@@ -165,10 +165,8 @@ $hasCompleteSearch =
                 >
             </div>
 
-            <!-- {{-- Passengers --}}
             <div>
-                <label for="passengers"
-                       class="mb-2 block text-xs font-semibold text-gray-600">
+                <label for="passengers" class="mb-2 block text-xs font-semibold text-gray-600">
                     Penumpang
                 </label>
 
@@ -181,7 +179,7 @@ $hasCompleteSearch =
                     value="{{ request('passengers', 1) }}"
                     class="w-full rounded-xl border-gray-300 py-3 text-sm focus:border-gray-900 focus:ring-gray-900"
                 >
-            </div> -->
+            </div>
 
             {{-- Submit --}}
             <div class="flex items-end">

@@ -8,10 +8,12 @@ window.cityAutocomplete = () => ({
     activeField: null,
     suggestions: [],
     requestId: 0,
+    debounceTimer: null,
 
-    async searchCities(field, value) {
+    searchCities(field, value) {
         this.activeField = field;
         const query = value.trim();
+        clearTimeout(this.debounceTimer);
         const requestId = ++this.requestId;
 
         if (query.length < 2) {
@@ -19,22 +21,24 @@ window.cityAutocomplete = () => ({
             return;
         }
 
-        try {
-            const response = await fetch(
-                `/api/cities/suggestion?q=${encodeURIComponent(query)}`,
-                { headers: { Accept: "application/json" } },
-            );
+        this.debounceTimer = setTimeout(async () => {
+            try {
+                const response = await fetch(
+                    `/api/cities/suggestion?q=${encodeURIComponent(query)}`,
+                    { headers: { Accept: "application/json" } },
+                );
 
-            if (!response.ok || requestId !== this.requestId) {
-                return;
-            }
+                if (!response.ok || requestId !== this.requestId) {
+                    return;
+                }
 
-            this.suggestions = await response.json();
-        } catch {
-            if (requestId === this.requestId) {
-                this.suggestions = [];
+                this.suggestions = await response.json();
+            } catch {
+                if (requestId === this.requestId) {
+                    this.suggestions = [];
+                }
             }
-        }
+        }, 300);
     },
 
     selectCity(field, city) {

@@ -338,7 +338,7 @@ class TravelDemoSeeder extends Seeder
 
         /*
         |--------------------------------------------------------------------------
-        | Route 7 - Hampir Penuh
+        | Route 7 - Jepara -> Jakarta
         |--------------------------------------------------------------------------
         */
 
@@ -346,13 +346,13 @@ class TravelDemoSeeder extends Seeder
             [
                 'bus_id' => $bus3->id,
                 'origin_city' => 'Jepara',
-                'destination_city' => 'Demak',
+                'destination_city' => 'Jakarta',
                 'departure_date' => now()->addDays(3)->toDateString(),
                 'departure_time' => '08:30:00',
             ],
             [
                 'origin_terminal' => 'Terminal Jepara',
-                'destination_terminal' => 'Terminal Demak',
+                'destination_terminal' => 'Terminal Kampung Rambutan',
                 'estimated_arrival_time' => '10:30:00',
                 'price' => 65000,
                 'available_seats' => 3,
@@ -386,7 +386,7 @@ class TravelDemoSeeder extends Seeder
 
         /*
         |--------------------------------------------------------------------------
-        | Route 9 - Cancelled
+        | Route 9 - Jepara -> Yogyakarta
         |--------------------------------------------------------------------------
         */
 
@@ -394,13 +394,13 @@ class TravelDemoSeeder extends Seeder
             [
                 'bus_id' => $bus1->id,
                 'origin_city' => 'Jepara',
-                'destination_city' => 'Rembang',
+                'destination_city' => 'Yogyakarta',
                 'departure_date' => now()->addDays(4)->toDateString(),
                 'departure_time' => '10:00:00',
             ],
             [
                 'origin_terminal' => 'Terminal Jepara',
-                'destination_terminal' => 'Terminal Rembang',
+                'destination_terminal' => 'Terminal Giwangan',
                 'estimated_arrival_time' => '13:00:00',
                 'price' => 85000,
                 'available_seats' => 30,
@@ -410,7 +410,7 @@ class TravelDemoSeeder extends Seeder
 
         /*
         |--------------------------------------------------------------------------
-        | Route 10 - Maintenance Bus
+        | Route 10 - Jepara -> Surabaya (Maintenance Bus)
         |--------------------------------------------------------------------------
         */
 
@@ -418,13 +418,13 @@ class TravelDemoSeeder extends Seeder
             [
                 'bus_id' => $bus5->id,
                 'origin_city' => 'Jepara',
-                'destination_city' => 'Semarang',
+                'destination_city' => 'Surabaya',
                 'departure_date' => now()->addDays(5)->toDateString(),
                 'departure_time' => '08:00:00',
             ],
             [
                 'origin_terminal' => 'Terminal Jepara',
-                'destination_terminal' => 'Terminal Terboyo',
+                'destination_terminal' => 'Terminal Purabaya',
                 'estimated_arrival_time' => '11:00:00',
                 'price' => 55000,
                 'available_seats' => 30,

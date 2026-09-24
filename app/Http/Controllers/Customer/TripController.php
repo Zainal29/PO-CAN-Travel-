@@ -312,6 +312,7 @@ class TripController extends Controller
                         $query->orderBy('departure_time');
                     }
                 )
+                ->orderBy('id')
                 ->paginate(10)
                 ->withQueryString();
         } elseif ($hasAnySearch) {
@@ -342,13 +343,15 @@ class TripController extends Controller
         $cities = TravelRoute::query()
             ->where('origin_city', 'like', $pattern)
             ->select('origin_city as city')
+            ->distinct()
             ->union(
                 TravelRoute::query()
                     ->where('destination_city', 'like', $pattern)
                     ->select('destination_city as city')
+                    ->distinct()
             )
             ->orderBy('city')
-            ->limit(8)
+            ->limit(10)
             ->pluck('city');
 
         return response()->json($cities->values());

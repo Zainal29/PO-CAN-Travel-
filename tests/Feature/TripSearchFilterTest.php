@@ -107,13 +107,74 @@ class TripSearchFilterTest extends TestCase
             ->assertSeeInOrder(['Bus Murah', 'Bus Mahal']);
     }
 
+    public function test_partial_search_is_rejected_with_a_clear_validation_error(): void
+    {
+        $response = $this->get(route('customer.trips.index', [
+            'origin_city' => 'Jepara',
+            'departure_date' => now()->addDay()->toDateString(),
+        ]));
+
+        $response
+            ->assertRedirect()
+            ->assertSessionHasErrors('trip');
+    }
+
+    public function test_passenger_filter_excludes_routes_with_insufficient_seats(): void
+    {
+        $date = now()->addDay()->toDateString();
+        $smallBus = $this->createBus('BUS-SMALL', 'Bus Kursi Sedikit', 'economy', 'active');
+        $largeBus = $this->createBus('BUS-LARGE', 'Bus Kursi Banyak', 'economy', 'active');
+
+        $this->createRoute($smallBus, $date, '08:00', 2, 50000);
+        $this->createRoute($largeBus, $date, '09:00', 5, 60000);
+
+        $this->get(route('customer.trips.index', [
+            'origin_city' => 'Jepara',
+            'destination_city' => 'Semarang',
+            'departure_date' => $date,
+            'passengers' => 3,
+        ]))
+            ->assertOk()
+            ->assertSee('Bus Kursi Banyak')
+            ->assertSee('1 perjalanan ditemukan.');
+    }
+
+    public function test_pagination_preserves_search_filters(): void
+    {
+        $date = now()->addDay()->toDateString();
+
+        for ($index = 1; $index <= 11; $index++) {
+            $bus = $this->createBus(
+                'BUS-PAGE-' . $index,
+                'Bus Pagination ' . $index,
+                'economy',
+                'active'
+            );
+            $this->createRoute($bus, $date, sprintf('%02d:00', $index % 10), 10, 50000 + $index);
+        }
+
+        $response = $this->get(route('customer.trips.index', [
+            'origin_city' => 'Jepara',
+            'destination_city' => 'Semarang',
+            'departure_date' => $date,
+            'sort_by' => 'price_asc',
+            'page' => 2,
+        ]));
+
+        $response
+            ->assertOk()
+            ->assertSee('Bus Pagination 11')
+            ->assertSee('origin_city=Jepara')
+            ->assertSee('sort_by=price_asc');
+    }
+
     private function createBus(string $code, string $name, string $type, string $status): Bus
     {
         return Bus::create([
             'bus_code' => $code,
             'bus_name' => $name,
             'bus_type' => $type,
-            'plate_number' => 'K ' . substr($code, -1) . '000 SRH',
+            'plate_number' => 'K ' . sprintf('%04d', abs(crc32($code)) % 10000) . ' SRH',
             'total_seats' => 30,
             'status' => $status,
         ]);
