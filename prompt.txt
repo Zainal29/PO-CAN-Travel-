@@ -1,396 +1,1283 @@
-Lanjutkan dari hasil audit read-only terakhir.
+# PO CAN TRAVEL — UI REDESIGN TAHAP 2
 
-Status audit saat ini adalah NEED FIX. Sekarang lakukan PERBAIKAN kode berdasarkan temuan audit tersebut.
+## Product-Level Redesign, Bukan Sekadar Restyling
 
-ATURAN UTAMA:
+Redesign tahap pertama sudah diterapkan dan business logic tetap aman.
 
-1. Jangan mengubah scope di luar sistem order/payment.
-2. Jangan membuat payment gateway eksternal.
-3. Payment tetap simulasi internal.
-4. Jangan menghapus data legacy secara destruktif.
-5. Pertahankan DB::transaction(), locking, seats_released, dan e-ticket yang sudah berjalan.
-6. Setelah setiap perubahan, periksa dampaknya terhadap test yang sudah ada.
-7. Jangan menganggap FormRequest sebagai satu-satunya pengaman; business rule wajib divalidasi di service.
-8. Jangan menambahkan status baru kecuali benar-benar diperlukan.
+Validasi terakhir:
 
-KONTRAK STATUS FINAL:
+```text
+php artisan view:cache       PASS
+npm run build                PASS
+php artisan test             PASS
+66 tests
+233 assertions
+```
 
-ORDER:
-pending → paid
-pending → cancelled
-pending → expired
-paid → completed
+Namun hasil visual masih terlalu polos dan generik.
 
-Tidak boleh:
-pending → confirmed
-confirmed → cancelled
-paid → cancelled
-paid → expired
-cancelled → paid
-expired → paid
-completed → paid
-completed → cancelled
-completed → expired
+Masalah utama:
 
-PAYMENT:
-unpaid → verified
-unpaid → rejected
-rejected → verified
+> UI sekarang terasa seperti template dashboard yang diberi warna baru, bukan aplikasi booking tiket bus yang benar-benar dirancang untuk pengguna.
 
-Jika status pending payment digunakan:
-pending → verified
-pending → rejected
+Saya ingin Anda melakukan **REDESIGN UI TAHAP 2 secara menyeluruh**.
 
-SOURCE OF TRUTH:
-payments.status adalah satu-satunya source of truth payment.
+Jangan hanya mengganti warna, border-radius, shadow, atau spacing.
 
-orders.payment_status hanya legacy/derived compatibility dan tidak boleh digunakan sebagai sumber keputusan business logic.
+Saya ingin perubahan pada:
 
-PERBAIKAN WAJIB:
+* visual hierarchy
+* information architecture
+* komposisi halaman
+* travel context
+* bus information
+* trip status
+* booking experience
+* order experience
+* ticket experience
+* responsive UX
+* visual identity
 
-1. HAPUS/NONAKTIFKAN CONFIRMED
+---
 
-Cari seluruh penggunaan:
+# 1. IDENTITAS PRODUK
 
-* confirmed
-* pending → confirmed
-* confirmed → cancelled
-* filter order_status confirmed
-* validasi confirmed sebagai active order
-* tombol/aksi konfirmasi admin
-* test yang menganggap confirmed sebagai status aktif
+PO CAN Travel adalah aplikasi pemesanan tiket bus.
 
-Sesuaikan dengan kontrak status baru.
+UI harus langsung memberikan kesan:
 
-Jangan sekadar menghapus string jika menyebabkan route/controller/test rusak. Periksa alurnya secara menyeluruh.
+```text
+TRAVEL
+BUS
+JOURNEY
+TICKET
+DEPARTURE
+DESTINATION
+```
 
-2. CANCELLATION
+Bukan:
 
-OrderCancellationService hanya boleh membatalkan order yang masih pending.
+```text
+GENERIC SAAS
+ADMIN DASHBOARD
+AI TEMPLATE
+```
 
-Aturan:
-pending + unpaid → cancelled + rejected
-pending + rejected → cancelled + rejected
+Desain harus terasa seperti produk transportasi.
 
-Jika:
-paid → tolak
-completed → tolak
-cancelled → tolak
-expired → tolak
-confirmed → tolak/tidak lagi didukung
+---
 
-Pastikan kursi dikembalikan tepat satu kali.
+# 2. ARAH VISUAL BARU
 
-Pastikan cancel berulang tidak menggandakan available_seats.
+Jangan gunakan pendekatan:
 
-3. EXPIRATION
-
-Expiration hanya berlaku untuk pending order yang expired_at <= now().
-
-Hasil:
-pending + unpaid → expired + rejected
-pending + rejected → expired + rejected
-
-Order paid/completed/cancelled tidak boleh berubah menjadi expired.
-
-Pastikan seats hanya dikembalikan satu kali.
-
-4. PAYMENT SERVICE
-
-PaymentService harus menjadi business-rule guard utama.
-
-Validasi di dalam service:
-
-* order harus dimiliki customer yang melakukan pembayaran
-* order harus pending
-* order belum expired
-* order bukan cancelled/completed/paid
-* payment harus tersedia
-* payment.status harus unpaid/rejected atau pending jika memang digunakan
-* payment method hanya bca, bri, qris
-* nominal harus berasal dari order.total_price
-* jangan menerima nominal dari frontend
-* pembayaran yang sudah verified tidak boleh diproses lagi
-
-Jika ownership sebelumnya hanya ada di PaymentController, pindahkan/duplikasi validasi yang diperlukan ke service agar direct service call juga aman.
-
-Gunakan DB::transaction().
-Lock order dan payment dengan tepat.
-
-Hasil pembayaran berhasil:
-payments.status = verified
-payments.payment_method = bca/bri/qris
-payments.amount = order.total_price
-payments.transaction_id = transaction ID internal
-payments.paid_at = now()
-orders.order_status = paid
-
-Jika orders.payment_status masih dipertahankan untuk compatibility:
-orders.payment_status = verified
-
-5. PAYMENT METHOD
-
-Audit seluruh project untuk:
-transfer
-virtual_account
-e_wallet
-cash
-
-Pastikan tidak ada lagi yang menjadi pilihan aktif.
-
-Semua pilihan aktif harus:
-bca
-bri
-qris
-
-Sangat penting:
-Periksa BookingService.
-
-Pastikan BookingService TIDAK lagi membuat:
-
-'payment_method' => 'transfer'
-
-karena enum final hanya:
-bca
-bri
-qris
-
-Jika payment_method memang seharusnya dipilih saat pembayaran, gunakan pendekatan yang kompatibel dengan schema saat ini dan jangan membuat booking gagal karena enum.
-
-6. INVALID STATE PROTECTION
-
-Pastikan aplikasi tidak menghasilkan kombinasi:
-
-pending + verified
-paid + unpaid
-paid + rejected
-cancelled + verified
-expired + verified
-cancelled + pending payment
-expired + pending payment
-
-Jika ditemukan data inconsistent dari legacy fixture, jangan diam-diam menganggap valid.
-
-Service harus menolak operasi yang akan menghasilkan kombinasi invalid.
-
-7. ADMIN UI
-
-Audit seluruh view admin payment/order.
-
-Hapus/nonaktifkan UI lama:
-
-* Verifikasi Pembayaran
-* Tolak Pembayaran
-* Upload bukti pembayaran
-* Transfer
-* Virtual Account
-* E-Wallet
-* Cash
-
-Payment sekarang simulasi internal.
-
-Admin boleh melihat:
-
-* payment method
-* payment status
-* transaction ID
-* amount
-* paid_at
-* informasi order/customer
-
-Tetapi tidak boleh ada flow manual verification/rejection yang bertentangan dengan payment simulation.
-
-8. CUSTOMER PAYMENT UI
-
-Pastikan flow:
-
-Booking
-→ pending + unpaid
-→ Bayar
-→ pilih BCA/BRI/QRIS
-→ isi payer_name
-→ isi payer_phone
-→ submit
-→ verified
-→ order paid
-→ e-ticket
-
-Jika pembayaran gagal/rejected:
-
-pending + rejected
-→ customer dapat Bayar Lagi
-→ pilih metode
-→ submit
-→ verified
-→ paid
-
-Jika order expired:
-expired + rejected
-→ tidak bisa bayar lagi
-
-Jika order cancelled:
-cancelled + rejected
-→ tidak bisa bayar lagi
-
-9. LEGACY payment_proof
-
-Jangan hapus payment_proof secara destruktif pada perubahan ini.
-
-Jika masih ada:
-
-* kolom
-* fillable
-* migration compatibility
-
-biarkan sebagai legacy compatibility.
-
-Namun:
-
-* jangan tampilkan upload payment proof di UI aktif
-* jangan jadikan payment_proof sebagai business logic
-* jangan gunakan payment_proof untuk menentukan payment status
-
-10. orders.payment_status
-
-Untuk saat ini JANGAN hapus kolom.
-
-Pastikan:
-
-* tidak dipakai sebagai source of truth
-* tidak dipakai untuk menentukan apakah pembayaran berhasil
-* tidak dipakai untuk authorization payment
-* jika masih ditulis, nilainya harus derived/synchronized dengan payments.status
-
-Dokumentasikan dengan comment yang jelas jika diperlukan.
-
-11. TEST WAJIB
-
-Tambahkan atau perbaiki test untuk:
-
-A. Payment success
-
-* BCA
-* BRI
-* QRIS
-
-B. Ownership
-
-* customer tidak dapat membayar order milik customer lain
-* direct PaymentService call juga ditolak jika ownership invalid
-
-C. Status
-
-* pending + unpaid → paid + verified
-* pending + rejected → paid + verified
-* paid tidak bisa dibayar lagi
-* completed tidak bisa dibayar
-* cancelled tidak bisa dibayar
-* expired tidak bisa dibayar
-
-D. Invalid combinations
-
-* cancelled + verified tidak boleh
-* expired + verified tidak boleh
-* pending + verified tidak boleh
-* paid + rejected tidak boleh
-
-E. Cancellation
-
-* pending + unpaid → cancelled + rejected
-* pending + rejected → cancelled + rejected
-* seats kembali
-* cancellation kedua tidak menambah seats lagi
-* paid tidak dapat dibatalkan
-
-F. Expiration
-
-* pending + unpaid → expired + rejected
-* pending + rejected → expired + rejected
-* seats kembali
-* expiration kedua tidak menambah seats lagi
-* paid tidak menjadi expired
-
-G. Security/integrity
-
-* frontend tidak dapat memanipulasi amount
-* amount selalu dari orders.total_price
-* payment method invalid ditolak oleh service
-* transaction ID dibuat server
-* double payment ditolak
-
-H. Booking
-
-* booking baru tidak menggunakan payment method legacy seperti transfer
-* booking menghasilkan state awal pending + unpaid
-
-I. Regression
-
-* jalankan seluruh test suite.
-
-12. ATOMICITY
-
-Pastikan update berikut berada dalam transaction yang sama:
-
-payment update
+```text
+white background
 +
-order update
+card
 +
-transaction ID
+shadow
 +
-paid_at
+rounded-xl
++
+icon
+```
 
-Jika salah satu operasi gagal, perubahan harus rollback.
+di seluruh halaman.
 
-Tambahkan test yang relevan jika memungkinkan tanpa membuat implementasi terlalu kompleks.
+Gunakan kombinasi:
 
-13. DOUBLE PAYMENT / CONCURRENCY
+```text
+large typography
+strong contrast
+travel imagery / bus imagery bila asset tersedia
+route visualization
+departure information
+ticket-like components
+timeline
+seat map
+status indicator
+structured information
+```
 
-Periksa apakah locking saat ini cukup untuk mencegah dua request pembayaran terhadap order yang sama.
+Whitespace tetap digunakan, tetapi jangan membuat halaman terasa kosong.
 
-Pastikan hanya satu request dapat mengubah payment menjadi verified.
+---
 
-Jika database/test environment sulit melakukan true concurrent test, minimal tambahkan test sequential double-submit dan dokumentasikan keterbatasan concurrency test.
+# 3. WARNA
 
-14. AUDIT SETELAH PERBAIKAN
+Warna navy/amber sebelumnya boleh dipertahankan sebagai dasar, tetapi jangan menjadikan seluruh UI hanya:
 
-Setelah selesai, jalankan:
+```text
+navy
+amber
+white
+```
 
-php artisan optimize:clear
+Bangun color system yang lebih matang.
+
+Contoh arah:
+
+```text
+Deep Navy
+#0B1F33
+
+Navy
+#12304A
+
+Bus / Transit Accent
+#F59E0B
+
+Warm Accent
+#FBBF24
+
+Background
+#F7F8FA
+
+Surface
+#FFFFFF
+
+Text
+#17202A
+
+Muted
+#64748B
+
+Border
+#E2E8F0
+
+Success
+#16A34A
+
+Warning
+#D97706
+
+Danger
+#DC2626
+```
+
+Jangan copy warna ini secara membabi buta.
+
+Sesuaikan dengan visual PO CAN Travel.
+
+Gunakan accent hanya pada elemen penting.
+
+---
+
+# 4. LANDING PAGE
+
+File:
+
+```text
+resources/views/welcome.blade.php
+```
+
+Jangan hanya membuat hero + search form.
+
+Buat landing page seperti website operator bus modern.
+
+Struktur:
+
+```text
+NAVBAR
+↓
+HERO
+↓
+SEARCH TICKET
+↓
+TRUST / SERVICE INFO
+↓
+POPULAR ROUTES
+↓
+WHY PO CAN TRAVEL
+↓
+HOW BOOKING WORKS
+↓
+CTA
+↓
+FOOTER
+```
+
+---
+
+## HERO
+
+Hero harus mempunyai visual yang kuat.
+
+Jika terdapat asset bus/travel yang tersedia, gunakan.
+
+Jika tidak ada asset yang sesuai, jangan membuat dekorasi abstrak yang berlebihan.
+
+Hero harus memiliki:
+
+```text
+Headline
+Subheadline
+Search journey
+Visual bus/travel
+```
+
+Contoh hierarchy:
+
+```text
+Temukan perjalanan Anda.
+Pesan tiket bus dengan mudah,
+langsung dari PO CAN Travel.
+
+[ Dari mana? ] [ Ke mana? ]
+[ Tanggal ] [ Penumpang ]
+
+[ Cari Perjalanan ]
+```
+
+Search box harus menjadi elemen utama.
+
+---
+
+# 5. SEARCH EXPERIENCE
+
+Search bukan sekadar form biasa.
+
+Buat seperti booking engine.
+
+Field:
+
+```text
+Asal
+Tujuan
+Tanggal
+Penumpang
+Periode keberangkatan
+Tipe bus
+Harga maksimum
+```
+
+Berikan visual distinction antara:
+
+```text
+FROM
+TO
+DATE
+PASSENGERS
+```
+
+Jika memungkinkan secara UI, tampilkan route preview:
+
+```text
+Jepara  →  Jakarta
+24 September 2026
+2 Penumpang
+```
+
+---
+
+# 6. CUSTOMER DASHBOARD
+
+File:
+
+```text
+resources/views/customer/dashboard/index.blade.php
+```
+
+Dashboard jangan terasa seperti:
+
+```text
+Welcome
+3 cards statistik
+Recent orders
+```
+
+Dashboard harus menjadi **travel command center**.
+
+Struktur:
+
+```text
+HEADER
+"Selamat datang, [nama]"
+
+QUICK BOOKING
+"Ke mana Anda ingin pergi?"
+
+UPCOMING TRIP
+↓
+TRIP STATUS
+↓
+RECENT ORDERS
+↓
+QUICK ACTIONS
+```
+
+---
+
+# 7. UPCOMING TRIP
+
+Ini harus menjadi elemen paling penting di dashboard ketika customer mempunyai perjalanan.
+
+Contoh visual:
+
+```text
+PERJALANAN BERIKUTNYA
+
+24 SEP 2026
+07:30
+
+Jepara
+    │
+    │  PO CAN Travel
+    │  Executive
+    │
+    ↓
+Jakarta
+
+Bus CAN-001
+Seat A12
+Ticket CAN-260924-XXXXXX
+
+[ Lihat Tiket ]
+```
+
+Jangan sekadar menampilkan:
+
+```text
+Order #PO...
+Status: Paid
+```
+
+Customer membeli perjalanan, jadi tampilkan **perjalanannya**.
+
+---
+
+# 8. TRIP STATUS
+
+Tambahkan informasi status perjalanan yang dapat dihitung dari data yang SUDAH tersedia.
+
+Contoh UI:
+
+```text
+STATUS PERJALANAN
+
+● Tiket Dibayar
+│
+● Menunggu Keberangkatan
+│
+○ Berangkat
+│
+○ Selesai
+```
+
+Jika waktu keberangkatan sudah lewat, tampilkan informasi yang sesuai dengan status data.
+
+Jangan membuat status database baru hanya untuk kebutuhan visual.
+
+Gunakan data existing.
+
+---
+
+# 9. INFORMASI WAKTU
+
+Pada halaman perjalanan dan order, tampilkan informasi waktu secara jelas.
+
+Contoh:
+
+```text
+07:30
+Keberangkatan
+
+14:30
+Estimasi Tiba
+```
+
+Tambahkan konteks:
+
+```text
+Berangkat dalam 2 jam
+```
+
+atau:
+
+```text
+Perjalanan telah dimulai
+```
+
+atau:
+
+```text
+Keberangkatan telah lewat
+```
+
+Tetapi:
+
+**JANGAN mengubah database atau membuat status baru hanya untuk ini.**
+
+Gunakan computed UI berdasarkan:
+
+```text
+departure_date
+departure_time
+estimated_arrival_time
+current time
+order_status
+checked_in_at
+```
+
+Pastikan timezone menggunakan timezone aplikasi yang benar.
+
+---
+
+# 10. TRIP LIST
+
+File:
+
+```text
+resources/views/customer/trips/index.blade.php
+```
+
+Ini harus menjadi salah satu halaman utama aplikasi.
+
+Jangan membuat daftar card besar yang monoton.
+
+Gunakan desain seperti hasil pencarian transportasi.
+
+Contoh:
+
+```text
+24 SEP 2026
+
+07:30
+Jepara
+       ───────────────
+       PO CAN Travel
+       Executive
+       ───────────────
+14:30
+Jakarta
+
+Rp150.000
+12 kursi tersedia
+
+[ Lihat Perjalanan ]
+```
+
+Tambahkan informasi:
+
+```text
+Bus
+Bus type
+Facilities
+Seat availability
+Departure
+Estimated arrival
+Price
+```
+
+---
+
+# 11. BUS INFORMATION
+
+Pada detail perjalanan:
+
+```text
+resources/views/customer/trips/show.blade.php
+```
+
+Tambahkan section khusus:
+
+```text
+BUS INFORMATION
+```
+
+Contoh:
+
+```text
+PO CAN Travel
+
+CAN-001
+
+Executive
+
+N 1234 AB
+
+30 Seats
+
+Facilities
+• AC
+• Reclining Seat
+• USB Charger
+• WiFi
+```
+
+Gunakan data:
+
+```text
+bus_code
+bus_name
+bus_type
+plate_number
+total_seats
+facilities
+description
+image
+status
+```
+
+Jangan membuat data baru.
+
+Jika `image` tersedia, tampilkan gambar bus.
+
+Jika tidak tersedia, gunakan fallback visual yang sederhana.
+
+---
+
+# 12. STATUS BUS
+
+Tampilkan status bus jika relevan:
+
+```text
+ACTIVE
+MAINTENANCE
+INACTIVE
+```
+
+Tetapi jangan menampilkan informasi internal yang tidak relevan untuk customer.
+
+Untuk customer, ubah menjadi bahasa yang mudah dipahami.
+
+Contoh:
+
+```text
+Bus tersedia
+```
+
+bukan:
+
+```text
+status = active
+```
+
+---
+
+# 13. AVAILABILITY
+
+Jangan hanya menampilkan:
+
+```text
+12 kursi
+```
+
+Buat informasi lebih jelas:
+
+```text
+12 dari 30 kursi tersedia
+```
+
+atau progress visual:
+
+```text
+Kursi tersedia
+████████░░░░
+
+12 / 30
+```
+
+Jangan mengubah data database.
+
+---
+
+# 14. SEAT SELECTION
+
+File:
+
+```text
+resources/views/customer/bookings/create.blade.php
+```
+
+Seat selection harus terlihat seperti pemilihan kursi bus nyata.
+
+Gunakan layout:
+
+```text
+             DRIVER
+
+       ┌──────┐
+       │      │
+       └──────┘
+
+ A01  A02     A03  A04
+ A05  A06     A07  A08
+ A09  A10     A11  A12
+
+        ...
+```
+
+Berikan legend:
+
+```text
+Available
+Selected
+Occupied
+```
+
+Seat harus menjadi salah satu visual focal point halaman booking.
+
+---
+
+# 15. BOOKING FLOW
+
+Buat booking terasa seperti checkout.
+
+Header:
+
+```text
+Pesan Tiket
+
+1 Perjalanan
+2 Kursi
+3 Penumpang
+4 Review
+```
+
+Namun jangan membuat stepper terlalu besar.
+
+Informasi perjalanan tetap terlihat:
+
+```text
+Jepara → Jakarta
+24 September 2026
+07:30
+PO CAN Travel
+Executive
+```
+
+Kemudian:
+
+```text
+Seat selection
+Passenger information
+Order summary
+```
+
+---
+
+# 16. ORDER DETAIL
+
+File:
+
+```text
+resources/views/customer/orders/show.blade.php
+```
+
+Jangan menjadikan halaman order sebagai tabel data.
+
+Buat seperti **travel reservation detail**.
+
+Header:
+
+```text
+Pesanan Anda
+
+CAN-260924-XXXXXX
+
+● Sudah Dibayar
+```
+
+Kemudian:
+
+```text
+TRIP
+
+Jepara
+07:30
+24 Sep
+
+        →
+
+Jakarta
+14:30
+24 Sep
+```
+
+Bus:
+
+```text
+PO CAN Travel
+CAN-001
+Executive
+```
+
+Passenger:
+
+```text
+Passenger
+Seat
+Phone
+```
+
+Payment:
+
+```text
+BCA
+Rp300.000
+Berhasil
+```
+
+Actions:
+
+```text
+[ Lihat E-Ticket ]
+[ Batalkan Pesanan ]
+```
+
+Tampilkan action hanya jika memang valid berdasarkan business logic existing.
+
+---
+
+# 17. PAYMENT UI
+
+File:
+
+```text
+resources/views/customer/payments/create.blade.php
+```
+
+Jangan membuat form payment generik.
+
+Buat seperti checkout tiket:
+
+```text
+PEMBAYARAN
+
+PO CAN Travel
+
+Jepara → Jakarta
+24 Sep 2026
+07:30
+
+-----------------
+
+Pilih metode pembayaran
+
+[ BCA ]
+[ BRI ]
+[ QRIS ]
+
+-----------------
+
+Nama pembayar
+Nomor telepon
+
+-----------------
+
+Total
+
+Rp300.000
+
+[ Bayar Sekarang ]
+```
+
+Metode pembayaran harus jelas.
+
+Gunakan visual bank/payment method yang tersedia dari asset project jika ada.
+
+Jangan membuat integrasi pembayaran baru.
+
+---
+
+# 18. PAYMENT SUCCESS
+
+File:
+
+```text
+resources/views/customer/payments/success.blade.php
+```
+
+Jangan hanya:
+
+```text
+Payment Success
+```
+
+Buat seperti confirmation page.
+
+```text
+Pembayaran berhasil
+
+Tiket Anda sudah diterbitkan.
+
+CAN-260924-XXXXXX
+
+Jepara → Jakarta
+24 Sep 2026
+07:30
+
+[ Lihat E-Ticket ]
+
+[ Lihat Pesanan ]
+```
+
+---
+
+# 19. E-TICKET
+
+File:
+
+```text
+resources/views/customer/orders/ticket.blade.php
+```
+
+Ini harus menjadi salah satu UI terbaik dalam aplikasi.
+
+Desain seperti tiket digital.
+
+```text
+┌──────────────────────────────────────┐
+│ PO CAN TRAVEL                       │
+│                                      │
+│ CAN-260924-ABC123                    │
+│                                      │
+│ JEPARA          →       JAKARTA      │
+│ 07:30                   14:30        │
+│                                      │
+│ 24 SEP 2026                          │
+│                                      │
+│ Passenger: Zainal                    │
+│ Seat: A12                            │
+│ Bus: CAN-001                         │
+│                                      │
+│                  [ QR CODE ]         │
+└──────────────────────────────────────┘
+```
+
+Tambahkan:
+
+```text
+boarding information
+departure terminal
+bus
+seat
+ticket code
+order code
+```
+
+hanya jika datanya tersedia.
+
+---
+
+# 20. TICKET STATUS
+
+E-ticket harus menunjukkan konteks:
+
+```text
+Belum Berangkat
+```
+
+atau berdasarkan waktu:
+
+```text
+Keberangkatan telah lewat
+```
+
+atau jika sudah check-in:
+
+```text
+Sudah Check-in
+```
+
+Gunakan data existing:
+
+```text
+order_status
+checked_in_at
+departure_date
+departure_time
+```
+
+Jangan membuat status database baru.
+
+---
+
+# 21. ORDER LIST
+
+File:
+
+```text
+resources/views/customer/orders/index.blade.php
+```
+
+Gunakan desain yang memudahkan pengguna menemukan perjalanan.
+
+Contoh:
+
+```text
+Pesanan
+
+┌─────────────────────────────┐
+│ Jepara → Jakarta            │
+│ 24 Sep 2026 · 07:30         │
+│                             │
+│ Executive · Seat A12        │
+│                             │
+│ Rp150.000                   │
+│ ● Sudah Dibayar             │
+│                             │
+│ [ Detail ]                  │
+└─────────────────────────────┘
+```
+
+Order code jangan menjadi informasi paling dominan.
+
+Route harus lebih dominan karena itu yang penting bagi customer.
+
+---
+
+# 22. HOME / DASHBOARD EMPTY STATE
+
+Jika customer belum memiliki order:
+
+Jangan tampilkan dashboard kosong.
+
+Gunakan:
+
+```text
+Belum ada perjalanan.
+
+Cari perjalanan pertama Anda
+dan pesan tiket dengan mudah.
+
+[ Cari Perjalanan ]
+```
+
+Buat visual yang tetap menarik tanpa dekorasi berlebihan.
+
+---
+
+# 23. RESPONSIVE
+
+Jangan sekadar mengecilkan desktop UI.
+
+Mobile harus memiliki layout tersendiri.
+
+Terutama:
+
+```text
+search
+trip card
+seat map
+booking
+payment
+ticket
+navigation
+```
+
+Pada mobile:
+
+```text
+route
+time
+price
+CTA
+```
+
+harus langsung terlihat tanpa scrolling horizontal.
+
+---
+
+# 24. MICROCOPY
+
+Gunakan bahasa Indonesia yang natural.
+
+Hindari:
+
+```text
+Your Journey Awaits
+Unlock Your Adventure
+Seamless Experience
+Explore Now
+```
+
+Gunakan:
+
+```text
+Cari perjalanan
+Pesan tiket
+Lihat perjalanan
+Lihat tiket
+Pesanan Anda
+Perjalanan berikutnya
+Berangkat
+Tiba
+Kursi tersedia
+Pembayaran berhasil
+```
+
+---
+
+# 25. INFORMASI YANG BOLEH DITAMBAHKAN
+
+Boleh menambahkan informasi **turunan dari data existing**, misalnya:
+
+```text
+12 / 30 kursi tersedia
+Berangkat dalam 3 jam
+Keberangkatan hari ini
+Keberangkatan telah lewat
+Sudah check-in
+Belum check-in
+Bus aktif
+```
+
+Tetapi jangan membuat:
+
+```text
+rating bus
+rating driver
+jumlah perjalanan
+on-time percentage
+live location
+traffic
+estimated delay
+```
+
+jika datanya tidak tersedia.
+
+Jangan mengarang data.
+
+---
+
+# 26. ASSET
+
+Sebelum menggunakan placeholder, periksa:
+
+```text
+resources/
+public/
+resources/images/
+```
+
+Jika ada:
+
+* logo
+* bus image
+* destination image
+* payment logo
+* illustration
+
+gunakan secara konsisten.
+
+Jangan menggunakan random stock image dari internet tanpa alasan.
+
+Jika tidak ada asset, buat UI tetap kuat melalui typography, layout dan CSS.
+
+---
+
+# 27. REUSABLE COMPONENT
+
+Buat component hanya ketika memang reusable.
+
+Contoh:
+
+```text
+trip-summary
+route-display
+bus-info
+seat-status
+order-status
+payment-status
+ticket-card
+empty-state
+```
+
+Jangan membuat 30 component kecil yang justru menyulitkan project.
+
+---
+
+# 28. JANGAN MENGUBAH BACKEND
+
+Tetap gunakan:
+
+```text
+TravelRoute
+Bus
+Order
+OrderDetail
+Payment
+User
+```
+
+dan field existing.
+
+Jangan mengubah:
+
+```text
+controllers
+services
+models
+migrations
+routes
+database
+```
+
+untuk kebutuhan visual.
+
+---
+
+# 29. STATUS YANG HARUS DIPERTAHANKAN
+
+Order:
+
+```text
+pending
+paid
+cancelled
+completed
+expired
+```
+
+JANGAN gunakan:
+
+```text
+confirmed
+```
+
+Payment:
+
+```text
+unpaid
+pending
+verified
+rejected
+```
+
+---
+
+# 30. VALIDASI
+
+Setelah perubahan:
+
+```bash
+php artisan view:cache
+npm run build
 php artisan test
+```
 
-Kemudian jalankan pencarian:
+Harus tetap:
 
-grep -RInE "payment_status|payment_proof|payment_method|order_status|confirmed|transfer|virtual_account|e_wallet|cash|payments.verify|payments.reject|Bayar Sekarang|Bayar Lagi|upload" app routes resources/views tests database --exclude-dir=node_modules
+```text
+66 tests passed
+233 assertions
+```
 
-Periksa hasil grep satu per satu.
+atau jika jumlah test berubah karena alasan yang benar, jelaskan.
 
-JANGAN menyimpulkan PASS hanya karena test hijau.
+---
 
-Lakukan audit kedua terhadap business logic.
+# 31. JANGAN LANGSUNG SELESAIKAN SEMUA
 
-LAPORAN AKHIR HARUS BERISI:
+Kerjakan dalam phase berikut:
 
-1. File yang diubah
-2. Perubahan setiap file
-3. State machine final
-4. Payment source of truth final
-5. Status `confirmed`
-6. Status `orders.payment_status`
-7. Status `payment_proof`
-8. Payment method final
-9. Cancellation flow
-10. Expiration flow
-11. Rejected payment retry flow
-12. Double-payment protection
-13. Ownership protection
-14. Atomicity
-15. Seat restoration
-16. Hasil grep legacy
-17. Hasil seluruh test
-18. Jumlah test dan assertion
-19. Apakah masih ada NEED FIX
-20. Potensi risiko yang masih tersisa
+## PHASE A
 
-KRITIS:
-Jangan hanya memperbaiki error test.
-Tujuan utama adalah memastikan implementasi benar-benar sesuai kontrak business logic, bukan sekadar membuat test hijau.
+```text
+welcome.blade.php
+customer/layouts/index.blade.php
+customer/dashboard/index.blade.php
+```
+
+## PHASE B
+
+```text
+customer/trips/index.blade.php
+customer/trips/show.blade.php
+```
+
+## PHASE C
+
+```text
+customer/bookings/create.blade.php
+customer/payments/create.blade.php
+customer/payments/success.blade.php
+```
+
+## PHASE D
+
+```text
+customer/orders/index.blade.php
+customer/orders/show.blade.php
+customer/orders/ticket.blade.php
+```
+
+## PHASE E
+
+```text
+auth/*
+profile/*
+```
+
+## PHASE F
+
+```text
+admin/*
+```
+
+Setelah setiap phase, lakukan validasi.
+
+---
+
+# HASIL YANG SAYA INGINKAN
+
+Jangan berhenti pada:
+
+> "UI sudah modern dan responsive."
+
+Saya ingin perubahan yang terlihat jelas ketika halaman dibuka.
+
+Pengguna harus langsung memahami:
+
+```text
+Saya sedang di mana?
+Saya mau pergi ke mana?
+Kapan saya berangkat?
+Bus apa yang saya gunakan?
+Berapa kursinya?
+Berapa harganya?
+Apa status pesanan saya?
+Apa yang harus saya lakukan berikutnya?
+```
+
+Desain harus menjawab pertanyaan tersebut secara visual.
+
+**Prioritas utama:**
+
+```text
+Travel context
++
+Information hierarchy
++
+Booking UX
++
+Visual identity
++
+Responsive UX
+```
+
+bukan sekadar:
+
+```text
+rounded cards
++
+shadow
++
+gradient
++
+icons
+```
+
+Mulai dari **PHASE A saja**.
+
+Sebelum coding, baca file existing dan jelaskan secara singkat:
+
+1. masalah UI saat ini
+2. struktur UI baru
+3. komponen yang akan digunakan
+4. informasi travel baru yang dapat ditampilkan dari data existing
+
+Setelah itu implementasikan PHASE A.

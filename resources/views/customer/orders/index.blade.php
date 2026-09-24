@@ -46,14 +46,13 @@
                 @forelse ($orders as $order)
 
                     @php
-                        $orderStatusClasses = [
-                            'pending' => 'bg-yellow-100 text-yellow-700',
-                            'confirmed' => 'bg-blue-100 text-blue-700',
-                            'paid' => 'bg-green-100 text-green-700',
-                            'cancelled' => 'bg-red-100 text-red-700',
-                            'completed' => 'bg-gray-100 text-gray-700',
-                            'expired' => 'bg-gray-100 text-gray-600',
-                        ];
+                       $orderStatusClasses = [
+    'pending' => 'bg-yellow-100 text-yellow-700',
+    'paid' => 'bg-green-100 text-green-700',
+    'cancelled' => 'bg-red-100 text-red-700',
+    'completed' => 'bg-gray-100 text-gray-700',
+    'expired' => 'bg-gray-100 text-gray-600',
+];
 
                         $paymentStatusClasses = [
                             'unpaid' => 'bg-yellow-100 text-yellow-700',

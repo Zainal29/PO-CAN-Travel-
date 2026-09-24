@@ -11,18 +11,19 @@
         totalSeats: {{ (int) $route->bus->total_seats }},
         bookedSeats: @json($bookedSeats),
     })"
-    class="max-w-6xl mx-auto space-y-6"
+    class="mx-auto max-w-6xl space-y-6"
 >
     {{-- Header --}}
     <div>
         <a
             href="{{ route('customer.trips.show', $route) }}"
-            class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-3"
+            class="mb-3 inline-flex items-center text-sm font-semibold text-slate-600 hover:text-brand-950"
         >
             &larr; Kembali ke detail perjalanan
         </a>
 
-    <h1 class="text-2xl font-bold text-gray-900">
+    <p class="eyebrow">Checkout booking</p>
+    <h1 class="mt-2 page-heading">
         Pesan Tiket
     </h1>
 
@@ -30,6 +31,8 @@
         Isi data penumpang dan pilih kursi yang tersedia.
     </p>
 </div>
+
+<ol class="grid grid-cols-4 gap-2 border-y border-slate-200 py-4 text-center text-xs font-semibold text-slate-500"><li class="text-brand-700">1. Perjalanan</li><li class="text-brand-700">2. Kursi & penumpang</li><li>3. Review</li><li>4. Pembayaran</li></ol>
 
 {{-- Validation errors --}}
 @if ($errors->any())
@@ -64,7 +67,7 @@
             >
 
             {{-- Route summary --}}
-            <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+            <div class="surface overflow-hidden">
                 <div class="px-5 py-4 border-b border-gray-200">
                     <h2 class="font-semibold text-gray-900">
                         Detail Perjalanan
@@ -121,7 +124,7 @@
             </div>
 
             {{-- Seat selection --}}
-            <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+            <div class="surface overflow-hidden">
                 <div class="px-5 py-4 border-b border-gray-200">
                     <div class="flex items-center justify-between gap-4">
                         <div>
@@ -195,7 +198,7 @@
             </div>
 
             {{-- Passenger data --}}
-            <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+            <div class="surface overflow-hidden">
                 <div class="px-5 py-4 border-b border-gray-200">
                     <div class="flex items-center justify-between gap-4">
                         <div>
@@ -314,7 +317,7 @@
             </div>
 
             {{-- Submit --}}
-            <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+            <div class="surface p-5">
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
                     <div>
                         <p class="text-sm text-gray-500">
@@ -344,7 +347,7 @@
 
     {{-- Order summary --}}
     <aside class="lg:col-span-1">
-        <div class="lg:sticky lg:top-6 bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+        <div class="surface overflow-hidden lg:sticky lg:top-6">
             <div class="px-5 py-4 border-b border-gray-200">
                 <h2 class="font-semibold text-gray-900">
                     Ringkasan Pesanan

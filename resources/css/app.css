@@ -1,3 +1,32 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    html { @apply scroll-smooth; }
+    body { @apply bg-slate-50 font-sans text-slate-800 antialiased; }
+    :focus-visible { @apply outline-none ring-2 ring-brand-500 ring-offset-2; }
+}
+
+@layer components {
+    .site-shell { @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8; }
+    .page-heading { @apply text-2xl font-bold tracking-tight text-brand-950 sm:text-3xl; }
+    .eyebrow { @apply text-xs font-bold uppercase tracking-[0.14em] text-brand-700; }
+    .surface { @apply border border-slate-200 bg-white; }
+    .surface-muted { @apply border border-slate-200 bg-slate-50; }
+    .section-title { @apply text-lg font-bold tracking-tight text-brand-950; }
+    .field-label { @apply mb-1.5 block text-sm font-medium text-slate-700; }
+    .btn-primary { @apply inline-flex min-h-11 items-center justify-center rounded-md bg-brand-950 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-900; }
+    .btn-secondary { @apply inline-flex min-h-11 items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-brand-950 transition-colors hover:bg-slate-50; }
+    .status { @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold; }
+    .status-pending { @apply bg-amber-50 text-amber-800; }
+    .status-paid, .status-verified, .status-completed { @apply bg-emerald-50 text-emerald-800; }
+    .status-cancelled, .status-expired, .status-rejected { @apply bg-red-50 text-red-800; }
+    .status-unpaid { @apply bg-slate-100 text-slate-700; }
+    .status-info { @apply bg-sky-50 text-sky-800; }
+}
+
+@media print {
+    .no-print { display: none !important; }
+    body { background: white !important; }
+}

@@ -34,14 +34,13 @@
                     <select name="status" class="rounded-lg border-gray-300">
                         <option value="">Semua Status Order</option>
 
-                        @foreach([
-                            'pending',
-                            'confirmed',
-                            'paid',
-                            'cancelled',
-                            'completed',
-                            'expired',
-                        ] as $status)
+                       @foreach([
+    'pending',
+    'paid',
+    'cancelled',
+    'completed',
+    'expired',
+] as $status)
                             <option
                                 value="{{ $status }}"
                                 @selected(request('status') === $status)

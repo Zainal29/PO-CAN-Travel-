@@ -25,14 +25,14 @@
     </div>
 
     @php
-        $statusClasses = [
-            'pending' => 'bg-yellow-100 text-yellow-700',
-            'confirmed' => 'bg-blue-100 text-blue-700',
-            'paid' => 'bg-green-100 text-green-700',
-            'cancelled' => 'bg-red-100 text-red-700',
-            'completed' => 'bg-gray-100 text-gray-700',
-            'expired' => 'bg-gray-100 text-gray-600',
-        ];
+       $statusClasses = [
+    'pending' => 'bg-yellow-100 text-yellow-700',
+    'paid' => 'bg-green-100 text-green-700',
+    'cancelled' => 'bg-red-100 text-red-700',
+    'completed' => 'bg-gray-100 text-gray-700',
+    'expired' => 'bg-gray-100 text-gray-600',
+];
+    
     @endphp
 
     <span class="inline-flex w-fit rounded-full px-3 py-1.5 text-sm font-semibold {{ $statusClasses[$order->order_status] ?? 'bg-gray-100 text-gray-600' }}">
@@ -397,10 +397,7 @@
 @endif
 
 {{-- Pembatalan --}}
-@if (
-    in_array($order->order_status, ['pending', 'confirmed'], true)
-)
-
+@if ($order->order_status === 'pending')
     <div class="mt-6 rounded-xl border border-red-200 bg-white p-6 shadow-sm">
 
         <h2 class="font-bold text-gray-900">

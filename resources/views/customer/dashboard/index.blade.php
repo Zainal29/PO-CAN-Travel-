@@ -1,147 +1,23 @@
 @extends('customer.layouts.index')
 
-@section('title', 'Dashboard Customer — PO CAN Travel')
+@section('title', 'Beranda — PO CAN Travel')
 
 @section('content')
-
-<div class="mb-8">
-    <h1 class="text-2xl font-bold text-gray-900">
-        Selamat datang, {{ auth()->user()->name }}
-    </h1>
-
-    <p class="mt-1 text-sm text-gray-500">
-        Kelola perjalanan dan pesanan tiket Anda.
-    </p>
+@php($nextOrder = $latestOrders->first(fn ($order) => in_array($order->order_status, ['pending', 'paid'], true)))
+<div class="flex flex-col gap-5 border-b border-slate-200 pb-7 sm:flex-row sm:items-end sm:justify-between">
+    <div><p class="eyebrow">Beranda</p><h1 class="page-heading mt-2">Halo, {{ auth()->user()->name }}</h1><p class="mt-2 text-sm text-slate-600">Semua kebutuhan perjalanan Anda, dalam satu tempat.</p></div>
+    <a href="{{ route('customer.trips.index') }}" class="btn-primary w-full sm:w-auto">Cari perjalanan</a>
 </div>
 
-<div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+<section class="mt-8 surface p-5 sm:p-6"><div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between"><div><p class="eyebrow">Booking cepat</p><h2 class="section-title mt-2">Ke mana Anda ingin pergi?</h2></div><form method="GET" action="{{ route('customer.trips.index') }}" class="grid w-full gap-3 sm:grid-cols-3 lg:max-w-3xl"><input name="origin_city" required placeholder="Kota asal" class="rounded-md border-slate-300 text-sm focus:border-brand-600 focus:ring-brand-600"><input name="destination_city" required placeholder="Kota tujuan" class="rounded-md border-slate-300 text-sm focus:border-brand-600 focus:ring-brand-600"><button class="btn-primary">Cari jadwal</button></form></div></section>
 
-    <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-        <p class="text-sm text-gray-500">Total Pesanan</p>
-        <p class="mt-2 text-3xl font-bold text-gray-900">
-            {{ $stats['total_orders'] }}
-        </p>
+<div class="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+    <div class="space-y-8">
+        <section><div class="flex items-center justify-between"><div><p class="eyebrow">Perjalanan berikutnya</p><h2 class="section-title mt-2">Rencana terdekat Anda</h2></div>@if($nextOrder)<a href="{{ route('customer.orders.show', $nextOrder) }}" class="text-sm font-semibold text-brand-700 hover:text-brand-950">Lihat pesanan →</a>@endif</div>
+            @if($nextOrder)<article class="surface mt-4 grid gap-5 p-5 sm:grid-cols-[110px_minmax(0,1fr)_auto] sm:items-center sm:p-6"><div><p class="text-2xl font-bold text-brand-950">{{ \Carbon\Carbon::parse($nextOrder->route->departure_time)->format('H:i') }}</p><p class="mt-1 text-xs text-slate-500">{{ $nextOrder->route->departure_date->translatedFormat('d M Y') }}</p></div><div><p class="font-semibold text-brand-950">{{ $nextOrder->route->origin_city }} <span class="mx-2 text-slate-400">→</span> {{ $nextOrder->route->destination_city }}</p><p class="mt-1 text-sm text-slate-500">{{ $nextOrder->route->bus->bus_name }} · {{ $nextOrder->total_passengers }} penumpang</p></div><x-status-badge :status="$nextOrder->order_status" /></article>@else<div class="surface-muted mt-4 p-5"><p class="font-semibold text-brand-950">Belum ada perjalanan aktif</p><p class="mt-1 text-sm text-slate-600">Mulai dengan mencari jadwal yang sesuai untuk Anda.</p></div>@endif
+        </section>
+        <section><div class="flex items-end justify-between"><div><p class="eyebrow">Pesanan terbaru</p><h2 class="section-title mt-2">Riwayat booking</h2></div><a href="{{ route('customer.orders.index') }}" class="text-sm font-semibold text-brand-700 hover:text-brand-950">Lihat semua →</a></div><div class="mt-4 divide-y divide-slate-200 border-y border-slate-200">@forelse($latestOrders as $order)<a href="{{ route('customer.orders.show', $order) }}" class="grid gap-3 py-4 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center hover:bg-slate-50"><div><p class="font-semibold text-brand-950">{{ $order->route->origin_city }} → {{ $order->route->destination_city }}</p><p class="mt-1 text-sm text-slate-500">{{ $order->order_code }} · {{ $order->route->departure_date->translatedFormat('d M Y') }}</p></div><x-status-badge :status="$order->payment?->status" type="payment" /><p class="font-semibold text-brand-950">Rp {{ number_format($order->total_price, 0, ',', '.') }}</p></a>@empty<p class="py-8 text-sm text-slate-500">Belum ada riwayat pesanan.</p>@endforelse</div></section>
     </div>
-
-    <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-        <p class="text-sm text-gray-500">Menunggu Pembayaran</p>
-        <p class="mt-2 text-3xl font-bold text-yellow-600">
-            {{ $stats['pending_orders'] }}
-        </p>
-    </div>
-
-    <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-        <p class="text-sm text-gray-500">Sudah Dibayar</p>
-        <p class="mt-2 text-3xl font-bold text-green-600">
-            {{ $stats['paid_orders'] }}
-        </p>
-    </div>
-
-    <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-        <p class="text-sm text-gray-500">Selesai</p>
-        <p class="mt-2 text-3xl font-bold text-blue-600">
-            {{ $stats['completed_orders'] }}
-        </p>
-    </div>
-
+    <aside class="surface h-fit p-5 sm:p-6"><p class="eyebrow">Ringkasan akun</p><dl class="mt-5 divide-y divide-slate-200"><div class="flex items-center justify-between py-3"><dt class="text-sm text-slate-600">Total pesanan</dt><dd class="font-bold text-brand-950">{{ $stats['total_orders'] }}</dd></div><div class="flex items-center justify-between py-3"><dt class="text-sm text-slate-600">Menunggu pembayaran</dt><dd class="font-bold text-amber-700">{{ $stats['pending_orders'] }}</dd></div><div class="flex items-center justify-between py-3"><dt class="text-sm text-slate-600">Perjalanan selesai</dt><dd class="font-bold text-brand-950">{{ $stats['completed_orders'] }}</dd></div></dl><a href="{{ route('profile.edit') }}" class="btn-secondary mt-5 w-full">Kelola profil</a></aside>
 </div>
-
-<div class="mt-8 grid gap-6 lg:grid-cols-3">
-
-    <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2">
-
-        <div class="flex items-center justify-between">
-            <div>
-                <h2 class="text-lg font-bold text-gray-900">
-                    Pesanan Terbaru
-                </h2>
-
-                <p class="text-sm text-gray-500">
-                    Riwayat pesanan terbaru Anda.
-                </p>
-            </div>
-
-            <a href="{{ route('customer.orders.index') }}"
-               class="text-sm font-medium text-blue-600 hover:text-blue-800">
-                Lihat semua
-            </a>
-        </div>
-
-        <div class="mt-5 overflow-x-auto">
-            <table class="w-full text-left text-sm">
-                <thead class="border-b border-gray-200 text-gray-500">
-                    <tr>
-                        <th class="px-3 py-3">Kode</th>
-                        <th class="px-3 py-3">Perjalanan</th>
-                        <th class="px-3 py-3">Tanggal</th>
-                        <th class="px-3 py-3">Status</th>
-                    </tr>
-                </thead>
-
-                <tbody class="divide-y divide-gray-100">
-
-                    @forelse ($latestOrders as $order)
-
-                        <tr>
-                            <td class="px-3 py-4 font-medium text-gray-900">
-                                <a href="{{ route('customer.orders.show', $order) }}"
-                                   class="hover:text-blue-600">
-                                    {{ $order->order_code }}
-                                </a>
-                            </td>
-
-                            <td class="px-3 py-4">
-                                {{ $order->route->origin_city }}
-                                →
-                                {{ $order->route->destination_city }}
-                            </td>
-
-                            <td class="px-3 py-4">
-                                {{ $order->route->departure_date->format('d/m/Y') }}
-                            </td>
-
-                            <td class="px-3 py-4">
-                                <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium">
-                                    {{ ucfirst($order->order_status) }}
-                                </span>
-                            </td>
-                        </tr>
-
-                    @empty
-
-                        <tr>
-                            <td colspan="4" class="px-3 py-8 text-center text-gray-500">
-                                Belum ada pesanan.
-                            </td>
-                        </tr>
-
-                    @endforelse
-
-                </tbody>
-            </table>
-        </div>
-
-    </div>
-
-    <div class="rounded-xl bg-gray-900 p-6 text-white">
-
-        <h2 class="text-lg font-bold">
-            Mau bepergian?
-        </h2>
-
-        <p class="mt-2 text-sm text-gray-300">
-            Cari jadwal perjalanan dan pesan tiket Anda sekarang.
-        </p>
-
-        <a href="{{ route('customer.trips.index') }}"
-           class="mt-6 inline-flex rounded-lg bg-white px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-100">
-            Cari Perjalanan
-        </a>
-
-    </div>
-
-</div>
-
 @endsection
-
-    

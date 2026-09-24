@@ -238,43 +238,29 @@
                     Pengelolaan Order
                 </h3>
 
-                @if($order->order_status === 'pending' || $order->order_status === 'paid')
-                    <form method="POST" action="{{ route('admin.orders.status', $order) }}" class="flex gap-3">
-                        @csrf
-                        @method('PATCH')
-                        <input type="hidden" name="order_status" value="{{ $order->order_status === 'pending' ? 'confirmed' : 'completed' }}">
-                        <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg">
-                            {{ $order->order_status === 'pending' ? 'Konfirmasi Order' : 'Selesaikan Order' }}
-                        </button>
-                    </form>
-                @endif
+                @if($order->order_status === 'paid')
+    <form
+        method="POST"
+        action="{{ route('admin.orders.status', $order) }}"
+        class="flex gap-3"
+    >
+        @csrf
+        @method('PATCH')
 
-                @if(in_array($order->order_status, ['pending', 'confirmed'], true))
-                    <form
-                        method="POST"
-                        action="{{ route('admin.orders.cancel', $order) }}"
-                        class="mt-6"
-                    >
-                        @csrf
-                        @method('PATCH')
+        <input
+            type="hidden"
+            name="order_status"
+            value="completed"
+        >
 
-                        <textarea
-                            name="cancellation_note"
-                            required
-                            rows="3"
-                            placeholder="Alasan pembatalan..."
-                            class="w-full rounded-lg border-gray-300"
-                        ></textarea>
-
-                        <button
-                            type="submit"
-                            class="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg"
-                            onclick="return confirm('Batalkan order ini?')"
-                        >
-                            Batalkan Order
-                        </button>
-                    </form>
-                @endif
+        <button
+            type="submit"
+            class="rounded-lg bg-indigo-600 px-4 py-2 text-white"
+        >
+            Selesaikan Order
+        </button>
+    </form>
+@endif
 
                 @if(in_array($order->order_status, ['cancelled', 'expired'], true) && ! $order->seats_released)
                     <div class="mt-6 rounded-lg border border-yellow-300 bg-yellow-50 p-4 text-sm text-yellow-800">
@@ -308,8 +294,7 @@
                     </form>
                 @endif
 
-                @if ($order->payment?->status === 'verified' && in_array($order->order_status, ['paid', 'confirmed'], true) && ! $order->checked_in_at)
-                    <form method="POST" action="{{ route('admin.orders.check-in', $order) }}" class="mt-6">
+@if ($order->payment?->status === 'verified' && $order->order_status === 'paid' && ! $order->checked_in_at)                     <form method="POST" action="{{ route('admin.orders.check-in', $order) }}" class="mt-6">
                         @csrf
                         @method('PATCH')
                         <button class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">Catat Check-in</button>

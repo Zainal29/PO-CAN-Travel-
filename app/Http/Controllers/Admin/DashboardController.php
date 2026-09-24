@@ -54,8 +54,7 @@ class DashboardController extends Controller
             ->selectRaw('order_status, COUNT(*) as total')
             ->groupBy('order_status')
             ->pluck('total', 'order_status');
-        $statusLabels = ['pending', 'confirmed', 'paid', 'cancelled', 'completed', 'expired'];
-
+$statusLabels = ['pending', 'paid', 'cancelled', 'completed', 'expired'];
         $ordersTrend = collect(range(6, 0))->map(function (int $daysAgo) {
             $date = now()->subDays($daysAgo);
 

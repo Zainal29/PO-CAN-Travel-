@@ -4,20 +4,20 @@
 
 @section('content')
 <div class="mx-auto max-w-2xl">
-    <div class="mb-6 flex items-center justify-between gap-4">
-        <a href="{{ route('customer.orders.show', $order) }}" class="text-sm font-medium text-gray-500 hover:text-gray-900">&larr; Kembali ke pesanan</a>
-        <button type="button" onclick="window.print()" class="rounded-lg border border-gray-300 px-3 py-2 text-sm font-semibold hover:bg-gray-100">Cetak</button>
+    <div class="no-print mb-6 flex items-center justify-between gap-4">
+        <a href="{{ route('customer.orders.show', $order) }}" class="text-sm font-semibold text-slate-600 hover:text-brand-950">&larr; Kembali ke pesanan</a>
+        <button type="button" onclick="window.print()" class="btn-secondary min-h-9 px-3 py-1.5">Cetak</button>
     </div>
 
-    <article class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
-        <div class="flex items-start justify-between gap-4 border-b border-dashed border-gray-300 pb-6">
+    <article class="border border-slate-300 bg-white p-6 sm:p-8">
+        <div class="flex items-start justify-between gap-4 border-b border-dashed border-slate-300 pb-6">
             <div>
-                <p class="text-sm font-semibold text-gray-500">PO CAN Travel</p>
-                <h1 class="mt-1 text-2xl font-bold text-gray-900">E-Ticket</h1>
+                <p class="text-sm font-semibold text-brand-700">PO CAN Travel</p>
+                <h1 class="mt-1 text-2xl font-bold text-brand-950">E-Ticket</h1>
             </div>
             <div class="text-right">
-                <p class="text-xs text-gray-500">Kode tiket</p>
-                <p class="mt-1 font-mono text-lg font-bold tracking-wide text-gray-900">{{ $order->ticket_code }}</p>
+                <p class="text-xs text-slate-500">Kode tiket</p>
+                <p class="mt-1 font-mono text-lg font-bold tracking-wide text-brand-950">{{ $order->ticket_code }}</p>
             </div>
         </div>
 
@@ -42,18 +42,18 @@
             </div>
         </div>
 
-        <div class="border-t border-dashed border-gray-300 pt-6">
+        <div class="border-t border-dashed border-slate-300 pt-6">
             <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h2 class="font-semibold text-gray-900">QR e-ticket</h2>
                     <p class="mt-1 text-sm text-gray-500">Tunjukkan QR ini saat check-in.</p>
                 </div>
-                <img src="{{ $ticketQrCode }}" alt="QR code e-ticket {{ $order->order_code }}" class="h-44 w-44 rounded-lg border border-gray-200 p-2">
+                <img src="{{ $ticketQrCode }}" alt="QR code e-ticket {{ $order->order_code }}" class="h-40 w-40 border border-slate-300 p-2">
             </div>
-            <a href="{{ route('customer.orders.ticket.qr', $order) }}" class="mt-4 inline-flex rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-gray-700">Download E-Tiket</a>
+            <a href="{{ route('customer.orders.ticket.qr', $order) }}" class="no-print btn-primary mt-4">Download E-Tiket</a>
         </div>
 
-        <div class="border-t border-dashed border-gray-300 pt-6">
+        <div class="border-t border-dashed border-slate-300 pt-6">
             <h2 class="font-semibold text-gray-900">Penumpang dan kursi</h2>
             <div class="mt-3 space-y-2 text-sm">
                 @foreach ($order->details as $detail)
@@ -62,7 +62,7 @@
             </div>
         </div>
 
-        <p class="mt-6 rounded-lg bg-gray-50 p-4 text-xs leading-5 text-gray-600">Tunjukkan e-ticket dan identitas yang sesuai kepada petugas saat boarding. Kode tiket ini hanya berlaku untuk satu kali perjalanan.</p>
+        <p class="mt-6 border-l-2 border-brand-500 bg-slate-50 p-4 text-xs leading-5 text-slate-600">Tunjukkan e-ticket dan identitas yang sesuai kepada petugas saat boarding. Kode tiket ini hanya berlaku untuk satu kali perjalanan.</p>
     </article>
 </div>
 @endsection
