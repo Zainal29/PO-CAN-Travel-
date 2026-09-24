@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('title', 'PO CAN Travel')</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('styles')
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800">
+    <nav x-data="{ open: false }" class="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur">
+        <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+            <a href="{{ auth()->check() ? route('customer.dashboard') : url('/') }}" class="flex items-center gap-2 font-bold text-slate-950"><span class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-400 text-sm">C</span>PO CAN Travel</a>
+            <button @click="open = !open" class="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium sm:hidden">Menu</button>
+            <div class="hidden items-center gap-1 sm:flex">
+                @auth
+                <a href="{{ route('customer.dashboard') }}" class="rounded-lg px-3 py-2 text-sm font-medium {{ request()->routeIs('customer.dashboard') ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100' }}">Dashboard</a>
+                @endauth
+                <a href="{{ route('customer.trips.index') }}" class="rounded-lg px-3 py-2 text-sm font-medium {{ request()->routeIs('customer.trips.*') || request()->routeIs('customer.bookings.*') ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100' }}">Cari perjalanan</a>
+                @auth
+                <a href="{{ route('customer.orders.index') }}" class="rounded-lg px-3 py-2 text-sm font-medium {{ request()->routeIs('customer.orders.*') || request()->routeIs('customer.payments.*') ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100' }}">Pesanan</a>
+                <div class="ml-3 flex items-center gap-2 border-l border-slate-200 pl-3">
+                    <a href="{{ route('profile.edit') }}" class="hidden text-right sm:block"><span class="block text-sm font-semibold text-slate-900">{{ auth()->user()->name }}</span><span class="block text-xs text-slate-500">Profil</span></a>
+                    <form method="POST" action="{{ route('logout') }}">@csrf<button class="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-100">Keluar</button></form>
+                </div>
+                @else
+                    <a href="{{ route('login') }}" class="rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100">Masuk</a>
+                    <a href="{{ route('register') }}" class="rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-700">Daftar</a>
+                @endauth
+            </div>
+        </div>
+        <div x-show="open" x-cloak class="border-t border-slate-200 px-4 py-3 sm:hidden">
+            <div class="grid gap-1"><a href="{{ route('customer.trips.index') }}" class="rounded-lg px-3 py-2 hover:bg-slate-100">Cari perjalanan</a>@auth<a href="{{ route('customer.dashboard') }}" class="rounded-lg px-3 py-2 hover:bg-slate-100">Dashboard</a><a href="{{ route('customer.orders.index') }}" class="rounded-lg px-3 py-2 hover:bg-slate-100">Pesanan saya</a><a href="{{ route('profile.edit') }}" class="rounded-lg px-3 py-2 hover:bg-slate-100">Profil</a>@else<a href="{{ route('login') }}" class="rounded-lg px-3 py-2 hover:bg-slate-100">Masuk</a>@endauth</div>
+        </div>
+    </nav>
+    <main class="mx-auto max-w-7xl px-4 py-7 sm:px-6 lg:px-8">
+        @if(session('success'))<div class="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{{ session('success') }}</div>@endif
+        @if(session('error'))<div class="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{{ session('error') }}</div>@endif
+        @if($errors->any())<div class="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"><ul class="list-disc space-y-1 pl-5">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
+        @yield('content')
+    </main>
+    @stack('scripts')
+</body>
+</html>

@@ -1,0 +1,740 @@
+# SOFTWARE REQUIREMENTS SPECIFICATION (SRS)
+
+## 1. Pendahuluan
+
+### 1.1 Nama Sistem
+
+**PO CAN Travel**
+
+### 1.2 Tujuan
+
+Dokumen ini mendefinisikan kebutuhan fungsional dan non-fungsional sistem PO CAN Travel.
+
+SRS menjadi acuan implementasi setelah PRD dan ERD.
+
+---
+
+# 2. Aktor Sistem
+
+## Admin
+
+Admin mengelola:
+
+* bus;
+* perjalanan;
+* customer;
+* order;
+* payment.
+
+## Customer
+
+Customer melakukan:
+
+* authentication;
+* pencarian perjalanan;
+* booking;
+* pembayaran;
+* pengelolaan order miliknya.
+
+---
+
+# 3. Functional Requirements
+
+## FR-AUTH-001 — Register
+
+Sistem harus menyediakan registrasi customer.
+
+Input:
+
+```text
+name
+email
+password
+password_confirmation
+phone
+```
+
+Validasi:
+
+* name required;
+* email required;
+* email valid;
+* email unique;
+* password required;
+* password confirmation harus sesuai.
+
+Role default:
+
+```text
+customer
+```
+
+---
+
+## FR-AUTH-002 — Login
+
+Sistem harus menyediakan login.
+
+Input:
+
+```text
+email
+password
+```
+
+Jika valid:
+
+```text
+→ customer dashboard
+```
+
+Jika gagal:
+
+```text
+→ validation/authentication error
+```
+
+---
+
+## FR-AUTH-003 — Logout
+
+User yang login dapat logout.
+
+Session authentication harus dihapus secara aman.
+
+---
+
+# 4. Customer Requirements
+
+## FR-CUS-001 — Dashboard
+
+Customer dapat melihat:
+
+* profile summary;
+* search form;
+* latest orders;
+* payment status;
+* order status.
+
+---
+
+## FR-CUS-002 — Search Trip
+
+Input:
+
+```text
+origin_city
+destination_city
+departure_date
+```
+
+Sistem menampilkan route yang:
+
+* sesuai kota asal;
+* sesuai kota tujuan;
+* sesuai tanggal;
+* status bukan `cancelled`;
+* memiliki kursi yang tersedia.
+
+---
+
+## FR-CUS-003 — Trip Detail
+
+Sistem harus menampilkan seluruh informasi route dan bus.
+
+---
+
+## FR-CUS-004 — Seat Selection
+
+Customer dapat memilih satu atau beberapa kursi.
+
+Sistem harus membedakan:
+
+```text
+available
+selected
+booked
+```
+
+Kursi booked tidak dapat dipilih.
+
+---
+
+## FR-CUS-005 — Prevent Double Booking
+
+Sistem wajib mencegah booking kursi yang sama untuk route yang sama.
+
+Proses harus menggunakan:
+
+```php
+DB::transaction()
+```
+
+Route harus dikunci ketika proses booking berlangsung.
+
+Sistem harus melakukan pemeriksaan ulang kursi di dalam transaction.
+
+---
+
+## FR-CUS-006 — Passenger Data
+
+Setiap kursi yang dipilih harus memiliki data passenger:
+
+```text
+passenger_name
+passenger_phone
+passenger_email
+seat_number
+```
+
+Jumlah passenger harus sama dengan jumlah kursi yang dipilih.
+
+---
+
+# 5. Order Requirements
+
+## FR-ORD-001 — Create Order
+
+Setelah passenger data valid, sistem membuat:
+
+```text
+orders
+order_details
+payments
+```
+
+dalam proses transaction.
+
+Order harus memiliki:
+
+```text
+order_code
+expired_at
+```
+
+yang valid.
+
+---
+
+## FR-ORD-002 — Calculate Total
+
+Formula:
+
+```text
+total_price =
+route.price × total_passengers
+```
+
+Harga harus berasal dari database.
+
+Customer tidak boleh menentukan harga melalui request frontend.
+
+---
+
+## FR-ORD-003 — Cancel Order
+
+Customer dapat membatalkan order yang memenuhi kondisi pembatalan.
+
+Sistem harus:
+
+1. mengubah status order;
+2. menyimpan cancellation note;
+3. mengembalikan kursi jika diperlukan;
+4. menjaga konsistensi payment status.
+
+---
+
+# 6. Payment Requirements
+
+## FR-PAY-001 — Create Payment
+
+Setiap order memiliki satu payment.
+
+Default:
+
+```text
+status = unpaid
+```
+
+---
+
+## FR-PAY-002 — Upload Payment Proof
+
+Customer dapat mengupload bukti pembayaran.
+
+Sistem wajib:
+
+* memvalidasi file;
+* membatasi ukuran;
+* memvalidasi MIME/type;
+* menyimpan file dengan Storage;
+* mencegah file berbahaya.
+
+Setelah upload:
+
+```text
+payment.status = pending
+order.payment_status = pending
+```
+
+---
+
+## FR-PAY-003 — Payment Verification
+
+Admin dapat memverifikasi payment.
+
+### Verify
+
+```text
+payment.status = verified
+order.payment_status = verified
+order.order_status = paid
+```
+
+### Reject
+
+```text
+payment.status = rejected
+order.payment_status = rejected
+```
+
+---
+
+# 7. Admin Requirements
+
+## FR-ADM-001 — Bus Management
+
+Admin dapat:
+
+```text
+CREATE
+READ
+UPDATE
+DELETE
+```
+
+bus.
+
+Field mengikuti ERD.
+
+---
+
+## FR-ADM-002 — Route Management
+
+Admin dapat:
+
+```text
+CREATE
+READ
+UPDATE
+DELETE
+```
+
+route.
+
+Admin harus memilih bus yang valid.
+
+---
+
+## FR-ADM-003 — Order Management
+
+Admin dapat:
+
+* melihat seluruh order;
+* melihat detail order;
+* melihat passenger;
+* melihat route;
+* melihat customer;
+* melihat payment;
+* mengelola status sesuai workflow.
+
+---
+
+## FR-ADM-004 — Payment Verification
+
+Admin dapat:
+
+* melihat payment pending;
+* melihat bukti;
+* verify;
+* reject.
+
+---
+
+# 8. Order Lifecycle
+
+Normal lifecycle:
+
+```text
+pending
+   ↓
+confirmed
+   ↓
+paid
+   ↓
+completed
+```
+
+Cancellation:
+
+```text
+pending/confirmed
+       ↓
+   cancelled
+```
+
+Expiration:
+
+```text
+pending
+   ↓
+expired
+```
+
+Payment rejected dapat tetap membutuhkan tindakan customer sesuai workflow aplikasi.
+
+---
+
+# 9. Expiration Requirement
+
+Sistem harus dapat mendeteksi order yang:
+
+```text
+order_status = pending
+AND expired_at < current_time
+AND payment_status != verified
+```
+
+Kemudian:
+
+```text
+order_status → expired
+```
+
+dan kursi dikembalikan.
+
+Proses expiration harus aman terhadap race condition dengan booking.
+
+---
+
+# 10. Authorization
+
+## Customer
+
+Customer hanya dapat:
+
+* membaca order miliknya;
+* membuat order untuk dirinya;
+* melakukan payment terhadap order miliknya;
+* membatalkan order miliknya jika memenuhi kondisi.
+
+Customer tidak boleh:
+
+* mengakses admin dashboard;
+* mengubah bus;
+* mengubah route;
+* melihat order customer lain;
+* memverifikasi payment.
+
+## Admin
+
+Admin dapat mengakses administrative features.
+
+---
+
+# 11. Validation Requirements
+
+Semua input wajib divalidasi server-side.
+
+Contoh:
+
+```text
+email
+phone
+price
+seat_number
+departure_date
+departure_time
+payment_method
+payment_proof
+```
+
+Tidak boleh mempercayai data harga, status, user ID, atau available seat dari frontend.
+
+---
+
+# 12. Database Transaction Requirements
+
+Booking harus atomic.
+
+Contoh:
+
+```php
+DB::transaction(function () {
+    // lock route
+
+    // verify seats
+
+    // check duplicate booking
+
+    // create order
+
+    // create order details
+
+    // create payment
+
+    // decrement available seats
+});
+```
+
+Jika salah satu proses gagal:
+
+```text
+ROLLBACK
+```
+
+---
+
+# 13. Security Requirements
+
+## SEC-001 Authentication
+
+Gunakan Laravel Breeze.
+
+## SEC-002 Authorization
+
+Gunakan middleware/policy.
+
+## SEC-003 CSRF
+
+Semua state-changing form harus menggunakan CSRF.
+
+## SEC-004 Password
+
+Password wajib di-hash.
+
+## SEC-005 Mass Assignment
+
+Model wajib menggunakan `$fillable` atau `$guarded`.
+
+## SEC-006 File Upload
+
+Payment proof wajib divalidasi.
+
+## SEC-007 Ownership
+
+Customer hanya dapat mengakses resource miliknya.
+
+---
+
+# 14. Performance Requirements
+
+Sistem harus:
+
+* menggunakan index database yang diperlukan;
+* menggunakan Eloquent relationship;
+* menghindari N+1 query;
+* menggunakan pagination pada data besar;
+* menggunakan transaction pada proses kritis.
+
+Search route menggunakan index:
+
+```text
+origin_city
+destination_city
+departure_date
+```
+
+---
+
+# 15. UI Requirements
+
+UI harus responsive.
+
+Minimum:
+
+```text
+Desktop
+Tablet
+Mobile
+```
+
+Customer interface:
+
+```text
+Landing/Home
+Login
+Register
+Dashboard
+Search
+Trip Detail
+Seat Selection
+Passenger
+Checkout
+Payment
+Order Detail
+Order History
+Profile
+```
+
+Admin interface:
+
+```text
+Login
+Dashboard
+Bus
+Routes
+Orders
+Payments
+Customers
+```
+
+---
+
+# 16. Testing Requirements
+
+Testing menggunakan:
+
+```text
+PHPUnit
+Laravel Feature Test
+Laravel Unit Test
+```
+
+## TEST-AUTH
+
+* register berhasil;
+* register email duplicate gagal;
+* login berhasil;
+* login password salah gagal;
+* logout berhasil.
+
+## TEST-AUTHORIZATION
+
+* customer tidak dapat mengakses admin;
+* admin dapat mengakses admin;
+* customer tidak dapat melihat order customer lain.
+
+## TEST-BUS
+
+* admin create bus;
+* admin read bus;
+* admin update bus;
+* admin delete bus;
+* customer tidak dapat CRUD bus.
+
+## TEST-ROUTE
+
+* admin create route;
+* admin update route;
+* admin delete route;
+* customer dapat search route.
+
+## TEST-BOOKING
+
+* booking berhasil;
+* total harga benar;
+* detail passenger tersimpan;
+* available seats berkurang.
+
+## TEST-DOUBLE-BOOKING
+
+Simulasi:
+
+```text
+Customer A → Route 1 → Seat 01
+Customer B → Route 1 → Seat 01
+```
+
+Sistem harus mencegah kursi yang sama dibooking dua kali.
+
+## TEST-PAYMENT
+
+* create payment;
+* upload proof;
+* payment pending;
+* verify payment;
+* reject payment.
+
+## TEST-CANCELLATION
+
+* cancellation berhasil jika memenuhi kondisi;
+* kursi dikembalikan jika diperlukan.
+
+## TEST-EXPIRATION
+
+* order yang melewati expired_at menjadi expired;
+* kursi dikembalikan;
+* order yang sudah paid tidak boleh di-expire.
+
+---
+
+# 17. Acceptance Criteria
+
+Sistem dianggap memenuhi requirement apabila:
+
+1. Customer dapat register.
+2. Customer dapat login/logout.
+3. Admin dan customer memiliki akses berbeda.
+4. Admin dapat mengelola bus.
+5. Admin dapat mengelola route.
+6. Customer dapat mencari route.
+7. Customer dapat melihat detail route.
+8. Customer dapat memilih kursi.
+9. Customer dapat membuat order.
+10. Total harga dihitung dari database.
+11. Double booking dapat dicegah.
+12. Payment dapat dibuat.
+13. Payment proof dapat diupload.
+14. Admin dapat verify/reject payment.
+15. Customer dapat melihat order history.
+16. Customer dapat membatalkan order sesuai aturan.
+17. Order expiration bekerja.
+18. Kursi dikembalikan setelah expiration/cancellation yang memenuhi aturan.
+19. Customer tidak dapat mengakses data customer lain.
+20. Automated tests berjalan dengan sukses.
+
+---
+
+# 18. Implementation Rule for AI Developer
+
+AI yang membantu development PO CAN Travel harus mengikuti aturan berikut:
+
+1. Baca PRD, ERD, dan SRS sebelum memberikan perubahan kode.
+2. Jangan mengubah struktur database tanpa alasan.
+3. Jangan menghapus requirement yang sudah ditetapkan.
+4. Jangan membuat fitur di luar scope tanpa persetujuan.
+5. Jika menemukan konflik antara kode dan dokumen, prioritaskan:
+
+   ```text
+   ERD → SRS → PRD → existing implementation
+   ```
+
+   untuk aspek struktur database dan requirement teknis.
+6. Untuk perubahan besar, jelaskan analisis terlebih dahulu.
+7. Jangan langsung memberikan banyak perubahan sekaligus jika perubahan belum diverifikasi.
+8. Gunakan Laravel 10 conventions.
+9. Gunakan Form Request untuk validasi kompleks.
+10. Gunakan Policy/Middleware untuk authorization.
+11. Gunakan Service jika business logic kompleks.
+12. Gunakan transaction untuk booking dan proses kritis.
+13. Selalu perhatikan race condition pada seat booking.
+14. Jangan percaya data harga atau kursi dari frontend.
+15. Jalankan test setelah perubahan yang relevan.
+16. Jangan mengubah `.env` menjadi bagian repository.
+17. Jangan mengarang field, table, relationship, route, atau requirement yang tidak ada di dokumentasi tanpa menjelaskan kebutuhan perubahan.
+18. Setiap bug harus dianalisis dari:
+
+```text
+symptom
+↓
+root cause
+↓
+affected component
+↓
+proposed fix
+↓
+implementation
+↓
+test
+```

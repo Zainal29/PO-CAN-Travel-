@@ -1,0 +1,31 @@
+1 ketika kursinya sudah terisi misal ada 25 kursi nah tinggal 5 kursi yang tersedia ketika user mau cek itu kan seharusnya kursi yang sudah di booking erwarna hitam nanti tinggal kursi yang belum di booking berwarna putih ,saat ini masih putinh semua 
+2. adakan fitur kembalikan kursi
+seperti ini kurang lebih fiturnya : 
+Berdasarkan konteks percakapan kita, ada beberapa fitur yang baru ditambahkan:
+
+## 1. **Soft Delete / Arsip Order**
+Fitur untuk menghapus order secara "soft" (tidak benar-benar hilang dari database, hanya ditandai sebagai terhapus). Order yang sudah diarsipkan tidak akan muncul di list order aktif, tapi masih bisa diakses untuk laporan/audit.
+
+## 2. **Release Seats / Release Kursi**
+Fitur untuk mengembalikan kursi yang sudah dipesan ke status "tersedia" agar bisa dipesan orang lain. Ini penting ketika order dibatalkan atau expired.
+
+## 3. **Order Cancellation Management / Pengelolaan Order Batal**
+Fitur keseluruhan untuk menangani order yang dibatalkan/ditolak/expired, termasuk:
+- Menampilkan warning bahwa kursi masih terkunci
+- Tombol untuk release kursi
+- Tombol untuk arsipkan order
+- Menampilkan catatan pembatalan
+
+---
+
+**Jadi secara umum, fitur yang kita tambahkan namanya:**
+
+### **"Order Cancellation & Seat Release Management"**
+atau dalam bahasa Indonesia:
+### **"Pengelolaan Pembatalan Order & Pelepasan Kursi"**
+
+Fitur ini memastikan bahwa:
+- ✅ Kursi dari order yang batal bisa digunakan lagi
+- ✅ Data order tetap tersimpan untuk laporan
+- ✅ Admin bisa mengelola order yang dibatalkan dengan baik
+

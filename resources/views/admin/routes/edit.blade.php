@@ -1,0 +1,1 @@
+<x-app-layout><x-slot name="header"><h2 class="font-semibold text-xl text-gray-800">Edit Rute</h2></x-slot><div class="py-6"><form method="POST" action="{{ route('admin.routes.update', $route) }}" class="max-w-4xl mx-auto bg-white p-6 shadow rounded-xl">@include('admin.routes.form')</form></div></x-app-layout>
