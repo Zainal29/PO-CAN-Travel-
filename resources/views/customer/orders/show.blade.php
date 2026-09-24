@@ -1,452 +1,313 @@
-
 @extends('customer.layouts.index')
 
-@section('title', 'Detail Pesanan — PO CAN Travel')
+@section('title', 'Detail Pesanan ' . $order->order_code . ' — PO CAN Travel')
 
 @section('content')
-
-<div class="mb-6">
-    <a href="{{ route('customer.orders.index') }}"
-       class="text-sm font-medium text-gray-500 hover:text-gray-900">
-        ← Kembali ke Pesanan
-    </a>
-</div>
-
-<div class="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-
+<div class="space-y-6">
+    {{-- Back Link & Header --}}
     <div>
-        <p class="text-sm text-gray-500">
-            Detail Pesanan
-        </p>
+        <a href="{{ route('customer.orders.index') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition mb-3">
+            &larr; Kembali ke Pesanan
+        </a>
 
-        <h1 class="mt-1 text-2xl font-bold text-gray-900">
-            {{ $order->order_code }}
-        </h1>
-    </div>
-
-    @php
-       $statusClasses = [
-    'pending' => 'bg-yellow-100 text-yellow-700',
-    'paid' => 'bg-green-100 text-green-700',
-    'cancelled' => 'bg-red-100 text-red-700',
-    'completed' => 'bg-gray-100 text-gray-700',
-    'expired' => 'bg-gray-100 text-gray-600',
-];
-    
-    @endphp
-
-    <span class="inline-flex w-fit rounded-full px-3 py-1.5 text-sm font-semibold {{ $statusClasses[$order->order_status] ?? 'bg-gray-100 text-gray-600' }}">
-        {{ ucfirst($order->order_status) }}
-    </span>
-
-</div>
-
-<div class="grid gap-6 lg:grid-cols-3">
-
-    {{-- Informasi perjalanan --}}
-    <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2">
-
-        <h2 class="text-lg font-bold text-gray-900">
-            Informasi Perjalanan
-        </h2>
-
-        <div class="mt-6 grid gap-6 md:grid-cols-2">
-
+        <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
-                <p class="text-xs text-gray-500">
-                    Rute
-                </p>
-
-                <p class="mt-1 text-base font-semibold text-gray-900">
-                    {{ $order->route->origin_city }}
-                    →
-                    {{ $order->route->destination_city }}
+                <p class="eyebrow">Rincian Tiket & Perjalanan</p>
+                <div class="flex items-center gap-3 mt-1">
+                    <h1 class="page-heading font-mono">
+                        {{ $order->order_code }}
+                    </h1>
+                    <x-status-badge :status="$order->order_status" type="order" />
+                </div>
+                <p class="mt-1 text-xs text-slate-500">
+                    Dipesan pada {{ $order->created_at->translatedFormat('l, d F Y, H:i') }} WIB
                 </p>
             </div>
 
-            <div>
-                <p class="text-xs text-gray-500">
-                    Bus
-                </p>
-
-                <p class="mt-1 text-base font-semibold text-gray-900">
-                    {{ $order->route->bus->bus_name }}
-                </p>
+            <div class="flex items-center gap-2">
+                @if($order->order_status === 'pending')
+                    <a href="{{ route('customer.payments.create', $order) }}" class="btn-primary min-h-10 text-xs font-semibold px-5 shadow-sm">
+                        Bayar Sekarang &rarr;
+                    </a>
+                @elseif($order->order_status === 'paid')
+                    <a href="{{ route('customer.orders.ticket', $order) }}" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-amber-400 px-5 text-xs font-bold text-brand-950 hover:bg-amber-300 transition shadow-sm">
+                        Lihat E-Ticket &rarr;
+                    </a>
+                @endif
             </div>
-
-            <div>
-                <p class="text-xs text-gray-500">
-                    Tanggal Keberangkatan
-                </p>
-
-                <p class="mt-1 text-base font-semibold text-gray-900">
-                    {{ $order->route->departure_date->format('d F Y') }}
-                </p>
-            </div>
-
-            <div>
-                <p class="text-xs text-gray-500">
-                    Jam Keberangkatan
-                </p>
-
-                <p class="mt-1 text-base font-semibold text-gray-900">
-                    {{ \Carbon\Carbon::parse($order->route->departure_time)->format('H:i') }}
-                </p>
-            </div>
-
-           <div class="md:col-span-2">
-    <p class="text-xs text-gray-500">
-        Terminal Asal
-    </p>
-
-    <p class="mt-1 text-sm font-medium text-gray-900">
-        {{ $order->route->origin_terminal }}
-    </p>
-</div>
-
-            <div>
-                <p class="text-xs text-gray-500">
-                    Terminal Tujuan
-                </p>
-
-                <p class="mt-1 text-sm font-medium text-gray-900">
-                    {{ $order->route->destination_terminal }}
-                </p>
-            </div>
-
         </div>
-
     </div>
 
-    {{-- Ringkasan pembayaran --}}
-    <div class="h-fit rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-
-        <h2 class="text-lg font-bold text-gray-900">
-            Ringkasan Pembayaran
-        </h2>
-
-        <div class="mt-5 space-y-4 text-sm">
-
-            <div class="flex justify-between gap-4">
-                <span class="text-gray-500">
-                    Penumpang
-                </span>
-
-                <span class="font-medium text-gray-900">
-                    {{ $order->total_passengers }} orang
-                </span>
-            </div>
-
-            <div class="flex justify-between gap-4">
-                <span class="text-gray-500">
-                    Harga per orang
-                </span>
-
-                <span class="font-medium text-gray-900">
-                    Rp {{ number_format($order->route->price, 0, ',', '.') }}
-                </span>
-            </div>
-
-            <div class="border-t border-gray-100 pt-4">
-
-                <div class="flex justify-between gap-4">
-                    <span class="font-semibold text-gray-900">
-                        Total
-                    </span>
-
-                    <span class="text-lg font-bold text-gray-900">
-                        Rp {{ number_format($order->total_price, 0, ',', '.') }}
+    {{-- Main Grid --}}
+    <div class="grid gap-6 lg:grid-cols-3">
+        {{-- Left Column: 2 Cols --}}
+        <div class="space-y-6 lg:col-span-2">
+            {{-- Route Visualization Card --}}
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm space-y-6">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h2 class="text-base font-bold text-slate-900">Jadwal & Rute Perjalanan</h2>
+                    <span class="rounded bg-slate-100 px-2 py-0.5 text-xs font-semibold uppercase text-slate-700">
+                        {{ $order->route->bus->bus_name }}
                     </span>
                 </div>
 
-            </div>
-
-        </div>
-
-        @if ($order->order_status === 'pending' && in_array($order->payment?->status, ['unpaid', 'rejected'], true))
-
-            <a href="{{ route('customer.payments.create', $order) }}"
-               class="mt-6 block rounded-lg bg-gray-900 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-gray-700">
-                {{ $order->payment?->status === 'rejected' ? 'Bayar Lagi' : 'Bayar Sekarang' }}
-            </a>
-
-        @endif
-
-        @if ($order->payment?->status === 'verified' && $order->ticket_code)
-            <a href="{{ route('customer.orders.ticket', $order) }}"
-               class="mt-3 block rounded-lg border border-gray-900 px-4 py-3 text-center text-sm font-semibold text-gray-900 hover:bg-gray-100">
-                Lihat E-Ticket
-            </a>
-        @endif
-
-    </div>
-
-</div>
-
-{{-- Data penumpang --}}
-<div class="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-
-    <div class="flex items-center justify-between">
-
-        <div>
-            <h2 class="text-lg font-bold text-gray-900">
-                Data Penumpang
-            </h2>
-
-            <p class="mt-1 text-sm text-gray-500">
-                Daftar penumpang dalam pesanan ini.
-            </p>
-        </div>
-
-        <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">
-            {{ $order->details->count() }} Penumpang
-        </span>
-
-    </div>
-
-    <div class="mt-6 overflow-x-auto">
-
-        <table class="w-full min-w-[700px] text-left text-sm">
-
-            <thead class="border-b border-gray-200 text-xs uppercase text-gray-500">
-                <tr>
-                    <th class="px-3 py-3">#</th>
-                    <th class="px-3 py-3">Nama</th>
-                    <th class="px-3 py-3">Telepon</th>
-                    <th class="px-3 py-3">Email</th>
-                    <th class="px-3 py-3">Kursi</th>
-                    <th class="px-3 py-3 text-right">Harga</th>
-                </tr>
-            </thead>
-
-            <tbody class="divide-y divide-gray-100">
-
-                @foreach ($order->details as $index => $detail)
-
-                    <tr>
-                        <td class="px-3 py-4 text-gray-500">
-                            {{ $index + 1 }}
-                        </td>
-
-                        <td class="px-3 py-4 font-medium text-gray-900">
-                            {{ $detail->passenger_name }}
-                        </td>
-
-                        <td class="px-3 py-4 text-gray-600">
-                            {{ $detail->passenger_phone }}
-                        </td>
-
-                        <td class="px-3 py-4 text-gray-600">
-                            {{ $detail->passenger_email ?: '-' }}
-                        </td>
-
-                        <td class="px-3 py-4">
-                            <span class="rounded-lg bg-gray-100 px-2.5 py-1 font-semibold text-gray-700">
-                                {{ $detail->seat_number }}
+                {{-- Vertical Route Visualization --}}
+                <div class="relative pl-6 sm:pl-8 border-l-2 border-dashed border-amber-400 space-y-8 my-3">
+                    {{-- Origin --}}
+                    <div class="relative">
+                        <span class="absolute -left-[31px] sm:-left-[39px] top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-brand-950 text-white ring-4 ring-white">
+                            <span class="h-2 w-2 rounded-full bg-amber-400"></span>
+                        </span>
+                        <div>
+                            <span class="inline-block font-mono text-xs font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                                {{ \Carbon\Carbon::parse($order->route->departure_time)->format('H:i') }} WIB
                             </span>
-                        </td>
+                            <h3 class="mt-1 text-lg font-bold text-slate-900">{{ $order->route->origin_city }}</h3>
+                            <p class="text-xs text-slate-500">{{ $order->route->origin_terminal }}</p>
+                        </div>
+                    </div>
 
-                        <td class="px-3 py-4 text-right font-medium">
-                            Rp {{ number_format($detail->price, 0, ',', '.') }}
-                        </td>
-                    </tr>
+                    {{-- Destination --}}
+                    <div class="relative">
+                        <span class="absolute -left-[31px] sm:-left-[39px] top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-white ring-4 ring-white">
+                            <span class="h-2 w-2 rounded-full bg-white"></span>
+                        </span>
+                        <div>
+                            <span class="inline-block font-mono text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                {{ \Carbon\Carbon::parse($order->route->estimated_arrival_time)->format('H:i') }} WIB (Estimasi)
+                            </span>
+                            <h3 class="mt-1 text-lg font-bold text-slate-900">{{ $order->route->destination_city }}</h3>
+                            <p class="text-xs text-slate-500">{{ $order->route->destination_terminal }}</p>
+                        </div>
+                    </div>
+                </div>
 
-                @endforeach
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</div>
-
-{{-- Informasi pembayaran --}}
-<div class="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-
-    <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-
-        <div>
-            <h2 class="text-lg font-bold text-gray-900">
-                Informasi Pembayaran
-            </h2>
-
-            <p class="mt-1 text-sm text-gray-500">
-                Status pembayaran untuk pesanan ini.
-            </p>
-        </div>
-
-        @php
-            $paymentClasses = [
-                'unpaid' => 'bg-yellow-100 text-yellow-700',
-                'pending' => 'bg-blue-100 text-blue-700',
-                'verified' => 'bg-green-100 text-green-700',
-                'rejected' => 'bg-red-100 text-red-700',
-            ];
-        @endphp
-
-        <span class="inline-flex w-fit rounded-full px-3 py-1.5 text-sm font-semibold {{ $paymentClasses[$order->payment?->status] ?? 'bg-gray-100 text-gray-600' }}">
-            {{ ucfirst($order->payment?->status ?? 'unpaid') }}
-        </span>
-
-    </div>
-
-    @if ($order->payment)
-
-        <div class="mt-6 grid gap-5 md:grid-cols-3">
-
-            <div>
-                <p class="text-xs text-gray-500">
-                    Metode Pembayaran
-                </p>
-
-                <p class="mt-1 text-sm font-semibold text-gray-900">
-                    {{ ucfirst(str_replace('_', ' ', $order->payment->payment_method)) }}
-                </p>
+                {{-- Bus Specs & Info --}}
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 rounded-xl bg-slate-50 p-4 border border-slate-100 text-xs">
+                    <div>
+                        <span class="text-slate-400 font-semibold uppercase">Tanggal Berangkat</span>
+                        <p class="mt-1 font-bold text-slate-900">{{ $order->route->departure_date->translatedFormat('d F Y') }}</p>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 font-semibold uppercase">Kelas Bus</span>
+                        <p class="mt-1 font-bold text-slate-900 capitalize">{{ str_replace('_', ' ', $order->route->bus->bus_type) }}</p>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 font-semibold uppercase">Plat Bus</span>
+                        <p class="mt-1 font-mono font-bold text-slate-900">{{ $order->route->bus->plate_number ?: '-' }}</p>
+                    </div>
+                </div>
             </div>
 
-            <div>
-                <p class="text-xs text-gray-500">
-                    Jumlah
-                </p>
+            {{-- Passenger List & Seats --}}
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h2 class="text-base font-bold text-slate-900">Manifes Penumpang</h2>
+                    <span class="text-xs text-slate-500 font-semibold">{{ $order->details->count() }} Penumpang</span>
+                </div>
 
-                <p class="mt-1 text-sm font-semibold text-gray-900">
-                    Rp {{ number_format($order->payment->amount, 0, ',', '.') }}
-                </p>
+                <div class="divide-y divide-slate-100">
+                    @foreach ($order->details as $index => $detail)
+                        <div class="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div class="flex items-center gap-3">
+                                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 font-bold text-xs text-slate-700">
+                                    {{ $index + 1 }}
+                                </div>
+                                <div>
+                                    <p class="font-bold text-sm text-slate-900">{{ $detail->passenger_name }}</p>
+                                    <p class="text-xs text-slate-500">{{ $detail->passenger_phone }} · {{ $detail->passenger_email ?: 'Tanpa email' }}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 sm:text-right">
+                                <span class="rounded-lg bg-amber-50 px-2.5 py-1 font-mono text-xs font-bold text-amber-800 border border-amber-200">
+                                    Kursi {{ $detail->seat_number }}
+                                </span>
+                                <span class="text-xs font-semibold text-slate-900">
+                                    Rp {{ number_format($detail->price, 0, ',', '.') }}
+                                </span>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
             </div>
 
-            <div>
-                <p class="text-xs text-gray-500">
-                    ID Transaksi
-                </p>
+            {{-- Review Form if Completed --}}
+            @if ($order->order_status === 'completed')
+                <div class="rounded-2xl border border-amber-200 bg-amber-50/50 p-6 shadow-sm space-y-4">
+                    <h2 class="text-base font-bold text-slate-900">Review Perjalanan</h2>
 
-                <p class="mt-1 text-sm font-semibold text-gray-900">
-                    {{ $order->payment->transaction_id ?: '-' }}
-                </p>
-            </div>
+                    @if ($order->review)
+                        <div class="rounded-xl bg-white p-4 border border-slate-200 space-y-2">
+                            <div class="flex items-center gap-1 text-amber-400">
+                                @for($i = 1; $i <= 5; $i++)
+                                    <svg class="h-4 w-4 {{ $i <= $order->review->rating ? 'fill-current' : 'text-slate-200' }}" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                @endfor
+                                <span class="ml-2 text-xs font-bold text-slate-700">{{ $order->review->rating }}/5</span>
+                            </div>
+                            @if ($order->review->comment)
+                                <p class="text-xs leading-5 text-slate-600">{{ $order->review->comment }}</p>
+                            @endif
+                        </div>
+                    @else
+                        <p class="text-xs text-slate-600">Bagikan pengalaman perjalanan Anda bersama armada PO CAN Travel.</p>
 
-        </div>
+                        <form method="POST" action="{{ route('customer.orders.review', $order) }}" class="space-y-4">
+                            @csrf
+                            <div>
+                                <label for="rating" class="block text-xs font-semibold uppercase text-slate-700 mb-1">Rating Kepuasan</label>
+                                <select id="rating" name="rating" required class="rounded-lg border-slate-300 text-sm focus:border-amber-500 focus:ring-amber-500 sm:w-48">
+                                    <option value="">Pilih rating</option>
+                                    @for ($rating = 5; $rating >= 1; $rating--)
+                                        <option value="{{ $rating }}" @selected(old('rating') == $rating)>{{ $rating }} Bintang</option>
+                                    @endfor
+                                </select>
+                                @error('rating')
+                                    <p class="mt-1 text-xs text-red-600 font-medium">{{ $message }}</p>
+                                @enderror
+                            </div>
 
-        @if ($order->payment->notes)
+                            <div>
+                                <label for="comment" class="block text-xs font-semibold uppercase text-slate-700 mb-1">Ulasan Pengalaman</label>
+                                <textarea id="comment" name="comment" rows="3" maxlength="2000" class="w-full rounded-lg border-slate-300 text-sm focus:border-amber-500 focus:ring-amber-500" placeholder="Ceritakan kenyamanan bus, ketepatan waktu, dan pelayanan kru...">{{ old('comment') }}</textarea>
+                                @error('comment')
+                                    <p class="mt-1 text-xs text-red-600 font-medium">{{ $message }}</p>
+                                @enderror
+                            </div>
 
-            <div class="mt-5 rounded-lg bg-gray-50 p-4">
-                <p class="text-xs font-medium text-gray-500">
-                    Catatan
-                </p>
-
-                <p class="mt-1 text-sm text-gray-700">
-                    {{ $order->payment->notes }}
-                </p>
-            </div>
-
-        @endif
-
-    @else
-
-        <div class="mt-5 rounded-lg bg-yellow-50 p-4 text-sm text-yellow-700">
-            Data pembayaran belum tersedia.
-        </div>
-
-    @endif
-
-</div>
-
-{{-- Review perjalanan --}}
-@if ($order->order_status === 'completed')
-    <div class="mt-6 rounded-xl border border-amber-200 bg-white p-6 shadow-sm">
-        <h2 class="font-bold text-gray-900">Review Perjalanan</h2>
-
-        @if ($order->review)
-            <p class="mt-2 text-sm text-gray-600">
-                Anda sudah memberikan rating {{ $order->review->rating }}/5 untuk perjalanan ini.
-            </p>
-            @if ($order->review->comment)
-                <p class="mt-3 rounded-lg bg-gray-50 p-4 text-sm text-gray-700">{{ $order->review->comment }}</p>
+                            <button type="submit" class="btn-primary min-h-10 text-xs font-semibold px-5">
+                                Kirim Ulasan
+                            </button>
+                        </form>
+                    @endif
+                </div>
             @endif
-        @else
-            <p class="mt-1 text-sm text-gray-500">Bagikan pengalaman Anda setelah perjalanan selesai.</p>
 
-            <form method="POST" action="{{ route('customer.orders.review', $order) }}" class="mt-5 space-y-4">
-                @csrf
+            {{-- Cancellation Form if Pending --}}
+            @if ($order->order_status === 'pending')
+                <div class="rounded-2xl border border-red-200 bg-red-50/40 p-6 shadow-sm space-y-3">
+                    <h2 class="text-base font-bold text-red-950">Batalkan Pesanan</h2>
+                    <p class="text-xs text-slate-600">
+                        Jika Anda membatalkan pesanan ini, kursi yang telah dipilih akan dilepaskan kembali ke jadwal perjalanan.
+                    </p>
 
-                <div>
-                    <label for="rating" class="mb-2 block text-sm font-medium text-gray-700">Rating</label>
-                    <select id="rating" name="rating" required class="w-full rounded-lg border-gray-300 focus:border-amber-500 focus:ring-amber-500 sm:w-48">
-                        <option value="">Pilih rating</option>
-                        @for ($rating = 5; $rating >= 1; $rating--)
-                            <option value="{{ $rating }}" @selected(old('rating') == $rating)>{{ $rating }}/5</option>
-                        @endfor
-                    </select>
-                    @error('rating')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
+                    <form method="POST" action="{{ route('customer.orders.cancel', $order) }}" class="space-y-3 pt-1">
+                        @csrf
+                        @method('PATCH')
+
+                        <div>
+                            <label for="cancellation_note" class="block text-xs font-semibold uppercase text-slate-700 mb-1">
+                                Alasan Pembatalan
+                            </label>
+                            <textarea
+                                id="cancellation_note"
+                                name="cancellation_note"
+                                rows="2"
+                                required
+                                minlength="5"
+                                maxlength="1000"
+                                placeholder="Jelaskan alasan pembatalan..."
+                                class="w-full rounded-lg border-slate-300 text-xs focus:border-red-500 focus:ring-red-500"
+                            >{{ old('cancellation_note') }}</textarea>
+                            @error('cancellation_note')
+                                <p class="mt-1 text-xs text-red-600 font-medium">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <button
+                            type="submit"
+                            onclick="return confirm('Apakah Anda yakin ingin membatalkan pesanan ini?')"
+                            class="rounded-lg border border-red-300 bg-white px-4 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 transition"
+                        >
+                            Batalkan Pesanan
+                        </button>
+                    </form>
+                </div>
+            @endif
+        </div>
+
+        {{-- Right Column: 1 Col --}}
+        <div class="space-y-6">
+            {{-- Payment Breakdown Card --}}
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-5">
+                <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
+                    <h2 class="text-base font-bold text-slate-900">Rincian Pembayaran</h2>
+                    <x-status-badge :status="$order->payment?->status ?? 'unpaid'" type="payment" />
                 </div>
 
-                <div>
-                    <label for="comment" class="mb-2 block text-sm font-medium text-gray-700">Komentar</label>
-                    <textarea id="comment" name="comment" rows="3" maxlength="2000" class="w-full rounded-lg border-gray-300 focus:border-amber-500 focus:ring-amber-500" placeholder="Ceritakan pengalaman Anda...">{{ old('comment') }}</textarea>
-                    @error('comment')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
+                <div class="space-y-3 text-xs">
+                    <div class="flex justify-between">
+                        <span class="text-slate-500">Jumlah Tiket</span>
+                        <span class="font-semibold text-slate-900">{{ $order->total_passengers }} Orang</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-500">Tarif per Kursi</span>
+                        <span class="font-semibold text-slate-900">Rp {{ number_format($order->route->price, 0, ',', '.') }}</span>
+                    </div>
+
+                    <div class="border-t border-slate-100 pt-3 flex justify-between items-baseline">
+                        <span class="text-sm font-bold text-slate-900">Total Tagihan</span>
+                        <span class="text-xl font-black text-brand-950">Rp {{ number_format($order->total_price, 0, ',', '.') }}</span>
+                    </div>
                 </div>
 
-                <button type="submit" class="rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-gray-700">Kirim Review</button>
-            </form>
-        @endif
-    </div>
-@endif
+                {{-- Status specific banners --}}
+                @if($order->order_status === 'pending')
+                    <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs space-y-2">
+                        <p class="font-bold text-amber-900">Menunggu Pembayaran</p>
+                        <p class="text-amber-800 leading-relaxed">
+                            Batas waktu pembayaran berlaku hingga {{ $order->expired_at ? $order->expired_at->format('H:i, d M Y') : 'segera' }}.
+                        </p>
+                        <a href="{{ route('customer.payments.create', $order) }}" class="btn-primary w-full min-h-10 text-xs font-semibold mt-2">
+                            Bayar Sekarang &rarr;
+                        </a>
+                    </div>
+                @elseif($order->order_status === 'paid')
+                    <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-xs space-y-2">
+                        <p class="font-bold text-emerald-900">Pembayaran Terverifikasi</p>
+                        <p class="text-emerald-800 leading-relaxed">
+                            E-ticket resmi Anda telah diterbitkan dan siap digunakan saat boarding.
+                        </p>
+                        <a href="{{ route('customer.orders.ticket', $order) }}" class="btn-primary w-full min-h-10 text-xs font-semibold mt-2">
+                            Buka E-Ticket
+                        </a>
+                    </div>
+                @elseif($order->order_status === 'completed')
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600">
+                        <p class="font-bold text-slate-900">Perjalanan telah selesai</p>
+                        <p class="mt-1">Terima kasih telah mempercayakan perjalanan Anda bersama PO CAN Travel.</p>
+                    </div>
+                @elseif($order->order_status === 'cancelled')
+                    <div class="rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-700">
+                        <p class="font-bold text-red-900">Pesanan Dibatalkan</p>
+                        <p class="mt-1">Pesanan tiket perjalanan ini telah dibatalkan.</p>
+                    </div>
+                @endif
 
-{{-- Pembatalan --}}
-@if ($order->order_status === 'pending')
-    <div class="mt-6 rounded-xl border border-red-200 bg-white p-6 shadow-sm">
+                @if($order->payment)
+                    <div class="border-t border-slate-100 pt-3 text-xs space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Metode</span>
+                            <span class="font-semibold text-slate-800 uppercase">{{ str_replace('_', ' ', $order->payment->payment_method) }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">ID Transaksi</span>
+                            <span class="font-mono font-semibold text-slate-800">{{ $order->payment->transaction_id ?: '-' }}</span>
+                        </div>
+                    </div>
+                @endif
+            </div>
 
-        <h2 class="font-bold text-gray-900">
-            Batalkan Pesanan
-        </h2>
-
-        <p class="mt-1 text-sm text-gray-500">
-            Pembatalan akan mengembalikan kursi ke jadwal perjalanan.
-        </p>
-
-        <form method="POST"
-              action="{{ route('customer.orders.cancel', $order) }}"
-              class="mt-5">
-
-            @csrf
-            @method('PATCH')
-
-            <label for="cancellation_note"
-                   class="mb-2 block text-sm font-medium text-gray-700">
-                Alasan pembatalan
-            </label>
-
-            <textarea
-                id="cancellation_note"
-                name="cancellation_note"
-                rows="3"
-                required
-                minlength="5"
-                maxlength="1000"
-                placeholder="Masukkan alasan pembatalan..."
-                class="w-full rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
-            >{{ old('cancellation_note') }}</textarea>
-
-            @error('cancellation_note')
-                <p class="mt-1 text-sm text-red-600">
-                    {{ $message }}
+            {{-- Boarding Information Card --}}
+            <div class="rounded-2xl border border-slate-200 bg-white p-5 text-xs text-slate-600 space-y-2 shadow-sm">
+                <h3 class="font-bold text-slate-900">Informasi Keberangkatan</h3>
+                <p class="leading-relaxed">
+                    Harap tiba di terminal keberangkatan minimal <strong>30 menit</strong> sebelum jadwal berangkat bus.
                 </p>
-            @enderror
-
-            <button type="submit"
-                    onclick="return confirm('Yakin ingin membatalkan pesanan ini?')"
-                    class="mt-4 rounded-lg border border-red-300 px-4 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-50">
-                Batalkan Pesanan
-            </button>
-
-        </form>
-
+                <p class="leading-relaxed">
+                    Tunjukkan e-ticket atau QR code pada petugas loket PO CAN Travel untuk proses check-in.
+                </p>
+            </div>
+        </div>
     </div>
-
-@endif
-
+</div>
 @endsection

@@ -1,28 +1,57 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="text-xl font-semibold tracking-tight text-brand-950 leading-tight">
-            Profil
-        </h2>
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-wider text-amber-600">Pengaturan Akun</p>
+                <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-900">Profil Saya</h1>
+                <p class="mt-1 text-sm text-slate-500">Kelola identitas personal, nomor kontak, dan keamanan akun Anda.</p>
+            </div>
+            @if(auth()->user()->role === 'customer')
+                <a href="{{ route('customer.dashboard') }}" class="text-xs font-semibold text-slate-600 hover:text-slate-900 transition">
+                    &larr; Kembali ke Dashboard
+                </a>
+            @else
+                <a href="{{ route('admin.dashboard') }}" class="text-xs font-semibold text-slate-600 hover:text-slate-900 transition">
+                    &larr; Kembali ke Dashboard Admin
+                </a>
+            @endif
+        </div>
     </x-slot>
 
     <div class="py-8 sm:py-10">
-        <div class="mx-auto max-w-5xl space-y-6 px-4 sm:px-6 lg:px-8">
-            <div class="border border-slate-200 bg-white p-5 sm:p-8">
-                <div class="max-w-xl">
-                    @include('profile.partials.update-profile-information-form')
+        <div class="mx-auto max-w-4xl space-y-6 px-4 sm:px-6 lg:px-8">
+            {{-- User Avatar Card --}}
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col sm:flex-row sm:items-center gap-5">
+                <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-brand-950 font-black text-2xl text-amber-300 ring-4 ring-amber-400/20">
+                    {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
+                </div>
+                <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-xl font-bold text-slate-900 truncate">{{ auth()->user()->name }}</h2>
+                        <span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold uppercase text-slate-700">
+                            {{ auth()->user()->role === 'admin' ? 'Administrator' : 'Customer' }}
+                        </span>
+                    </div>
+                    <p class="text-sm text-slate-500 mt-0.5">{{ auth()->user()->email }}</p>
+                    @if(auth()->user()->phone)
+                        <p class="text-xs font-mono text-slate-600 mt-1">Telp: {{ auth()->user()->phone }}</p>
+                    @endif
                 </div>
             </div>
 
-            <div class="border border-slate-200 bg-white p-5 sm:p-8">
-                <div class="max-w-xl">
-                    @include('profile.partials.update-password-form')
-                </div>
+            {{-- 1. Edit Information Form --}}
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+                @include('profile.partials.update-profile-information-form')
             </div>
 
-            <div class="border border-red-200 bg-white p-5 sm:p-8">
-                <div class="max-w-xl">
-                    @include('profile.partials.delete-user-form')
-                </div>
+            {{-- 2. Update Password Form --}}
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+                @include('profile.partials.update-password-form')
+            </div>
+
+            {{-- 3. Delete Account Form --}}
+            <div class="rounded-2xl border border-red-200 bg-white p-6 sm:p-8 shadow-sm">
+                @include('profile.partials.delete-user-form')
             </div>
         </div>
     </div>

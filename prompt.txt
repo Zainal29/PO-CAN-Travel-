@@ -1,1283 +1,693 @@
-# PO CAN TRAVEL — UI REDESIGN TAHAP 2
+## FINAL UI AUDIT & COMPLETION — PO CAN TRAVEL
 
-## Product-Level Redesign, Bukan Sekadar Restyling
+Jangan menganggap redesign UI sudah selesai hanya karena beberapa Blade sudah diperbarui.
 
-Redesign tahap pertama sudah diterapkan dan business logic tetap aman.
+Tujuan tahap ini adalah memastikan **SELURUH UI PO CAN Travel benar-benar selesai, konsisten, dan tidak ada halaman yang masih terlihat seperti template Laravel/Breeze/default/AI-generated**.
 
-Validasi terakhir:
+Fokus terbesar: **ADMIN PANEL**.
 
-```text
-php artisan view:cache       PASS
-npm run build                PASS
-php artisan test             PASS
-66 tests
-233 assertions
-```
+### ATURAN UTAMA
 
-Namun hasil visual masih terlalu polos dan generik.
-
-Masalah utama:
-
-> UI sekarang terasa seperti template dashboard yang diberi warna baru, bukan aplikasi booking tiket bus yang benar-benar dirancang untuk pengguna.
-
-Saya ingin Anda melakukan **REDESIGN UI TAHAP 2 secara menyeluruh**.
-
-Jangan hanya mengganti warna, border-radius, shadow, atau spacing.
-
-Saya ingin perubahan pada:
-
-* visual hierarchy
-* information architecture
-* komposisi halaman
-* travel context
-* bus information
-* trip status
-* booking experience
-* order experience
-* ticket experience
-* responsive UX
-* visual identity
+1. Jangan mengubah business logic.
+2. Jangan mengubah database/schema.
+3. Jangan mengubah controller/service/request/model kecuali benar-benar diperlukan untuk memperbaiki error UI.
+4. Jangan mengubah route yang sudah bekerja.
+5. Jangan menghapus fitur.
+6. Jangan mengganti payment simulation menjadi payment gateway.
+7. Jangan reset/revert perubahan UI yang sudah dibuat.
+8. Sebelum mengedit, audit seluruh Blade.
+9. Jangan hanya memperbaiki halaman yang terlihat paling jelas.
+10. Semua halaman harus menggunakan design system yang konsisten.
 
 ---
 
-# 1. IDENTITAS PRODUK
+# PHASE 1 — AUDIT SELURUH VIEW
 
-PO CAN Travel adalah aplikasi pemesanan tiket bus.
+Jalankan:
 
-UI harus langsung memberikan kesan:
-
-```text
-TRAVEL
-BUS
-JOURNEY
-TICKET
-DEPARTURE
-DESTINATION
+```bash
+find resources/views -type f -name '*.blade.php' | sort
 ```
 
-Bukan:
+Kemudian kelompokkan seluruh view:
 
 ```text
-GENERIC SAAS
-ADMIN DASHBOARD
-AI TEMPLATE
+Customer
+Admin
+Auth
+Layouts
+Components
+Profile
+Errors
 ```
 
-Desain harus terasa seperti produk transportasi.
+Buat daftar halaman:
+
+```text
+[ ] sudah redesign
+[ ] sebagian redesign
+[ ] masih default/plain
+[ ] broken
+[ ] inconsistent
+```
+
+Jangan langsung mengedit sebelum daftar ini selesai.
 
 ---
 
-# 2. ARAH VISUAL BARU
+# PHASE 2 — ADMIN PANEL
 
-Jangan gunakan pendekatan:
+ADMIN ADALAH PRIORITAS UTAMA.
 
-```text
-white background
-+
-card
-+
-shadow
-+
-rounded-xl
-+
-icon
-```
-
-di seluruh halaman.
-
-Gunakan kombinasi:
+Audit semua:
 
 ```text
-large typography
-strong contrast
-travel imagery / bus imagery bila asset tersedia
-route visualization
-departure information
-ticket-like components
-timeline
-seat map
-status indicator
-structured information
+resources/views/admin/
 ```
 
-Whitespace tetap digunakan, tetapi jangan membuat halaman terasa kosong.
+Pastikan minimal mencakup:
+
+### Admin Layout
+
+```text
+admin/layouts/app.blade.php
+admin/layouts/*
+admin/navigation*
+```
+
+Harus memiliki:
+
+* sidebar desktop
+* mobile navigation
+* brand PO CAN Travel
+* active menu state
+* user/account area
+* logout
+* responsive sidebar
+* page title
+* breadcrumb/context jika diperlukan
+* consistent content width
+* consistent spacing
+
+Jangan membuat sidebar terlalu besar.
+
+Gunakan visual hierarchy yang jelas.
 
 ---
 
-# 3. WARNA
+# ADMIN DASHBOARD
 
-Warna navy/amber sebelumnya boleh dipertahankan sebagai dasar, tetapi jangan menjadikan seluruh UI hanya:
-
-```text
-navy
-amber
-white
-```
-
-Bangun color system yang lebih matang.
-
-Contoh arah:
+Periksa:
 
 ```text
-Deep Navy
-#0B1F33
-
-Navy
-#12304A
-
-Bus / Transit Accent
-#F59E0B
-
-Warm Accent
-#FBBF24
-
-Background
-#F7F8FA
-
-Surface
-#FFFFFF
-
-Text
-#17202A
-
-Muted
-#64748B
-
-Border
-#E2E8F0
-
-Success
-#16A34A
-
-Warning
-#D97706
-
-Danger
-#DC2626
+admin/dashboard.blade.php
 ```
 
-Jangan copy warna ini secara membabi buta.
+Dashboard harus terasa seperti **travel booking management dashboard**, bukan dashboard Laravel biasa.
 
-Sesuaikan dengan visual PO CAN Travel.
+Tampilkan secara visual:
 
-Gunakan accent hanya pada elemen penting.
+* total orders
+* pending orders
+* paid orders
+* completed orders
+* total revenue jika data memang tersedia
+* total buses
+* total routes
+* recent orders
+* payment activity
+* operational information
+
+Gunakan:
+
+* compact statistic cards
+* data tables
+* status badges
+* recent activity
+* useful empty states
+
+Jangan menggunakan terlalu banyak card besar.
 
 ---
 
-# 4. LANDING PAGE
+# ADMIN BUS MANAGEMENT
 
-File:
+Audit:
 
 ```text
-resources/views/welcome.blade.php
+admin/buses/index.blade.php
+admin/buses/create.blade.php
+admin/buses/edit.blade.php
+admin/buses/show.blade.php
 ```
 
-Jangan hanya membuat hero + search form.
+Pastikan semuanya memiliki visual yang sama.
 
-Buat landing page seperti website operator bus modern.
+Index:
 
-Struktur:
+* search
+* filter
+* bus code
+* bus name
+* type
+* plate number
+* seats
+* status
+* actions
+* pagination
+* empty state
+
+Create/Edit:
+
+* form sections yang jelas
+* label konsisten
+* input yang rapi
+* facilities
+* image
+* status
+* validation errors
+* cancel/save actions
+
+Show:
+
+* bus identity
+* bus type
+* plate
+* total seats
+* facilities
+* status
+* related routes jika tersedia
+* action buttons
+
+Jangan membuat form menjadi satu card panjang yang berantakan.
+
+---
+
+# ADMIN ROUTES
+
+Audit:
 
 ```text
-NAVBAR
-↓
-HERO
-↓
-SEARCH TICKET
-↓
-TRUST / SERVICE INFO
-↓
-POPULAR ROUTES
-↓
-WHY PO CAN TRAVEL
-↓
-HOW BOOKING WORKS
-↓
-CTA
-↓
-FOOTER
+admin/routes/index.blade.php
+admin/routes/create.blade.php
+admin/routes/edit.blade.php
+admin/routes/show.blade.php
+admin/routes/form.blade.php
+```
+
+Route adalah inti aplikasi travel.
+
+Tampilkan secara jelas:
+
+```text
+Origin
+   ↓
+Destination
+
+Departure date
+Departure time
+Estimated arrival
+Bus
+Price
+Available seats
+Status
+```
+
+Gunakan route visualization/timeline sederhana.
+
+Hindari tabel yang terlalu padat.
+
+---
+
+# ADMIN ORDERS
+
+Audit:
+
+```text
+admin/orders/index.blade.php
+admin/orders/show.blade.php
+```
+
+Harus terasa seperti sistem operasional travel.
+
+Index:
+
+* order code
+* ticket code
+* customer
+* route
+* departure
+* passengers
+* amount
+* payment status
+* order status
+* actions
+
+Show:
+
+* customer
+* route
+* bus
+* departure
+* passengers
+* seats
+* payment
+* order status
+* ticket information
+* check-in
+* cancellation
+* seat release
+
+Gunakan section yang jelas.
+
+Jangan menampilkan semua informasi dalam satu blok panjang.
+
+---
+
+# ADMIN PAYMENTS
+
+Audit:
+
+```text
+admin/payments/index.blade.php
+admin/payments/show.blade.php
+```
+
+Ini harus terlihat seperti payment management/history.
+
+Tampilkan:
+
+* transaction ID
+* order code
+* customer
+* payment method
+* amount
+* payment status
+* paid date
+* order status
+
+Pastikan **soft-deleted order tidak menyebabkan UI error**.
+
+Periksa relasi Payment → Order.
+
+Jika order dapat soft delete tetapi histori payment tetap harus ditampilkan, pastikan relasinya mendukung:
+
+```php
+return $this->belongsTo(Order::class)->withTrashed();
+```
+
+Jangan menghapus data payment hanya karena order sudah archived.
+
+---
+
+# ADMIN USERS / CUSTOMERS
+
+Audit seluruh halaman user/customer management.
+
+Pastikan:
+
+* user identity
+* email
+* phone
+* role
+* status jika tersedia
+* created date
+* actions
+
+Table harus readable pada desktop dan tetap usable pada mobile.
+
+---
+
+# ADMIN SETTINGS
+
+Pastikan view sesuai dengan data yang benar-benar dikirim controller.
+
+Jangan berasumsi `$settings` adalah object jika controller mengirim `$data`.
+
+Audit semua:
+
+```text
+admin/settings/*
+```
+
+Pastikan:
+
+* tidak ada undefined variable
+* tidak ada undefined property
+* form tetap berfungsi
+* input tidak rusak
+* success/error message terlihat jelas
+
+---
+
+# PHASE 3 — CUSTOMER PANEL
+
+Audit semua:
+
+```text
+resources/views/customer/
+```
+
+Periksa:
+
+```text
+dashboard
+trips
+booking
+orders
+payments
+profile
+ticket
+```
+
+Semua harus memiliki visual identity yang sama.
+
+Customer harus langsung memahami:
+
+```text
+Mau ke mana?
+Kapan berangkat?
+Naik bus apa?
+Jam berapa?
+Kursi berapa?
+Status perjalanan apa?
 ```
 
 ---
 
-## HERO
+# TRAVEL CONTEXT
 
-Hero harus mempunyai visual yang kuat.
-
-Jika terdapat asset bus/travel yang tersedia, gunakan.
-
-Jika tidak ada asset yang sesuai, jangan membuat dekorasi abstrak yang berlebihan.
-
-Hero harus memiliki:
-
-```text
-Headline
-Subheadline
-Search journey
-Visual bus/travel
-```
-
-Contoh hierarchy:
-
-```text
-Temukan perjalanan Anda.
-Pesan tiket bus dengan mudah,
-langsung dari PO CAN Travel.
-
-[ Dari mana? ] [ Ke mana? ]
-[ Tanggal ] [ Penumpang ]
-
-[ Cari Perjalanan ]
-```
-
-Search box harus menjadi elemen utama.
-
----
-
-# 5. SEARCH EXPERIENCE
-
-Search bukan sekadar form biasa.
-
-Buat seperti booking engine.
-
-Field:
-
-```text
-Asal
-Tujuan
-Tanggal
-Penumpang
-Periode keberangkatan
-Tipe bus
-Harga maksimum
-```
-
-Berikan visual distinction antara:
-
-```text
-FROM
-TO
-DATE
-PASSENGERS
-```
-
-Jika memungkinkan secara UI, tampilkan route preview:
-
-```text
-Jepara  →  Jakarta
-24 September 2026
-2 Penumpang
-```
-
----
-
-# 6. CUSTOMER DASHBOARD
-
-File:
-
-```text
-resources/views/customer/dashboard/index.blade.php
-```
-
-Dashboard jangan terasa seperti:
-
-```text
-Welcome
-3 cards statistik
-Recent orders
-```
-
-Dashboard harus menjadi **travel command center**.
-
-Struktur:
-
-```text
-HEADER
-"Selamat datang, [nama]"
-
-QUICK BOOKING
-"Ke mana Anda ingin pergi?"
-
-UPCOMING TRIP
-↓
-TRIP STATUS
-↓
-RECENT ORDERS
-↓
-QUICK ACTIONS
-```
-
----
-
-# 7. UPCOMING TRIP
-
-Ini harus menjadi elemen paling penting di dashboard ketika customer mempunyai perjalanan.
-
-Contoh visual:
-
-```text
-PERJALANAN BERIKUTNYA
-
-24 SEP 2026
-07:30
-
-Jepara
-    │
-    │  PO CAN Travel
-    │  Executive
-    │
-    ↓
-Jakarta
-
-Bus CAN-001
-Seat A12
-Ticket CAN-260924-XXXXXX
-
-[ Lihat Tiket ]
-```
-
-Jangan sekadar menampilkan:
-
-```text
-Order #PO...
-Status: Paid
-```
-
-Customer membeli perjalanan, jadi tampilkan **perjalanannya**.
-
----
-
-# 8. TRIP STATUS
-
-Tambahkan informasi status perjalanan yang dapat dihitung dari data yang SUDAH tersedia.
-
-Contoh UI:
-
-```text
-STATUS PERJALANAN
-
-● Tiket Dibayar
-│
-● Menunggu Keberangkatan
-│
-○ Berangkat
-│
-○ Selesai
-```
-
-Jika waktu keberangkatan sudah lewat, tampilkan informasi yang sesuai dengan status data.
-
-Jangan membuat status database baru hanya untuk kebutuhan visual.
-
-Gunakan data existing.
-
----
-
-# 9. INFORMASI WAKTU
-
-Pada halaman perjalanan dan order, tampilkan informasi waktu secara jelas.
-
-Contoh:
-
-```text
-07:30
-Keberangkatan
-
-14:30
-Estimasi Tiba
-```
-
-Tambahkan konteks:
-
-```text
-Berangkat dalam 2 jam
-```
-
-atau:
-
-```text
-Perjalanan telah dimulai
-```
-
-atau:
-
-```text
-Keberangkatan telah lewat
-```
-
-Tetapi:
-
-**JANGAN mengubah database atau membuat status baru hanya untuk ini.**
-
-Gunakan computed UI berdasarkan:
+Gunakan data yang sudah tersedia:
 
 ```text
 departure_date
 departure_time
 estimated_arrival_time
-current time
-order_status
-checked_in_at
-```
-
-Pastikan timezone menggunakan timezone aplikasi yang benar.
-
----
-
-# 10. TRIP LIST
-
-File:
-
-```text
-resources/views/customer/trips/index.blade.php
-```
-
-Ini harus menjadi salah satu halaman utama aplikasi.
-
-Jangan membuat daftar card besar yang monoton.
-
-Gunakan desain seperti hasil pencarian transportasi.
-
-Contoh:
-
-```text
-24 SEP 2026
-
-07:30
-Jepara
-       ───────────────
-       PO CAN Travel
-       Executive
-       ───────────────
-14:30
-Jakarta
-
-Rp150.000
-12 kursi tersedia
-
-[ Lihat Perjalanan ]
-```
-
-Tambahkan informasi:
-
-```text
-Bus
-Bus type
-Facilities
-Seat availability
-Departure
-Estimated arrival
-Price
-```
-
----
-
-# 11. BUS INFORMATION
-
-Pada detail perjalanan:
-
-```text
-resources/views/customer/trips/show.blade.php
-```
-
-Tambahkan section khusus:
-
-```text
-BUS INFORMATION
-```
-
-Contoh:
-
-```text
-PO CAN Travel
-
-CAN-001
-
-Executive
-
-N 1234 AB
-
-30 Seats
-
-Facilities
-• AC
-• Reclining Seat
-• USB Charger
-• WiFi
-```
-
-Gunakan data:
-
-```text
-bus_code
-bus_name
-bus_type
-plate_number
+origin_city
+destination_city
+bus
+available_seats
 total_seats
-facilities
-description
-image
-status
 ```
 
-Jangan membuat data baru.
+Tampilkan context seperti:
 
-Jika `image` tersedia, tampilkan gambar bus.
+```text
+Berangkat dalam 2 jam
+Keberangkatan hari ini
+Perjalanan sedang berlangsung
+Keberangkatan telah lewat
+```
 
-Jika tidak tersedia, gunakan fallback visual yang sederhana.
+Jangan menambahkan database field baru hanya untuk UI.
+
+Hitung berdasarkan datetime yang sudah ada.
 
 ---
 
-# 12. STATUS BUS
+# PAYMENT
 
-Tampilkan status bus jika relevan:
-
-```text
-ACTIVE
-MAINTENANCE
-INACTIVE
-```
-
-Tetapi jangan menampilkan informasi internal yang tidak relevan untuk customer.
-
-Untuk customer, ubah menjadi bahasa yang mudah dipahami.
-
-Contoh:
-
-```text
-Bus tersedia
-```
-
-bukan:
-
-```text
-status = active
-```
-
----
-
-# 13. AVAILABILITY
-
-Jangan hanya menampilkan:
-
-```text
-12 kursi
-```
-
-Buat informasi lebih jelas:
-
-```text
-12 dari 30 kursi tersedia
-```
-
-atau progress visual:
-
-```text
-Kursi tersedia
-████████░░░░
-
-12 / 30
-```
-
-Jangan mengubah data database.
-
----
-
-# 14. SEAT SELECTION
-
-File:
-
-```text
-resources/views/customer/bookings/create.blade.php
-```
-
-Seat selection harus terlihat seperti pemilihan kursi bus nyata.
-
-Gunakan layout:
-
-```text
-             DRIVER
-
-       ┌──────┐
-       │      │
-       └──────┘
-
- A01  A02     A03  A04
- A05  A06     A07  A08
- A09  A10     A11  A12
-
-        ...
-```
-
-Berikan legend:
-
-```text
-Available
-Selected
-Occupied
-```
-
-Seat harus menjadi salah satu visual focal point halaman booking.
-
----
-
-# 15. BOOKING FLOW
-
-Buat booking terasa seperti checkout.
-
-Header:
-
-```text
-Pesan Tiket
-
-1 Perjalanan
-2 Kursi
-3 Penumpang
-4 Review
-```
-
-Namun jangan membuat stepper terlalu besar.
-
-Informasi perjalanan tetap terlihat:
-
-```text
-Jepara → Jakarta
-24 September 2026
-07:30
-PO CAN Travel
-Executive
-```
-
-Kemudian:
-
-```text
-Seat selection
-Passenger information
-Order summary
-```
-
----
-
-# 16. ORDER DETAIL
-
-File:
-
-```text
-resources/views/customer/orders/show.blade.php
-```
-
-Jangan menjadikan halaman order sebagai tabel data.
-
-Buat seperti **travel reservation detail**.
-
-Header:
-
-```text
-Pesanan Anda
-
-CAN-260924-XXXXXX
-
-● Sudah Dibayar
-```
-
-Kemudian:
-
-```text
-TRIP
-
-Jepara
-07:30
-24 Sep
-
-        →
-
-Jakarta
-14:30
-24 Sep
-```
-
-Bus:
-
-```text
-PO CAN Travel
-CAN-001
-Executive
-```
-
-Passenger:
-
-```text
-Passenger
-Seat
-Phone
-```
-
-Payment:
+Pertahankan:
 
 ```text
 BCA
-Rp300.000
-Berhasil
+BRI
+QRIS
 ```
 
-Actions:
+Tetap gunakan internal payment simulation.
 
-```text
-[ Lihat E-Ticket ]
-[ Batalkan Pesanan ]
-```
+Jangan menambahkan:
 
-Tampilkan action hanya jika memang valid berdasarkan business logic existing.
+* Midtrans
+* Xendit
+* Stripe
+* payment gateway
+* OTP
+* kartu kredit
+* external payment API
+
+UI payment harus menjelaskan bahwa pembayaran adalah simulasi internal.
 
 ---
 
-# 17. PAYMENT UI
+# E-TICKET
 
-File:
+E-ticket harus terlihat seperti tiket perjalanan nyata.
 
-```text
-resources/views/customer/payments/create.blade.php
-```
-
-Jangan membuat form payment generik.
-
-Buat seperti checkout tiket:
+Harus jelas:
 
 ```text
-PEMBAYARAN
-
 PO CAN Travel
 
-Jepara → Jakarta
-24 Sep 2026
-07:30
+Ticket Code
+Order Code
 
------------------
+Origin
+Destination
 
-Pilih metode pembayaran
+Departure Date
+Departure Time
 
-[ BCA ]
-[ BRI ]
-[ QRIS ]
+Bus
+Seat
+Passenger
 
------------------
-
-Nama pembayar
-Nomor telepon
-
------------------
-
-Total
-
-Rp300.000
-
-[ Bayar Sekarang ]
+Payment Status
+Order Status
 ```
 
-Metode pembayaran harus jelas.
-
-Gunakan visual bank/payment method yang tersedia dari asset project jika ada.
-
-Jangan membuat integrasi pembayaran baru.
+Gunakan visual hierarchy seperti boarding pass/ticket.
 
 ---
 
-# 18. PAYMENT SUCCESS
+# PHASE 4 — AUTH
 
-File:
-
-```text
-resources/views/customer/payments/success.blade.php
-```
-
-Jangan hanya:
+Audit:
 
 ```text
-Payment Success
+login
+register
+forgot-password
+reset-password
+confirm-password
+verify-email
+profile
 ```
 
-Buat seperti confirmation page.
+Jangan biarkan halaman auth masih terlihat seperti Breeze default.
 
-```text
-Pembayaran berhasil
+Tetap gunakan backend/auth Breeze yang sekarang.
 
-Tiket Anda sudah diterbitkan.
-
-CAN-260924-XXXXXX
-
-Jepara → Jakarta
-24 Sep 2026
-07:30
-
-[ Lihat E-Ticket ]
-
-[ Lihat Pesanan ]
-```
+Hanya perbaiki UI.
 
 ---
 
-# 19. E-TICKET
+# PHASE 5 — DESIGN SYSTEM
 
-File:
+Buat satu design language.
 
-```text
-resources/views/customer/orders/ticket.blade.php
-```
-
-Ini harus menjadi salah satu UI terbaik dalam aplikasi.
-
-Desain seperti tiket digital.
+PO CAN Travel harus memiliki identitas:
 
 ```text
-┌──────────────────────────────────────┐
-│ PO CAN TRAVEL                       │
-│                                      │
-│ CAN-260924-ABC123                    │
-│                                      │
-│ JEPARA          →       JAKARTA      │
-│ 07:30                   14:30        │
-│                                      │
-│ 24 SEP 2026                          │
-│                                      │
-│ Passenger: Zainal                    │
-│ Seat: A12                            │
-│ Bus: CAN-001                         │
-│                                      │
-│                  [ QR CODE ]         │
-└──────────────────────────────────────┘
+Travel
+Bus
+Route
+Ticket
+Boarding
+Departure
+Destination
 ```
 
-Tambahkan:
+Gunakan visual hierarchy yang kuat.
 
-```text
-boarding information
-departure terminal
-bus
-seat
-ticket code
-order code
-```
+Prioritaskan:
 
-hanya jika datanya tersedia.
-
----
-
-# 20. TICKET STATUS
-
-E-ticket harus menunjukkan konteks:
-
-```text
-Belum Berangkat
-```
-
-atau berdasarkan waktu:
-
-```text
-Keberangkatan telah lewat
-```
-
-atau jika sudah check-in:
-
-```text
-Sudah Check-in
-```
-
-Gunakan data existing:
-
-```text
-order_status
-checked_in_at
-departure_date
-departure_time
-```
-
-Jangan membuat status database baru.
-
----
-
-# 21. ORDER LIST
-
-File:
-
-```text
-resources/views/customer/orders/index.blade.php
-```
-
-Gunakan desain yang memudahkan pengguna menemukan perjalanan.
-
-Contoh:
-
-```text
-Pesanan
-
-┌─────────────────────────────┐
-│ Jepara → Jakarta            │
-│ 24 Sep 2026 · 07:30         │
-│                             │
-│ Executive · Seat A12        │
-│                             │
-│ Rp150.000                   │
-│ ● Sudah Dibayar             │
-│                             │
-│ [ Detail ]                  │
-└─────────────────────────────┘
-```
-
-Order code jangan menjadi informasi paling dominan.
-
-Route harus lebih dominan karena itu yang penting bagi customer.
-
----
-
-# 22. HOME / DASHBOARD EMPTY STATE
-
-Jika customer belum memiliki order:
-
-Jangan tampilkan dashboard kosong.
-
-Gunakan:
-
-```text
-Belum ada perjalanan.
-
-Cari perjalanan pertama Anda
-dan pesan tiket dengan mudah.
-
-[ Cari Perjalanan ]
-```
-
-Buat visual yang tetap menarik tanpa dekorasi berlebihan.
-
----
-
-# 23. RESPONSIVE
-
-Jangan sekadar mengecilkan desktop UI.
-
-Mobile harus memiliki layout tersendiri.
-
-Terutama:
-
-```text
-search
-trip card
-seat map
-booking
-payment
-ticket
-navigation
-```
-
-Pada mobile:
-
-```text
-route
-time
-price
-CTA
-```
-
-harus langsung terlihat tanpa scrolling horizontal.
-
----
-
-# 24. MICROCOPY
-
-Gunakan bahasa Indonesia yang natural.
+* typography
+* spacing
+* borders
+* layout
+* status
+* tables
+* forms
+* navigation
 
 Hindari:
 
-```text
-Your Journey Awaits
-Unlock Your Adventure
-Seamless Experience
-Explore Now
-```
-
-Gunakan:
-
-```text
-Cari perjalanan
-Pesan tiket
-Lihat perjalanan
-Lihat tiket
-Pesanan Anda
-Perjalanan berikutnya
-Berangkat
-Tiba
-Kursi tersedia
-Pembayaran berhasil
-```
+* glassmorphism berlebihan
+* gradient berlebihan
+* blob decoration
+* shadow berlebihan
+* rounded card di setiap elemen
+* icon di setiap teks
+* oversized heading
+* terlalu banyak warna
+* dashboard yang terlihat seperti template SaaS
+* UI yang terlihat generatif/AI slop
 
 ---
 
-# 25. INFORMASI YANG BOLEH DITAMBAHKAN
+# PHASE 6 — RESPONSIVE AUDIT
 
-Boleh menambahkan informasi **turunan dari data existing**, misalnya:
-
-```text
-12 / 30 kursi tersedia
-Berangkat dalam 3 jam
-Keberangkatan hari ini
-Keberangkatan telah lewat
-Sudah check-in
-Belum check-in
-Bus aktif
-```
-
-Tetapi jangan membuat:
+Wajib periksa secara konseptual:
 
 ```text
-rating bus
-rating driver
-jumlah perjalanan
-on-time percentage
-live location
-traffic
-estimated delay
+360px
+390px
+430px
+768px
+1024px
+1280px+
 ```
 
-jika datanya tidak tersedia.
+Khusus admin:
 
-Jangan mengarang data.
+* sidebar tidak menyebabkan horizontal overflow
+* table tetap usable
+* action buttons tidak bertumpuk buruk
+* filter/search responsive
+* form tidak terlalu sempit
+* modal tidak keluar layar
+
+Khusus customer:
+
+* booking nyaman di HP
+* seat selection nyaman disentuh
+* payment nyaman di HP
+* ticket mudah dibaca
+* navigation tidak memakan terlalu banyak ruang
 
 ---
 
-# 26. ASSET
+# PHASE 7 — FUNCTIONAL UI AUDIT
 
-Sebelum menggunakan placeholder, periksa:
-
-```text
-resources/
-public/
-resources/images/
-```
-
-Jika ada:
-
-* logo
-* bus image
-* destination image
-* payment logo
-* illustration
-
-gunakan secara konsisten.
-
-Jangan menggunakan random stock image dari internet tanpa alasan.
-
-Jika tidak ada asset, buat UI tetap kuat melalui typography, layout dan CSS.
-
----
-
-# 27. REUSABLE COMPONENT
-
-Buat component hanya ketika memang reusable.
-
-Contoh:
+Setelah redesign, periksa seluruh Blade untuk:
 
 ```text
-trip-summary
-route-display
-bus-info
-seat-status
-order-status
-payment-status
-ticket-card
-empty-state
+undefined variable
+undefined property
+wrong route name
+wrong route parameter
+missing csrf
+broken form action
+broken validation
+broken old()
+broken session flash
+broken conditional
+broken Alpine state
+broken JavaScript
+missing @vite
+missing assets
 ```
 
-Jangan membuat 30 component kecil yang justru menyulitkan project.
-
----
-
-# 28. JANGAN MENGUBAH BACKEND
-
-Tetap gunakan:
-
-```text
-TravelRoute
-Bus
-Order
-OrderDetail
-Payment
-User
-```
-
-dan field existing.
-
-Jangan mengubah:
-
-```text
-controllers
-services
-models
-migrations
-routes
-database
-```
-
-untuk kebutuhan visual.
-
----
-
-# 29. STATUS YANG HARUS DIPERTAHANKAN
-
-Order:
-
-```text
-pending
-paid
-cancelled
-completed
-expired
-```
-
-JANGAN gunakan:
-
-```text
-confirmed
-```
-
-Payment:
-
-```text
-unpaid
-pending
-verified
-rejected
-```
-
----
-
-# 30. VALIDASI
-
-Setelah perubahan:
+Cari juga:
 
 ```bash
+grep -R "@extends" resources/views -n
+grep -R "undefined" resources/views -n
+grep -R "\$settings" resources/views/admin -n
+grep -R "confirmed" resources/views app/Http/Controllers -n
+```
+
+Pastikan tidak ada status/UI lama yang sudah tidak digunakan.
+
+---
+
+# PHASE 8 — CSS AUDIT
+
+Periksa:
+
+```text
+resources/css/app.css
+resources/views/layouts/*
+resources/views/admin/layouts/*
+resources/views/customer/layouts/*
+tailwind.config.js
+```
+
+Pastikan:
+
+* tidak ada CSS duplicate
+* tidak ada style conflict
+* tidak ada class yang tidak sengaja terhapus
+* tidak ada komponen yang memiliki style berbeda tanpa alasan
+* tidak ada CSS inline berlebihan
+* tidak ada Tailwind class yang menghasilkan layout rusak
+
+Jika membuat reusable component, gunakan component tersebut secara konsisten.
+
+---
+
+# PHASE 9 — VALIDATION
+
+Setelah semua perubahan:
+
+```bash
+php artisan optimize:clear
 php artisan view:cache
-npm run build
+php artisan route:list
 php artisan test
+npm run build
 ```
 
-Harus tetap:
+Jika test gagal:
 
-```text
-66 tests passed
-233 assertions
-```
-
-atau jika jumlah test berubah karena alasan yang benar, jelaskan.
+1. identifikasi apakah failure berasal dari UI atau backend
+2. jangan mengubah business logic hanya untuk membuat test pass
+3. perbaiki root cause
+4. jalankan ulang test
 
 ---
 
-# 31. JANGAN LANGSUNG SELESAIKAN SEMUA
+# PHASE 10 — FINAL REPORT
 
-Kerjakan dalam phase berikut:
+Jangan hanya mengatakan "UI sudah selesai".
 
-## PHASE A
-
-```text
-welcome.blade.php
-customer/layouts/index.blade.php
-customer/dashboard/index.blade.php
-```
-
-## PHASE B
+Berikan laporan:
 
 ```text
-customer/trips/index.blade.php
-customer/trips/show.blade.php
+ADMIN
+- Dashboard: DONE/NEEDS WORK
+- Buses: DONE/NEEDS WORK
+- Routes: DONE/NEEDS WORK
+- Orders: DONE/NEEDS WORK
+- Payments: DONE/NEEDS WORK
+- Users: DONE/NEEDS WORK
+- Settings: DONE/NEEDS WORK
+
+CUSTOMER
+- Dashboard: ...
+- Trips: ...
+- Booking: ...
+- Orders: ...
+- Payment: ...
+- Ticket: ...
+- Profile: ...
+
+AUTH
+- Login: ...
+- Register: ...
+- Password: ...
+- Profile: ...
+
+TECHNICAL
+- Tests: PASS/FAIL
+- View cache: PASS/FAIL
+- Build: PASS/FAIL
+- Route check: PASS/FAIL
+
+REMAINING UI ISSUES
+1.
+2.
+3.
 ```
 
-## PHASE C
+**PENTING:**
 
-```text
-customer/bookings/create.blade.php
-customer/payments/create.blade.php
-customer/payments/success.blade.php
-```
+Jangan berhenti setelah memperbaiki 2–3 halaman.
 
-## PHASE D
+Jika menemukan halaman yang masih plain/default/inconsistent, langsung perbaiki dalam tahap ini.
 
-```text
-customer/orders/index.blade.php
-customer/orders/show.blade.php
-customer/orders/ticket.blade.php
-```
+Target akhir adalah:
 
-## PHASE E
-
-```text
-auth/*
-profile/*
-```
-
-## PHASE F
-
-```text
-admin/*
-```
-
-Setelah setiap phase, lakukan validasi.
-
----
-
-# HASIL YANG SAYA INGINKAN
-
-Jangan berhenti pada:
-
-> "UI sudah modern dan responsive."
-
-Saya ingin perubahan yang terlihat jelas ketika halaman dibuka.
-
-Pengguna harus langsung memahami:
-
-```text
-Saya sedang di mana?
-Saya mau pergi ke mana?
-Kapan saya berangkat?
-Bus apa yang saya gunakan?
-Berapa kursinya?
-Berapa harganya?
-Apa status pesanan saya?
-Apa yang harus saya lakukan berikutnya?
-```
-
-Desain harus menjawab pertanyaan tersebut secara visual.
-
-**Prioritas utama:**
-
-```text
-Travel context
-+
-Information hierarchy
-+
-Booking UX
-+
-Visual identity
-+
-Responsive UX
-```
-
-bukan sekadar:
-
-```text
-rounded cards
-+
-shadow
-+
-gradient
-+
-icons
-```
-
-Mulai dari **PHASE A saja**.
-
-Sebelum coding, baca file existing dan jelaskan secara singkat:
-
-1. masalah UI saat ini
-2. struktur UI baru
-3. komponen yang akan digunakan
-4. informasi travel baru yang dapat ditampilkan dari data existing
-
-Setelah itu implementasikan PHASE A.
+> SELURUH PO CAN TRAVEL MEMILIKI SATU DESIGN SYSTEM YANG KONSISTEN, DENGAN ADMIN PANEL SEBAGAI PRIORITAS UTAMA, TANPA MERUSAK BACKEND ATAU BUSINESS LOGIC.

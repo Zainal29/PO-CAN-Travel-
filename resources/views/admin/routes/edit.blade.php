@@ -1,1 +1,17 @@
-<x-app-layout><x-slot name="header"><h2 class="font-semibold text-xl text-gray-800">Edit Rute</h2></x-slot><div class="py-6"><form method="POST" action="{{ route('admin.routes.update', $route) }}" class="max-w-4xl mx-auto bg-white p-6 shadow rounded-xl">@include('admin.routes.form')</form></div></x-app-layout>
+<x-app-layout>
+    <x-slot name="header">
+        <div>
+            <a href="{{ route('admin.routes.index') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition mb-2">
+                &larr; Kembali ke daftar rute
+            </a>
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900">Edit Rute Perjalanan</h1>
+            <p class="mt-1 text-sm text-slate-500">Perbarui jadwal keberangkatan, tarif, atau alokasi armada bus untuk rute ini.</p>
+        </div>
+    </x-slot>
+
+    <div class="mx-auto max-w-4xl px-4 py-7 sm:px-6 lg:px-8">
+        <form method="POST" action="{{ route('admin.routes.update', $route) }}">
+            @include('admin.routes.form')
+        </form>
+    </div>
+</x-app-layout>
