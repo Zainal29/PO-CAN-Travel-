@@ -19,19 +19,19 @@
 
             {{-- Brand Logo --}}
             <a href="{{ auth()->check() && auth()->user()->role === 'customer' ? route('customer.dashboard') : route('home') }}" 
-               class="flex items-center gap-2.5 shrink-0">
-                <div class="h-9 w-9 rounded-lg bg-blue-900 p-1 flex items-center justify-center shadow-xs">
+               class="flex items-center gap-3 shrink-0">
+                <div class="h-11 w-11 rounded-xl bg-white border border-slate-200/90 overflow-hidden shadow-xs flex items-center justify-center shrink-0">
                     <img src="{{ asset('storage/images/LOGO-CAN-TRAVEL.jpeg') }}" 
                          alt="Logo PO CAN Travel" 
-                         class="h-full w-full object-contain rounded"
+                         class="h-full w-full object-cover scale-135"
                          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                    <span class="hidden h-full w-full items-center justify-center font-black text-white text-sm">C</span>
+                    <span class="hidden h-full w-full items-center justify-center font-black text-blue-900 text-base">C</span>
                 </div>
                 <div class="flex flex-col">
-                    <span class="text-base font-extrabold tracking-tight text-slate-900">
+                    <span class="text-base sm:text-lg font-extrabold tracking-tight text-slate-900 leading-tight">
                         PO CAN Travel
                     </span>
-                    <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600">
                         Tiket Bus Antarkota
                     </span>
                 </div>

@@ -1,6 +1,6 @@
 <nav x-data="{ open: false }" class="border-b border-slate-800 bg-slate-950 text-white">
     <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-        <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2 font-bold"><span class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-400 text-sm text-slate-950">C</span>PO CAN <span class="font-normal text-slate-400">Admin</span></a>
+        <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2 font-bold"><div class="h-8 w-8 rounded-lg bg-white overflow-hidden flex items-center justify-center shrink-0 border border-slate-700"><img src="{{ asset('storage/images/LOGO-CAN-TRAVEL.jpeg') }}" alt="Logo PO CAN" class="h-full w-full object-cover scale-135" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><span class="hidden h-full w-full items-center justify-center font-black text-blue-900 text-xs">C</span></div>PO CAN <span class="font-normal text-slate-400">Admin</span></a>
         <button @click="open = !open" class="rounded-lg border border-slate-700 px-3 py-2 text-sm sm:hidden">Menu</button>
         <div class="hidden items-center gap-1 sm:flex">
             <a href="{{ route('admin.dashboard') }}" class="rounded-lg px-3 py-2 text-sm {{ request()->routeIs('admin.dashboard') ? 'bg-slate-800' : 'text-slate-300 hover:bg-slate-800' }}">Ringkasan</a>

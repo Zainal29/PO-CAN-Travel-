@@ -39,6 +39,32 @@ class HomeController extends Controller
 
         $settings = Setting::all()->pluck('value', 'key');
 
-        return view('welcome', compact('featuredRoutes', 'fleet', 'settings'));
+        $originCities = TravelRoute::query()
+            ->where('status', 'available')
+            ->whereHas('bus', fn ($q) => $q->where('status', 'active'))
+            ->distinct()
+            ->pluck('origin_city')
+            ->filter()
+            ->sort()
+            ->values();
+
+        if ($originCities->isEmpty()) {
+            $originCities = collect(['Jepara', 'Semarang', 'Kudus', 'Pati']);
+        }
+
+        $destinationCities = TravelRoute::query()
+            ->where('status', 'available')
+            ->whereHas('bus', fn ($q) => $q->where('status', 'active'))
+            ->distinct()
+            ->pluck('destination_city')
+            ->filter()
+            ->sort()
+            ->values();
+
+        if ($destinationCities->isEmpty()) {
+            $destinationCities = collect(['Semarang', 'Kudus', 'Jepara', 'Pati', 'Rembang', 'Jakarta']);
+        }
+
+        return view('welcome', compact('featuredRoutes', 'fleet', 'settings', 'originCities', 'destinationCities'));
     }
 }

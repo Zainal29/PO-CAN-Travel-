@@ -40,37 +40,31 @@
         <form method="GET" action="{{ route('customer.trips.index') }}" class="space-y-4">
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {{-- Kota Asal --}}
-                <div class="relative" @click.outside="closeSuggestions('origin_city')">
+                <div>
                     <label for="origin_city" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
                         Kota Asal
                     </label>
                     <div class="relative">
                         <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <circle cx="12" cy="10" r="3"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0z"/>
                             </svg>
                         </span>
-                        <input id="origin_city" name="origin_city" type="text" required
-                               value="{{ request('origin_city') }}"
-                               placeholder="Contoh: Jepara"
-                               autocomplete="off"
-                               x-on:input="searchCities('origin_city', $event.target.value)"
-                               x-on:focus="searchCities('origin_city', $event.target.value)"
-                               class="w-full rounded-lg border-slate-300 py-2.5 pl-9 pr-3 text-sm focus:border-blue-600 focus:ring-blue-600">
-                    </div>
-                    <div x-cloak x-show="activeField === 'origin_city' && suggestions.length" 
-                         class="absolute inset-x-0 top-full z-20 mt-1 max-h-48 overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
-                        <template x-for="city in suggestions" :key="city">
-                            <button type="button" x-on:click="selectCity('origin_city', city)" 
-                                    class="block w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700" 
-                                    x-text="city"></button>
-                        </template>
+                        <select id="origin_city" name="origin_city" required
+                                class="w-full rounded-lg border-slate-300 py-2.5 pl-9 pr-8 text-sm focus:border-blue-600 focus:ring-blue-600 bg-white">
+                            <option value="" disabled {{ !request('origin_city') ? 'selected' : '' }}>Pilih Kota Asal</option>
+                            @foreach($originCities as $city)
+                                <option value="{{ $city }}" {{ request('origin_city') == $city ? 'selected' : '' }}>
+                                    {{ $city }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
 
                 {{-- Kota Tujuan --}}
-                <div class="relative" @click.outside="closeSuggestions('destination_city')">
+                <div>
                     <label for="destination_city" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
                         Kota Tujuan
                     </label>
@@ -81,21 +75,15 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                             </svg>
                         </span>
-                        <input id="destination_city" name="destination_city" type="text" required
-                               value="{{ request('destination_city') }}"
-                               placeholder="Contoh: Semarang"
-                               autocomplete="off"
-                               x-on:input="searchCities('destination_city', $event.target.value)"
-                               x-on:focus="searchCities('destination_city', $event.target.value)"
-                               class="w-full rounded-lg border-slate-300 py-2.5 pl-9 pr-3 text-sm focus:border-blue-600 focus:ring-blue-600">
-                    </div>
-                    <div x-cloak x-show="activeField === 'destination_city' && suggestions.length" 
-                         class="absolute inset-x-0 top-full z-20 mt-1 max-h-48 overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
-                        <template x-for="city in suggestions" :key="city">
-                            <button type="button" x-on:click="selectCity('destination_city', city)" 
-                                    class="block w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700" 
-                                    x-text="city"></button>
-                        </template>
+                        <select id="destination_city" name="destination_city" required
+                                class="w-full rounded-lg border-slate-300 py-2.5 pl-9 pr-8 text-sm focus:border-blue-600 focus:ring-blue-600 bg-white">
+                            <option value="" disabled {{ !request('destination_city') ? 'selected' : '' }}>Pilih Kota Tujuan</option>
+                            @foreach($destinationCities as $city)
+                                <option value="{{ $city }}" {{ request('destination_city') == $city ? 'selected' : '' }}>
+                                    {{ $city }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
 
@@ -283,6 +271,21 @@
                                     </span>
                                     <span class="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700 border border-emerald-200">
                                         {{ $route->available_seats }} kursi tersedia
+                                    </span>
+                                </div>
+
+                                {{-- Nama Bus & Kode di Card Body --}}
+                                <div class="mt-3 flex items-center justify-between gap-2 rounded-lg bg-blue-50/70 border border-blue-100 px-3 py-2 text-xs">
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <svg class="h-4 w-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h8m-8 4h8m-4 4h4M6 3h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2z"/>
+                                        </svg>
+                                        <span class="font-extrabold text-blue-950 truncate">
+                                            {{ $route->bus->bus_name }}
+                                        </span>
+                                    </div>
+                                    <span class="shrink-0 font-mono text-[10px] font-bold bg-white text-blue-700 px-2 py-0.5 rounded shadow-2xs border border-blue-200">
+                                        {{ $route->bus->bus_code }}
                                     </span>
                                 </div>
 

@@ -141,23 +141,20 @@ class OrderController extends Controller
 
     public function checkIn(Order $order): RedirectResponse
     {
-        $departureAt = Carbon::parse(
-            $order->route->departure_date->toDateString() . ' ' . $order->route->departure_time
-        );
+        $isPaymentVerified = ($order->payment?->status === 'verified') || ($order->payment_status === 'verified');
 
         if (
-            $order->payment?->status !== 'verified'
-            || $order->order_status !== 'paid'
-            || $departureAt->isPast()
+            ! $isPaymentVerified
+            || ! in_array($order->order_status, ['paid', 'completed'], true)
         ) {
-            return back()->with('error', 'Order ini belum memenuhi syarat check-in.');
+            return back()->with('error', 'Order ini belum memenuhi syarat check-in (pembayaran belum terverifikasi).');
         }
 
         if ($order->checked_in_at) {
-            return back()->with('error', 'Order ini sudah check-in.');
+            return back()->with('error', 'Order ini sudah check-in pada ' . $order->checked_in_at->format('d M Y H:i') . '.');
         }
 
-        $order->update(['checked_in_at' => now()]);
+        $order->update(['checked_in_at' => now('Asia/Jakarta')]);
 
         return back()->with('success', 'Check-in berhasil dicatat.');
     }

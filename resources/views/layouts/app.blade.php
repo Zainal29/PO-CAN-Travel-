@@ -29,7 +29,13 @@
             {{-- Brand Logo --}}
             <div class="flex h-16 shrink-0 items-center justify-between px-6 border-b border-slate-800/80">
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2.5 font-bold tracking-tight">
-                    <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-400 text-sm font-black text-brand-950">C</span>
+                    <div class="h-9 w-9 rounded-lg bg-white border border-slate-700/80 overflow-hidden shadow-xs flex items-center justify-center shrink-0">
+                        <img src="{{ asset('storage/images/LOGO-CAN-TRAVEL.jpeg') }}" 
+                             alt="Logo PO CAN Travel" 
+                             class="h-full w-full object-cover scale-135"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <span class="hidden h-full w-full items-center justify-center font-black text-blue-900 text-xs">C</span>
+                    </div>
                     <span class="text-base text-white">PO CAN <span class="font-normal text-amber-400 text-xs uppercase tracking-wider ml-1 px-1.5 py-0.5 rounded bg-amber-400/10 border border-amber-400/30">Admin</span></span>
                 </a>
                 <button @click="sidebarOpen = false" class="lg:hidden text-slate-400 hover:text-white p-1 rounded-md">

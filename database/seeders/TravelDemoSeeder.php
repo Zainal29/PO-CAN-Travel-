@@ -195,15 +195,15 @@ class TravelDemoSeeder extends Seeder
                 'bus_id' => $bus1->id,
                 'origin_city' => 'Jepara',
                 'destination_city' => 'Semarang',
-                'departure_date' => now()->addDays(1)->toDateString(),
-                'departure_time' => '08:00:00',
+                'departure_date' => now()->toDateString(),
+                'departure_time' => '23:30:00',
             ],
             [
                 'origin_terminal' => 'Terminal Jepara',
                 'destination_terminal' => 'Terminal Terboyo',
-                'estimated_arrival_time' => '11:00:00',
+                'estimated_arrival_time' => '02:00:00',
                 'price' => 75000,
-                'available_seats' => 30,
+                'available_seats' => 28,
                 'status' => 'available',
             ]
         );
