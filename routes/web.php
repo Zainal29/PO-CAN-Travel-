@@ -95,6 +95,10 @@ Route::middleware('auth')->group(function () {
         Route::delete('orders/{order}/archive', [\App\Http\Controllers\Admin\OrderController::class, 'archive'])
             ->name('orders.archive');
 
+        // Scanner
+        Route::get('scanner', [\App\Http\Controllers\Admin\ScannerController::class, 'index'])
+            ->name('scanner.index');
+
         // Payments
         Route::get('payments', [\App\Http\Controllers\Admin\PaymentController::class, 'index'])
             ->name('payments.index');

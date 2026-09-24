@@ -250,32 +250,7 @@
 
             {{-- Operational Action Buttons --}}
             <div class="flex flex-wrap items-center gap-3 pt-2">
-                {{-- Complete Trip Button --}}
-                @if($order->order_status === 'paid')
-                    <form method="POST" action="{{ route('admin.orders.status', $order) }}" class="inline">
-                        @csrf
-                        @method('PATCH')
-                        <input type="hidden" name="order_status" value="completed">
-                        <button type="submit" 
-                                onclick="return confirm('Tandai perjalanan ini telah selesai dan tiba di tujuan?')"
-                                class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            <span>Tandai Perjalanan Selesai</span>
-                        </button>
-                    </form>
-                @endif
-
-                {{-- Manual Check-in if not yet checked in --}}
-                @if ($order->payment?->status === 'verified' && $order->order_status === 'paid' && ! $order->checked_in_at)
-                    <form method="POST" action="{{ route('admin.orders.check-in', $order) }}" class="inline">
-                        @csrf
-                        @method('PATCH')
-                        <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-emerald-700 transition">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            <span>Catat Check-in Langsung</span>
-                        </button>
-                    </form>
-                @endif
+                {{-- Removed Manual Check-in and Completion Buttons --}}
 
                 {{-- Release Seats --}}
                 @if(in_array($order->order_status, ['cancelled', 'expired'], true) && ! $order->seats_released)
@@ -308,28 +283,16 @@
                 @endif
             </div>
 
-            {{-- QR Scanner Accordion/Box --}}
+            {{-- Link to Scanner --}}
             @if ($order->payment?->status === 'verified' && $order->order_status === 'paid' && ! $order->checked_in_at)
                 <div class="pt-4 border-t border-slate-100">
-                    <details class="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
-                        <summary class="cursor-pointer font-bold text-xs text-slate-700 hover:text-blue-600 transition select-none flex items-center justify-between">
-                            <span class="flex items-center gap-2">
-                                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
-                                <span>Pindai / Validasi QR E-Ticket Tiket</span>
-                            </span>
-                            <span class="text-xs text-slate-400">Klik untuk buka scanner</span>
-                        </summary>
-
-                        <form method="POST" action="{{ route('admin.orders.qr.check-in') }}" class="mt-4 space-y-3">
-                            @csrf
-                            @method('PATCH')
-                            <label for="qr_payload" class="block text-xs font-bold uppercase tracking-wider text-slate-700">Hasil Scan QR E-Ticket</label>
-                            <textarea id="qr_payload" name="qr_payload" rows="3" required maxlength="5000" class="w-full rounded-xl border-slate-300 text-xs focus:border-blue-600 focus:ring-blue-600 font-mono shadow-xs" placeholder="Tempel hasil scan QR e-ticket di sini..."></textarea>
-                            <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white hover:bg-blue-700 transition shadow-xs">
-                                Validasi QR dan Check-in
-                            </button>
-                        </form>
-                    </details>
+                    <a href="{{ route('admin.scanner.index') }}" class="inline-flex items-center justify-between w-full rounded-2xl border border-slate-200 bg-slate-50/60 p-4 hover:bg-slate-100 transition">
+                        <span class="flex items-center gap-2 font-bold text-xs text-slate-700">
+                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+                            <span>Buka Scanner Kamera</span>
+                        </span>
+                        <span class="text-xs text-slate-400">Klik untuk memindai tiket</span>
+                    </a>
                 </div>
             @endif
         </div>

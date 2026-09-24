@@ -14,7 +14,7 @@
      x-init="init()"
      class="w-full">
     {{-- Phase 1: Upcoming (Menuju Keberangkatan) --}}
-    <div x-show="phase === 'upcoming'"
+    <div x-cloak x-show="phase === 'upcoming'"
          class="rounded-2xl border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50/50 p-4 sm:p-5 shadow-xs">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="space-y-1">
@@ -73,7 +73,7 @@
     </div>
 
     {{-- Phase 2: In Transit (Bus Sedang Berjalan) --}}
-    <div x-show="phase === 'in_transit'"
+    <div x-cloak x-show="phase === 'in_transit'"
          class="rounded-2xl border border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50/50 p-4 sm:p-5 shadow-xs">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="space-y-1">
@@ -130,7 +130,7 @@
     </div>
 
     {{-- Phase 3: Arrived / Completed (Tiba di Tujuan) --}}
-    <div x-show="phase === 'completed'"
+    <div x-cloak x-show="phase === 'completed'"
          class="rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50/50 p-4 sm:p-5 shadow-xs">
         <div class="flex items-center justify-between gap-3">
             <div class="flex items-center gap-3">
@@ -162,8 +162,8 @@
 @once
 @push('scripts')
 <script>
-function tripCountdownTimer(departureIso, arrivalIso) {
-    return {
+document.addEventListener('alpine:init', () => {
+    Alpine.data('tripCountdownTimer', (departureIso, arrivalIso) => ({
         departureTime: new Date(departureIso).getTime(),
         arrivalTime: new Date(arrivalIso).getTime(),
         now: Date.now(),
@@ -209,8 +209,8 @@ function tripCountdownTimer(departureIso, arrivalIso) {
         formatDigits(num) {
             return String(num).padStart(2, '0');
         }
-    };
-}
+    }));
+});
 </script>
 @endpush
 @endonce

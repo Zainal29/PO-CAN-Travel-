@@ -20,7 +20,7 @@
             </p>
         </div>
 
-        {{-- Quick Search Form --}}
+        <!-- {{-- Quick Search Form --}}
         <form method="GET" action="{{ route('customer.trips.index') }}" class="mt-6 grid gap-3 sm:grid-cols-3 max-w-3xl">
             <div>
                 <label for="origin_city" class="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Kota Asal</label>
@@ -42,7 +42,7 @@
                     <span>Cari Perjalanan</span>
                 </button>
             </div>
-        </form>
+        </form> -->
     </div>
 
     {{-- 2. Ringkasan Status Perjalanan --}}
