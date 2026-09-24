@@ -369,6 +369,24 @@
                             </div>
 
                             <div class="p-4 sm:p-5">
+                                {{-- Nama Armada Bus Jelas & Terlihat --}}
+                                <div class="flex items-center justify-between gap-2 mb-3 bg-blue-50/80 p-2.5 rounded-xl border border-blue-100">
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white shadow-xs">
+                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                                            </svg>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <p class="text-xs font-extrabold text-blue-950 truncate">{{ $route->bus->bus_name }}</p>
+                                            <p class="text-[10px] text-blue-600 font-mono font-medium">{{ $route->bus->bus_code }} · {{ $route->bus->plate_number ?: 'Tanpa Plat' }}</p>
+                                        </div>
+                                    </div>
+                                    <span class="shrink-0 text-[10px] font-extrabold text-blue-700 bg-white px-2 py-0.5 rounded-md border border-blue-200 uppercase tracking-wider">
+                                        {{ str_replace('_', ' ', $route->bus->bus_type) }}
+                                    </span>
+                                </div>
+
                                 {{-- Baris Tanggal & Ketersediaan Kursi --}}
                                 <div class="flex items-center justify-between border-b border-slate-100 pb-3 text-xs">
                                     <span class="font-bold text-slate-700">
@@ -468,23 +486,23 @@
         </section>
 
         {{-- 4. CARA BOOKING --}}
-        <section id="cara-booking" class="border-t border-slate-200 bg-white py-14 sm:py-20">
+        <section id="cara-booking" class="border-t border-slate-200 bg-white py-20 sm:py-28 lg:py-32">
             <div class="site-shell">
                 <div class="max-w-2xl">
-                    <div class="inline-flex items-center gap-1.5 rounded-full bg-blue-50 border border-blue-200 px-3 py-1 text-xs font-bold text-blue-700 mb-3">
+                    <div class="inline-flex items-center gap-1.5 rounded-full bg-blue-50 border border-blue-200 px-3.5 py-1 text-xs font-bold text-blue-700 mb-4 shadow-xs">
                         <span class="h-2 w-2 rounded-full bg-blue-600 animate-pulse"></span>
                         <span>PANDUAN PEMESANAN</span>
                     </div>
-                    <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+                    <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900 leading-tight">
                         Cara Booking Tiket Resmi
                     </h2>
-                    <p class="mt-2 text-sm text-slate-600 leading-relaxed">
+                    <p class="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed">
                         Pesan tiket bus PO CAN Travel secara cepat, transparan, dan terkonfirmasi langsung dalam lima langkah praktis tanpa antri di loket terminal.
                     </p>
                 </div>
 
                 {{-- Grid Langkah Pemesanan --}}
-                <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+                <div class="mt-12 sm:mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
                     @php
                         $bookingSteps = [
                             [
@@ -531,27 +549,27 @@
                     @endphp
 
                     @foreach($bookingSteps as $index => $step)
-                        <div class="relative flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition duration-200 hover:-translate-y-1 hover:border-blue-400 hover:shadow-md">
+                        <div class="relative flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition duration-200 hover:-translate-y-1 hover:border-blue-400 hover:shadow-md">
                             <div>
-                                <div class="flex items-center justify-between mb-4">
-                                    <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600 border border-blue-100">
+                                <div class="flex items-center justify-between mb-5">
+                                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 border border-blue-100 shadow-2xs">
                                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $step['icon'] }}"/>
                                         </svg>
                                     </div>
-                                    <span class="font-mono text-xs font-black text-blue-700 bg-blue-50/80 px-2.5 py-1 rounded-md border border-blue-200/60">
+                                    <span class="font-mono text-xs font-black text-blue-700 bg-blue-50/90 px-2.5 py-1 rounded-md border border-blue-200/60">
                                         Langkah {{ $step['num'] }}
                                     </span>
                                 </div>
                                 <h3 class="text-base font-bold text-slate-900 leading-snug">
                                     {{ $step['name'] }}
                                 </h3>
-                                <p class="mt-2 text-xs text-slate-500 leading-relaxed">
+                                <p class="mt-2.5 text-xs text-slate-500 leading-relaxed">
                                     {{ $step['desc'] }}
                                 </p>
                             </div>
 
-                            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center gap-1.5 text-[11px] font-semibold text-blue-600">
+                            <div class="mt-5 pt-3.5 border-t border-slate-100 flex items-center gap-1.5 text-[11px] font-semibold text-blue-600">
                                 <svg class="h-3.5 w-3.5 shrink-0 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                                 </svg>
@@ -562,45 +580,45 @@
                 </div>
 
                 {{-- Garansi & Kemudahan Pemesanan Strip --}}
-                <div class="mt-8 rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50/90 via-indigo-50/60 to-slate-50 p-5 sm:p-6 shadow-xs">
-                    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                        <div class="flex items-start gap-3">
-                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white shadow-xs">
-                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                <div class="mt-12 sm:mt-16 rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50/90 via-indigo-50/60 to-slate-50 p-6 sm:p-8 shadow-xs">
+                    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                        <div class="flex items-start gap-3.5">
+                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-xs">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                             </div>
                             <div>
-                                <h4 class="text-xs font-bold text-slate-900">100% Kepastian Kursi</h4>
-                                <p class="text-[11px] text-slate-500 mt-0.5">Nomor kursi terkunci permanen saat konfirmasi order.</p>
+                                <h4 class="text-sm font-bold text-slate-900">100% Kepastian Kursi</h4>
+                                <p class="text-xs text-slate-500 mt-1 leading-relaxed">Nomor kursi terkunci permanen saat konfirmasi order.</p>
                             </div>
                         </div>
 
-                        <div class="flex items-start gap-3">
-                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white shadow-xs">
-                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <div class="flex items-start gap-3.5">
+                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-xs">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             </div>
                             <div>
-                                <h4 class="text-xs font-bold text-slate-900">Tarif Transparan</h4>
-                                <p class="text-[11px] text-slate-500 mt-0.5">Harga final tertera, tanpa biaya admin terselubung.</p>
+                                <h4 class="text-sm font-bold text-slate-900">Tarif Transparan</h4>
+                                <p class="text-xs text-slate-500 mt-1 leading-relaxed">Harga final tertera, tanpa biaya admin terselubung.</p>
                             </div>
                         </div>
 
-                        <div class="flex items-start gap-3">
-                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white shadow-xs">
-                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                        <div class="flex items-start gap-3.5">
+                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-xs">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
                             </div>
                             <div>
-                                <h4 class="text-xs font-bold text-slate-900">Boarding E-Ticket</h4>
-                                <p class="text-[11px] text-slate-500 mt-0.5">Scan cepat di terminal langsung dari layar smartphone.</p>
+                                <h4 class="text-sm font-bold text-slate-900">Boarding E-Ticket</h4>
+                                <p class="text-xs text-slate-500 mt-1 leading-relaxed">Scan cepat di terminal langsung dari layar smartphone.</p>
                             </div>
                         </div>
 
-                        <div class="flex items-start gap-3">
-                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white shadow-xs">
-                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                        <div class="flex items-start gap-3.5">
+                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-xs">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                             </div>
                             <div>
-                                <h4 class="text-xs font-bold text-slate-900">Bantuan CS Siaga</h4>
-                                <p class="text-[11px] text-slate-500 mt-0.5">Tim operasional siap sedia memandu perjalanan Anda.</p>
+                                <h4 class="text-sm font-bold text-slate-900">Bantuan CS Siaga</h4>
+                                <p class="text-xs text-slate-500 mt-1 leading-relaxed">Tim operasional siap sedia memandu perjalanan Anda.</p>
                             </div>
                         </div>
                     </div>
@@ -609,28 +627,28 @@
         </section>
 
         {{-- 5. KEUNGGULAN LAYANAN & INFO --}}
-        <section id="benefit" class="border-t border-slate-200 bg-slate-50/70 py-14 sm:py-20">
+        <section id="benefit" class="border-t border-slate-200 bg-slate-50/70 py-20 sm:py-28 lg:py-32">
             <div class="site-shell">
                 <div class="max-w-2xl">
-                    <div class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs font-bold text-emerald-800 mb-3">
+                    <div class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3.5 py-1 text-xs font-bold text-emerald-800 mb-4 shadow-xs">
                         <span class="h-2 w-2 rounded-full bg-emerald-600"></span>
                         <span>MENGAPA PO CAN TRAVEL</span>
                     </div>
-                    <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+                    <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900 leading-tight">
                         Keunggulan Nyata untuk Kenyamanan Anda
                     </h2>
-                    <p class="mt-2 text-sm text-slate-600 leading-relaxed">
+                    <p class="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed">
                         Kami mengutamakan keselamatan, ketepatan jadwal armada, dan kemudahan teknologi digital agar perjalanan Anda nyaman sejak pemesanan hingga tiba di tujuan.
                     </p>
                 </div>
 
                 {{-- 4 Pilar Keunggulan --}}
-                <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <div class="mt-12 sm:mt-16 grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-4">
                     {{-- 01: Pilih Kursi Real-Time --}}
-                    <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs flex flex-col justify-between hover:border-blue-300 transition">
+                    <div class="rounded-2xl border border-slate-200 bg-white p-7 shadow-xs flex flex-col justify-between hover:border-blue-300 transition">
                         <div>
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 border border-blue-100">
+                            <div class="flex items-center justify-between mb-5">
+                                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 border border-blue-100 shadow-2xs">
                                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                                     </svg>
@@ -638,21 +656,21 @@
                                 <span class="font-mono text-xs font-black text-slate-400">01</span>
                             </div>
                             <h3 class="text-base font-bold text-slate-900">Pilih Kursi Nyata</h3>
-                            <p class="mt-2 text-xs leading-relaxed text-slate-600">
+                            <p class="mt-2.5 text-xs leading-relaxed text-slate-600">
                                 Denah bus ditampilkan interaktif dan real-time. Anda bebas memilih posisi dekat jendela, lorong, atau baris depan sebelum membayar.
                             </p>
                         </div>
-                        <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap gap-1.5">
+                        <div class="mt-5 pt-3.5 border-t border-slate-100 flex flex-wrap gap-1.5">
                             <span class="rounded bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700">Denah Live</span>
                             <span class="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">Bebas Pilih</span>
                         </div>
                     </div>
 
                     {{-- 02: Pembayaran Transparan --}}
-                    <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs flex flex-col justify-between hover:border-blue-300 transition">
+                    <div class="rounded-2xl border border-slate-200 bg-white p-7 shadow-xs flex flex-col justify-between hover:border-blue-300 transition">
                         <div>
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100">
+                            <div class="flex items-center justify-between mb-5">
+                                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-2xs">
                                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                                     </svg>
@@ -660,21 +678,21 @@
                                 <span class="font-mono text-xs font-black text-slate-400">02</span>
                             </div>
                             <h3 class="text-base font-bold text-slate-900">Pembayaran Otomatis</h3>
-                            <p class="mt-2 text-xs leading-relaxed text-slate-600">
+                            <p class="mt-2.5 text-xs leading-relaxed text-slate-600">
                                 Verifikasi cepat dan aman terhubung langsung ke sistem reservasi resmi. Tarif transparan tanpa tambahan biaya siluman saat tiba di terminal.
                             </p>
                         </div>
-                        <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap gap-1.5">
+                        <div class="mt-5 pt-3.5 border-t border-slate-100 flex flex-wrap gap-1.5">
                             <span class="rounded bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">Auto-Verifikasi</span>
                             <span class="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">No Hidden Fee</span>
                         </div>
                     </div>
 
                     {{-- 03: E-Ticket QR Code --}}
-                    <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs flex flex-col justify-between hover:border-blue-300 transition">
+                    <div class="rounded-2xl border border-slate-200 bg-white p-7 shadow-xs flex flex-col justify-between hover:border-blue-300 transition">
                         <div>
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100">
+                            <div class="flex items-center justify-between mb-5">
+                                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 shadow-2xs">
                                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
                                     </svg>
@@ -682,21 +700,21 @@
                                 <span class="font-mono text-xs font-black text-slate-400">03</span>
                             </div>
                             <h3 class="text-base font-bold text-slate-900">E-Ticket QR Resmi</h3>
-                            <p class="mt-2 text-xs leading-relaxed text-slate-600">
+                            <p class="mt-2.5 text-xs leading-relaxed text-slate-600">
                                 E-ticket digital langsung terbit lengkap dengan QR code resmi. Boarding tanpa repot cetak kertas fisik, praktis dan ramah lingkungan.
                             </p>
                         </div>
-                        <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap gap-1.5">
+                        <div class="mt-5 pt-3.5 border-t border-slate-100 flex flex-wrap gap-1.5">
                             <span class="rounded bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-700">QR Code Sah</span>
                             <span class="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">Paperless</span>
                         </div>
                     </div>
 
                     {{-- 04: Armada Terawat & Nyaman --}}
-                    <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs flex flex-col justify-between hover:border-blue-300 transition">
+                    <div class="rounded-2xl border border-slate-200 bg-white p-7 shadow-xs flex flex-col justify-between hover:border-blue-300 transition">
                         <div>
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-amber-600 border border-amber-100">
+                            <div class="flex items-center justify-between mb-5">
+                                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-amber-600 border border-amber-100 shadow-2xs">
                                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                                     </svg>
@@ -704,11 +722,11 @@
                                 <span class="font-mono text-xs font-black text-slate-400">04</span>
                             </div>
                             <h3 class="text-base font-bold text-slate-900">Armada Prima & Nyaman</h3>
-                            <p class="mt-2 text-xs leading-relaxed text-slate-600">
+                            <p class="mt-2.5 text-xs leading-relaxed text-slate-600">
                                 Bus berstandar tinggi dengan AC dingin, port USB charger tiap bangku, reclining seat, dan kru berpengalaman di setiap rute antarkota.
                             </p>
                         </div>
-                        <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap gap-1.5">
+                        <div class="mt-5 pt-3.5 border-t border-slate-100 flex flex-wrap gap-1.5">
                             <span class="rounded bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">AC & USB Port</span>
                             <span class="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">Kru Ramah</span>
                         </div>
@@ -716,64 +734,64 @@
                 </div>
 
                 {{-- Trust Metrics Counter Bar --}}
-                <div class="mt-10 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-                    <div class="grid grid-cols-2 gap-6 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
+                <div class="mt-12 sm:mt-16 rounded-2xl border border-slate-200 bg-white p-8 sm:p-10 shadow-xs">
+                    <div class="grid grid-cols-2 gap-8 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
                         <div class="text-center pt-2 sm:pt-0">
-                            <p class="font-mono text-2xl sm:text-3xl font-black text-blue-900">10.000+</p>
-                            <p class="mt-1 text-xs font-semibold text-slate-600">Tiket Terpesan</p>
-                            <p class="text-[11px] text-slate-400">Kepercayaan ribuan penumpang</p>
+                            <p class="font-mono text-2xl sm:text-3xl lg:text-4xl font-black text-blue-900">10.000+</p>
+                            <p class="mt-1.5 text-xs sm:text-sm font-bold text-slate-700">Tiket Terpesan</p>
+                            <p class="text-[11px] text-slate-400 mt-0.5">Kepercayaan ribuan penumpang</p>
                         </div>
 
                         <div class="text-center pt-2 sm:pt-0">
-                            <p class="font-mono text-2xl sm:text-3xl font-black text-blue-900">100%</p>
-                            <p class="mt-1 text-xs font-semibold text-slate-600">Jadwal Terkonfirmasi</p>
-                            <p class="text-[11px] text-slate-400">Kepastian jam keberangkatan</p>
+                            <p class="font-mono text-2xl sm:text-3xl lg:text-4xl font-black text-blue-900">100%</p>
+                            <p class="mt-1.5 text-xs sm:text-sm font-bold text-slate-700">Jadwal Terkonfirmasi</p>
+                            <p class="text-[11px] text-slate-400 mt-0.5">Kepastian jam keberangkatan</p>
                         </div>
 
                         <div class="text-center pt-2 sm:pt-0">
-                            <p class="font-mono text-2xl sm:text-3xl font-black text-blue-900">4.9 / 5.0</p>
-                            <p class="mt-1 text-xs font-semibold text-slate-600">Rating Kepuasan</p>
-                            <p class="text-[11px] text-slate-400">Dari ulasan nyata penumpang</p>
+                            <p class="font-mono text-2xl sm:text-3xl lg:text-4xl font-black text-blue-900">4.9 / 5.0</p>
+                            <p class="mt-1.5 text-xs sm:text-sm font-bold text-slate-700">Rating Kepuasan</p>
+                            <p class="text-[11px] text-slate-400 mt-0.5">Dari ulasan nyata penumpang</p>
                         </div>
 
                         <div class="text-center pt-2 sm:pt-0">
-                            <p class="font-mono text-2xl sm:text-3xl font-black text-blue-900">24/7</p>
-                            <p class="mt-1 text-xs font-semibold text-slate-600">Layanan Siaga</p>
-                            <p class="text-[11px] text-slate-400">Dukungan operasional penuh</p>
+                            <p class="font-mono text-2xl sm:text-3xl lg:text-4xl font-black text-blue-900">24/7</p>
+                            <p class="mt-1.5 text-xs sm:text-sm font-bold text-slate-700">Layanan Siaga</p>
+                            <p class="text-[11px] text-slate-400 mt-0.5">Dukungan operasional penuh</p>
                         </div>
                     </div>
                 </div>
 
                 {{-- Kebijakan & Ketentuan Layanan --}}
-                <div id="kebijakan" class="mt-8 rounded-2xl border border-slate-200 bg-white p-6 sm:p-7 shadow-xs">
-                    <div class="flex items-center gap-2.5 mb-4">
-                        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div id="kebijakan" class="mt-12 sm:mt-16 rounded-2xl border border-slate-200 bg-white p-7 sm:p-9 shadow-xs">
+                    <div class="flex items-center gap-3 mb-5">
+                        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600 shadow-2xs">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
                         </div>
-                        <h3 class="text-base font-bold text-slate-900">
+                        <h3 class="text-base sm:text-lg font-bold text-slate-900">
                             Kebijakan Pembatalan, Boarding, & Perjalanan
                         </h3>
                     </div>
 
-                    <div class="grid gap-6 md:grid-cols-3 text-xs text-slate-600 leading-relaxed border-t border-slate-100 pt-4">
-                        <div class="space-y-1">
-                            <h4 class="font-bold text-slate-900">1. Pembatalan & Perubahan</h4>
+                    <div class="grid gap-6 md:grid-cols-3 text-xs text-slate-600 leading-relaxed border-t border-slate-100 pt-5">
+                        <div class="space-y-1.5">
+                            <h4 class="font-bold text-slate-900 text-sm">1. Pembatalan & Perubahan</h4>
                             <p>
                                 {{ $settings['cancellation_policy'] ?? 'Pembatalan atau perubahan jadwal tiket dapat dilakukan maksimal 3 jam sebelum waktu keberangkatan yang tertera pada e-ticket.' }}
                             </p>
                         </div>
 
-                        <div class="space-y-1">
-                            <h4 class="font-bold text-slate-900">2. Ketentuan Boarding Terminal</h4>
+                        <div class="space-y-1.5">
+                            <h4 class="font-bold text-slate-900 text-sm">2. Ketentuan Boarding Terminal</h4>
                             <p>
                                 Penumpang disarankan tiba di terminal keberangkatan minimal 30 menit sebelum jadwal untuk validasi QR code e-ticket kepada petugas loket atau kondektur bus.
                             </p>
                         </div>
 
-                        <div class="space-y-1">
-                            <h4 class="font-bold text-slate-900">3. Fasilitas & Bagasi</h4>
+                        <div class="space-y-1.5">
+                            <h4 class="font-bold text-slate-900 text-sm">3. Fasilitas & Bagasi</h4>
                             <p>
                                 Setiap tiket mencakup bagasi standar penumpang (hingga 20 kg). Dilarang membawa barang berbahaya atau terlarang sesuai aturan perhubungan antarkota resmi.
                             </p>
@@ -784,17 +802,17 @@
         </section>
 
         {{-- 6. CTA (Sederhana: Siap berangkat? Cari jadwal bus dan pesan perjalanan Anda sekarang. Cari Jadwal) --}}
-        <section class="border-t border-slate-800 bg-blue-900 text-white py-12">
-            <div class="site-shell flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        <section class="border-t border-slate-800 bg-blue-900 text-white py-16 sm:py-20">
+            <div class="site-shell flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h2 class="text-2xl font-bold tracking-tight">Siap berangkat?</h2>
-                    <p class="mt-1 text-xs sm:text-sm text-blue-100">
+                    <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Siap berangkat?</h2>
+                    <p class="mt-1.5 text-xs sm:text-sm text-blue-100">
                         Cari jadwal bus dan pesan perjalanan Anda sekarang.
                     </p>
                 </div>
                 <div>
                     <a href="{{ route('customer.trips.index') }}" 
-                       class="inline-flex items-center justify-center rounded-lg bg-white px-5 py-2.5 text-xs font-bold text-blue-900 hover:bg-blue-50 transition shadow-xs">
+                       class="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 text-xs sm:text-sm font-bold text-blue-900 hover:bg-blue-50 transition shadow-sm">
                         Cari Jadwal
                     </a>
                 </div>
@@ -804,28 +822,28 @@
 
     {{-- 7. FOOTER (Dark navy/blue, compact dan profesional) --}}
     <footer id="kontak" class="border-t border-slate-800 bg-slate-900 text-slate-400">
-        <div class="site-shell py-10">
-            <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 text-xs">
+        <div class="site-shell py-14 sm:py-18">
+            <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 text-xs">
                 {{-- PO CAN Travel & Deskripsi --}}
-                <div class="space-y-2">
+                <div class="space-y-3">
                     <div class="flex items-center gap-2 font-bold text-white">
-                        <span class="flex h-6 w-6 items-center justify-center rounded bg-blue-600 text-xs font-black text-white">C</span>
-                        <span class="text-sm">{{ $settings['app_name'] ?? 'PO CAN Travel' }}</span>
+                        <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-xs font-black text-white shadow-2xs">C</span>
+                        <span class="text-base font-extrabold">{{ $settings['app_name'] ?? 'PO CAN Travel' }}</span>
                     </div>
                     <p class="text-xs leading-relaxed text-slate-400">
                         Layanan pemesanan tiket bus antarkota resmi dengan kepastian jadwal dan kenyamanan armada terdepan.
                     </p>
                     @if(!empty($settings['footer_address']))
-                        <p class="text-[11px] text-slate-500 pt-1">
+                        <p class="text-[11px] text-slate-500 pt-1 leading-relaxed">
                             {{ $settings['footer_address'] }}
                         </p>
                     @endif
                 </div>
 
                 {{-- Jadwal & Cara Booking --}}
-                <div class="space-y-2">
-                    <p class="font-bold text-slate-200">Layanan</p>
-                    <ul class="space-y-1.5">
+                <div class="space-y-3">
+                    <p class="font-bold text-slate-200 text-sm">Layanan</p>
+                    <ul class="space-y-2">
                         <li>
                             <a href="{{ route('customer.trips.index') }}" class="hover:text-white transition">
                                 Jadwal Bus
@@ -846,9 +864,9 @@
                 </div>
 
                 {{-- Kebijakan --}}
-                <div class="space-y-2">
-                    <p class="font-bold text-slate-200">Kebijakan</p>
-                    <ul class="space-y-1.5">
+                <div class="space-y-3">
+                    <p class="font-bold text-slate-200 text-sm">Kebijakan</p>
+                    <ul class="space-y-2">
                         <li>
                             <a href="#kebijakan" class="hover:text-white transition">
                                 Kebijakan Pembatalan
@@ -863,9 +881,9 @@
                 </div>
 
                 {{-- Kontak --}}
-                <div class="space-y-2">
-                    <p class="font-bold text-slate-200">Kontak</p>
-                    <ul class="space-y-1.5">
+                <div class="space-y-3">
+                    <p class="font-bold text-slate-200 text-sm">Kontak</p>
+                    <ul class="space-y-2">
                         @if(!empty($settings['contact_email']))
                             <li>
                                 <a href="mailto:{{ $settings['contact_email'] }}" class="hover:text-white transition">
@@ -887,7 +905,7 @@
                 </div>
             </div>
 
-            <div class="mt-8 border-t border-slate-800 pt-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-500">
+            <div class="mt-12 border-t border-slate-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-500">
                 <p>&copy; {{ date('Y') }} {{ $settings['app_name'] ?? 'PO CAN Travel' }}. Seluruh hak cipta dilindungi.</p>
                 <p>Website Resmi Pemesanan Tiket Bus</p>
             </div>

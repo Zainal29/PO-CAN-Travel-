@@ -103,11 +103,11 @@
 
     .settings-input,
     .settings-textarea {
-        @apply w-full rounded-xl border-gray-300 bg-white py-2.5 px-3 text-sm focus:border-amber-500 focus:ring-amber-500 focus:outline-none;
+        @apply w-full rounded-xl border-slate-300 bg-white py-2.5 px-3 text-sm focus:border-blue-600 focus:ring-blue-600 focus:outline-none;
     }
 
     .settings-submit {
-        @apply inline-flex items-center gap-2 rounded-2xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 transition;
+        @apply inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-100 transition;
     }
 }
 

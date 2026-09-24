@@ -83,7 +83,7 @@ class BookingService
                 );
             }
 
-            $bookedSeats = OrderDetail::query()
+            OrderDetail::query()
                 ->whereIn('seat_number', $seatNumbers)
                 ->whereHas('order', function ($query) use ($routeId) {
                     $query
@@ -91,14 +91,17 @@ class BookingService
                         ->whereIn('order_status', [
                             'pending',
                             'paid',
+                            'completed',
                         ]);
                 })
                 ->lockForUpdate()
-                ->pluck('seat_number')
-                ->map(fn ($seat) => strtoupper(trim($seat)));
+                ->get();
+
+            $allBookedSeats = collect($this->getBookedSeatsForRoute($route))
+                ->map(fn ($seat) => (string) $seat);
 
             $alreadyBooked = $seatNumbers
-                ->intersect($bookedSeats)
+                ->intersect($allBookedSeats)
                 ->values();
 
             if ($alreadyBooked->isNotEmpty()) {
@@ -191,5 +194,48 @@ class BookingService
                 'payment',
             ]);
         });
+    }
+
+    /**
+     * Mengambil daftar nomor kursi yang sudah dipesan atau tidak tersedia
+     * untuk rute perjalanan yang ditentukan.
+     *
+     * @param TravelRoute $route
+     * @return array<int>
+     */
+    public function getBookedSeatsForRoute(TravelRoute $route): array
+    {
+        $bus = $route->bus ?? \App\Models\Bus::find($route->bus_id);
+        $totalSeats = $bus ? (int) $bus->total_seats : 30;
+
+        $dbBooked = OrderDetail::query()
+            ->whereHas('order', function ($query) use ($route) {
+                $query->where('route_id', $route->id)
+                    ->whereIn('order_status', [
+                        'pending',
+                        'paid',
+                        'completed',
+                    ]);
+            })
+            ->pluck('seat_number')
+            ->map(fn ($seat) => (int) $seat)
+            ->filter(fn ($seat) => $seat >= 1 && $seat <= $totalSeats)
+            ->unique()
+            ->values()
+            ->all();
+
+        $targetUnavailable = max(0, $totalSeats - (int) $route->available_seats);
+
+        if (count($dbBooked) < $targetUnavailable) {
+            $allSeats = range(1, $totalSeats);
+            $availablePool = array_values(array_diff($allSeats, $dbBooked));
+            $needed = $targetUnavailable - count($dbBooked);
+            $autoBlocked = array_slice($availablePool, 0, $needed);
+            $dbBooked = array_values(array_unique(array_merge($dbBooked, $autoBlocked)));
+        }
+
+        sort($dbBooked);
+
+        return $dbBooked;
     }
 }

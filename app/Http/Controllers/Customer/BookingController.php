@@ -30,17 +30,7 @@ class BookingController extends Controller
             404
         );
 
-        $bookedSeats = OrderDetail::query()
-            ->whereHas('order', function ($query) use ($route) {
-                $query->where('route_id', $route->id)
-                    ->whereIn('order_status', [
-                        'pending',
-                        'paid',
-                    ]);
-            })
-            ->pluck('seat_number')
-            ->map(fn ($seat) => (int) $seat)
-            ->values();
+        $bookedSeats = $this->bookingService->getBookedSeatsForRoute($route);
 
         return view(
             'customer.bookings.create',

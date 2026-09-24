@@ -60,4 +60,58 @@ class SeatAvailabilityViewTest extends TestCase
             ->assertSee('bookedSeats: [7]', false)
             ->assertSee('Sudah dipesan');
     }
+
+    public function test_booking_page_auto_blocks_seats_when_available_seats_less_than_total_capacity(): void
+    {
+        $customer = User::factory()->create(['role' => 'customer']);
+        $bus = Bus::create([
+            'bus_code' => 'BUS-25',
+            'bus_name' => 'Bus VIP 25',
+            'bus_type' => 'vip',
+            'plate_number' => 'K 9999 VIP',
+            'total_seats' => 25,
+            'status' => 'active',
+        ]);
+        $route = TravelRoute::create([
+            'bus_id' => $bus->id,
+            'origin_city' => 'Jepara',
+            'origin_terminal' => 'Terminal Jepara',
+            'destination_city' => 'Demak',
+            'destination_terminal' => 'Terminal Demak',
+            'departure_date' => now()->addDays(2)->toDateString(),
+            'departure_time' => '08:30',
+            'estimated_arrival_time' => '10:30',
+            'price' => 65000,
+            'available_seats' => 2,
+            'status' => 'available',
+        ]);
+
+        // 1 explicit order for seat 2
+        $order = Order::create([
+            'user_id' => $customer->id,
+            'route_id' => $route->id,
+            'order_code' => 'PO-DEMO-002',
+            'total_passengers' => 1,
+            'total_price' => 65000,
+            'payment_status' => 'verified',
+            'order_status' => 'paid',
+        ]);
+        $order->details()->create([
+            'passenger_name' => 'Existing Passenger',
+            'passenger_phone' => '081234567899',
+            'seat_number' => '2',
+            'price' => 65000,
+        ]);
+
+        $response = $this->actingAs($customer)
+            ->get(route('customer.bookings.create', $route))
+            ->assertOk();
+
+        // Exactly 23 seats must be in bookedSeats, leaving only 2 seats available
+        $booked = app(\App\Services\BookingService::class)->getBookedSeatsForRoute($route);
+        $this->assertCount(23, $booked);
+        $this->assertContains(2, $booked);
+        $this->assertNotContains(24, $booked);
+        $this->assertNotContains(25, $booked);
+    }
 }

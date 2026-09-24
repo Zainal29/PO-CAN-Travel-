@@ -97,8 +97,13 @@
                 <div class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-xs space-y-5">
                     <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
                         <div>
-                            <h2 class="text-base font-bold text-slate-900">Pilih Kursi</h2>
-                            <p class="text-xs text-slate-500">Klik nomor kursi yang tersedia untuk memilih.</p>
+                            <div class="flex items-center gap-2">
+                                <h2 class="text-base font-bold text-slate-900">Pilih Kursi</h2>
+                                <span class="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700 border border-emerald-200">
+                                    {{ $route->available_seats }} dari {{ $route->bus->total_seats }} kursi tersedia
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-0.5">Klik nomor kursi yang tersedia untuk memilih.</p>
                         </div>
                         <div class="rounded-md bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700 border border-blue-200">
                             Terpilih: <span x-text="selectedSeats.length"></span> / <span x-text="passengers.length"></span> kursi
