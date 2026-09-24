@@ -18,12 +18,16 @@ class OrderController extends Controller
 {
     public function __construct(
         private OrderCancellationService $cancellationService,
-        private QrCodeService $qrCodeService
+        private QrCodeService $qrCodeService,
+        private \App\Services\OrderScheduleSyncService $scheduleSyncService
     ) {
     }
 
     public function index(): View
     {
+        // Otomatis sinkronkan status pesanan aktif berdasarkan jadwal
+        $this->scheduleSyncService->syncAllActive();
+
         $orders = Order::query()
             ->where('user_id', auth()->id())
             ->with([
@@ -45,6 +49,9 @@ class OrderController extends Controller
             $order->user_id === auth()->id(),
             403
         );
+
+        // Sinkronkan status jadwal order secara otomatis
+        $order = $this->scheduleSyncService->syncOrder($order);
 
         $order->load([
             'route.bus',

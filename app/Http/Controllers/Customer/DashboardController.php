@@ -10,6 +10,9 @@ class DashboardController extends Controller
 {
     public function index(): View
     {
+        // Otomatis perbarui status check-in dan selesai sesuai jadwal
+        app(\App\Services\OrderScheduleSyncService::class)->syncAllActive();
+
         $user = auth()->user();
 
         $stats = [

@@ -3,32 +3,78 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="PO CAN Travel — Pesan tiket bus antarkota dengan jadwal terpercaya, pilihan kursi nyaman, dan harga transparan.">
-    <title>{{ $settings['app_name'] ?? 'PO CAN Travel' }} — Pemesanan Tiket Bus</title>
+    <meta name="description" content="PO CAN Travel — Platform pemesanan tiket bus antarkota resmi. Jadwal akurat, pilihan kursi langsung, dan e-ticket instan dengan QR code.">
+    <title>{{ $settings['app_name'] ?? 'PO CAN Travel' }} — Pemesanan Tiket Bus Resmi</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-white text-slate-800 antialiased">
-    {{-- Header / Navigation --}}
-    <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
-        <nav class="site-shell flex h-16 items-center justify-between">
-            <a href="{{ route('home') }}" class="flex items-center gap-2.5 font-bold tracking-tight text-brand-950">
-                <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-950 text-sm font-black text-amber-300 shadow-sm">C</span>
-                <span class="text-base">{{ $settings['app_name'] ?? 'PO CAN Travel' }}</span>
+<body class="min-h-screen bg-slate-50 font-sans text-slate-900 antialiased selection:bg-blue-600 selection:text-white">
+
+    {{-- 1. NAVBAR (Clean, putih, sticky, border tipis) --}}
+    <header class="sticky top-0 z-40 border-b border-slate-200 bg-white shadow-xs">
+        <nav class="site-shell flex h-16 items-center justify-between gap-4">
+            {{-- Logo PO CAN Travel --}}
+            <a href="{{ route('home') }}" class="flex items-center gap-3 shrink-0">
+                <div class="h-9 w-9 rounded-lg bg-blue-900 p-1 flex items-center justify-center shadow-xs">
+                    <img src="{{ asset('storage/images/LOGO-CAN-TRAVEL.jpeg') }}" 
+                         alt="Logo PO CAN Travel" 
+                         class="h-full w-full object-contain rounded"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <span class="hidden h-full w-full items-center justify-center font-black text-white text-sm">C</span>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-base font-extrabold tracking-tight text-slate-900">
+                        {{ $settings['app_name'] ?? 'PO CAN Travel' }}
+                    </span>
+                    <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                        Tiket Bus Antarkota
+                    </span>
+                </div>
             </a>
 
-            <div class="flex items-center gap-2 text-sm font-semibold">
-                <a href="{{ route('customer.trips.index') }}" class="hidden rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition sm:block">
+            {{-- Navigasi Sesuai Role --}}
+            <div class="flex items-center gap-2 sm:gap-4 text-sm font-semibold">
+                {{-- Jadwal Bus (selalu tampil) --}}
+                <a href="{{ route('customer.trips.index') }}" 
+                   class="rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">
                     Jadwal Bus
                 </a>
+
                 @auth
-                    <a href="{{ auth()->user()->role === 'admin' ? route('admin.dashboard') : route('customer.dashboard') }}" class="btn-primary min-h-9 px-4 py-1.5 text-xs shadow-sm">
-                        Dashboard
-                    </a>
+                    @if(auth()->user()->role === 'admin')
+                        {{-- Admin: Kembali ke Admin (TIDAK BOLEH ke /customer/*) --}}
+                        <a href="{{ route('admin.dashboard') }}" 
+                           class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 px-3.5 py-2 text-xs font-bold text-white shadow-xs transition">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                            </svg>
+                            <span>Kembali ke Admin</span>
+                        </a>
+                    @else
+                        {{-- Customer: Beranda + Pesanan + Profil --}}
+                        <a href="{{ route('home') }}" 
+                           class="hidden md:inline-flex rounded-lg px-3 py-2 text-slate-900 bg-slate-100 transition">
+                            Beranda
+                        </a>
+                        <a href="{{ route('customer.orders.index') }}" 
+                           class="rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">
+                            Pesanan
+                        </a>
+                        <a href="{{ route('profile.edit') }}" 
+                           class="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs">
+                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
+                            <span>Profil</span>
+                        </a>
+                    @endif
                 @else
-                    <a href="{{ route('login') }}" class="rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition">
+                    {{-- Guest: Masuk + Daftar --}}
+                    <a href="{{ route('login') }}" 
+                       class="rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition">
                         Masuk
                     </a>
-                    <a href="{{ route('register') }}" class="btn-primary min-h-9 px-4 py-1.5 text-xs shadow-sm">
+                    <a href="{{ route('register') }}" 
+                       class="rounded-lg bg-blue-600 hover:bg-blue-700 px-3.5 py-2 text-xs font-bold text-white shadow-xs transition">
                         Daftar
                     </a>
                 @endauth
@@ -37,238 +83,584 @@
     </header>
 
     <main>
-        {{-- Hero & Booking Search --}}
-        <section class="border-b border-slate-200 bg-gradient-to-b from-slate-50 to-white py-12 sm:py-16 lg:py-20">
-            <div class="site-shell grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-                {{-- Hero Copy --}}
-                <div class="max-w-2xl space-y-4">
-                    <p class="eyebrow text-amber-700">TIKET BUS RESMI & TERPERCAYA</p>
-                    <h1 class="text-4xl font-extrabold tracking-tight text-brand-950 sm:text-5xl sm:leading-[1.12]">
-                        Perjalanan Anda, dimulai dari jadwal yang tepat.
-                    </h1>
-                    <p class="text-base leading-relaxed text-slate-600 max-w-xl">
-                        Cari rute perjalanan bus antarkota, pilih nomor kursi favorit Anda secara transparan, dan dapatkan e-ticket instan langsung dari PO CAN Travel.
-                    </p>
+        {{-- 2. HERO + SEARCH (Search menjadi focal point, visual foto bus relevan, biru-putih-slate) --}}
+        <section class="relative border-b border-slate-200 bg-slate-900 text-white overflow-hidden">
+            {{-- Background Bus Image dengan Overlay Biru Gelap --}}
+            <div class="absolute inset-0 z-0">
+                <img src="{{ asset('images/hero-bus.jpg') }}" 
+                     alt="Armada Bus PO CAN Travel" 
+                     class="w-full h-full object-cover object-center opacity-40">
+                <div class="absolute inset-0 bg-slate-900/80"></div>
+            </div>
 
-                    <div class="pt-2 flex flex-wrap gap-4 text-xs font-semibold text-slate-500">
-                        <span class="inline-flex items-center gap-1.5">
-                            <svg class="h-4 w-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                            Pilihan Kursi Nyata
-                        </span>
-                        <span class="inline-flex items-center gap-1.5">
-                            <svg class="h-4 w-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                            E-Ticket QR Code
-                        </span>
-                        <span class="inline-flex items-center gap-1.5">
-                            <svg class="h-4 w-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                            Armada Bus Executive
-                        </span>
-                    </div>
-                </div>
-
-                {{-- Search Box Card --}}
-                <div class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
-                    <div class="mb-5">
-                        <h2 class="text-lg font-bold text-brand-950">Cari perjalanan</h2>
-                        <p class="mt-1 text-xs text-slate-500">Tentukan rute dan tanggal keberangkatan Anda.</p>
-                    </div>
-
-                    <form method="GET" action="{{ route('customer.trips.index') }}" class="space-y-4">
-                        <div class="grid gap-4 sm:grid-cols-2">
-                            <div>
-                                <label for="origin_city" class="block text-xs font-semibold uppercase text-slate-700 mb-1.5">Kota Asal</label>
-                                <input id="origin_city" name="origin_city" required placeholder="Contoh: Jepara" class="w-full rounded-lg border-slate-300 text-sm focus:border-brand-500 focus:ring-brand-500">
-                            </div>
-                            <div>
-                                <label for="destination_city" class="block text-xs font-semibold uppercase text-slate-700 mb-1.5">Kota Tujuan</label>
-                                <input id="destination_city" name="destination_city" required placeholder="Contoh: Semarang" class="w-full rounded-lg border-slate-300 text-sm focus:border-brand-500 focus:ring-brand-500">
-                            </div>
-                            <div>
-                                <label for="departure_date" class="block text-xs font-semibold uppercase text-slate-700 mb-1.5">Tanggal Berangkat</label>
-                                <input id="departure_date" name="departure_date" type="date" min="{{ today()->toDateString() }}" required class="w-full rounded-lg border-slate-300 text-sm focus:border-brand-500 focus:ring-brand-500">
-                            </div>
-                            <div>
-                                <label for="passengers" class="block text-xs font-semibold uppercase text-slate-700 mb-1.5">Jumlah Penumpang</label>
-                                <select id="passengers" name="passengers" class="w-full rounded-lg border-slate-300 text-sm focus:border-brand-500 focus:ring-brand-500">
-                                    <option value="1">1 Penumpang</option>
-                                    <option value="2">2 Penumpang</option>
-                                    <option value="3">3 Penumpang</option>
-                                    <option value="4">4 Penumpang</option>
-                                </select>
-                            </div>
+            <div class="relative z-10 site-shell py-12 sm:py-16 lg:py-20">
+                <div class="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+                    {{-- Kiri: Headline kuat, deskripsi singkat, feature kecil --}}
+                    <div class="max-w-2xl space-y-5">
+                        <div class="inline-flex items-center gap-2 rounded-md bg-blue-900/80 border border-blue-700/60 px-3 py-1 text-xs font-semibold text-blue-200">
+                            <span class="h-2 w-2 rounded-full bg-blue-400"></span>
+                            <span>Tiket Resmi Bus Antarkota</span>
                         </div>
 
-                        <button type="submit" class="btn-primary w-full min-h-11 text-sm font-semibold shadow-sm mt-2">
-                            Cari jadwal perjalanan
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </section>
+                        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
+                            Perjalanan Anda, dimulai dari jadwal yang tepat.
+                        </h1>
 
-        {{-- 3 Value Props --}}
-        <section class="border-b border-slate-200 bg-white">
-            <div class="site-shell grid sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-slate-200">
-                @foreach([
-                    ['01', 'Pilih Jadwal Tepat', 'Rute antarkota terjadwal dengan waktu keberangkatan dan estimasi tiba yang jelas.'],
-                    ['02', 'Pilih Kursi Langsung', 'Denah kursi interaktif memungkinkan Anda memilih posisi duduk sebelum membayar.'],
-                    ['03', 'E-Ticket & Boarding Mudah', 'Dapatkan QR code e-ticket langsung setelah pembayaran untuk check-in di terminal.']
-                ] as [$number, $title, $copy])
-                    <div class="py-8 sm:px-8 sm:first:pl-0 sm:last:pr-0">
-                        <p class="font-mono text-xs font-bold text-amber-600">{{ $number }}</p>
-                        <h3 class="mt-2 text-base font-bold text-slate-900">{{ $title }}</h3>
-                        <p class="mt-1 text-xs leading-5 text-slate-500">{{ $copy }}</p>
+                        <p class="text-sm sm:text-base leading-relaxed text-slate-300 max-w-xl">
+                            Pesan tiket bus antarkota resmi PO CAN Travel dengan jadwal terkonfirmasi, kepastian nomor kursi pilihan sendiri, dan kemudahan e-ticket instan.
+                        </p>
+
+                        {{-- Feature Kecil --}}
+                        <div class="flex flex-wrap items-center gap-4 pt-2 text-xs font-medium text-slate-200">
+                            <div class="flex items-center gap-1.5">
+                                <svg class="h-4 w-4 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <span>Pilihan Kursi Nyata</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <svg class="h-4 w-4 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <span>E-Ticket QR Resmi</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <svg class="h-4 w-4 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <span>Armada Terawat</span>
+                            </div>
+                        </div>
                     </div>
-                @endforeach
+
+                    {{-- Kanan: Search Card (Focal Point: Putih, border, shadow ringan, radius moderat) --}}
+                    <div id="search-card" 
+                         class="rounded-xl border border-slate-200 bg-white p-5 sm:p-7 shadow-md text-slate-900" 
+                         x-data="cityAutocomplete()">
+                        <div class="mb-5 border-b border-slate-100 pb-3">
+                            <h2 class="text-lg font-bold text-slate-900 tracking-tight">Cari perjalanan</h2>
+                            <p class="text-xs text-slate-500 mt-0.5">Tentukan rute bus dan tanggal keberangkatan Anda.</p>
+                        </div>
+
+                        {{-- Form Search: Route & Fields dari SearchTripRequest --}}
+                        <form method="GET" action="{{ route('customer.trips.index') }}" class="space-y-4">
+                            <div class="grid gap-3 sm:grid-cols-2">
+                                {{-- Kota Asal --}}
+                                <div class="relative" @click.outside="closeSuggestions('origin_city')">
+                                    <label for="origin_city" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                        Kota Asal
+                                    </label>
+                                    <div class="relative">
+                                        <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <circle cx="12" cy="10" r="3"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0z"/>
+                                            </svg>
+                                        </span>
+                                        <input id="origin_city" 
+                                               name="origin_city" 
+                                               type="text" 
+                                               required
+                                               placeholder="Contoh: Jepara"
+                                               autocomplete="off"
+                                               x-on:input="searchCities('origin_city', $event.target.value)"
+                                               x-on:focus="searchCities('origin_city', $event.target.value)"
+                                               class="w-full rounded-lg border-slate-300 py-2.5 pl-9 pr-3 text-sm font-medium text-slate-900 focus:border-blue-600 focus:ring-blue-600">
+                                    </div>
+                                    <div x-cloak x-show="activeField === 'origin_city' && suggestions.length" 
+                                         class="absolute inset-x-0 top-full z-20 mt-1 max-h-48 overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
+                                        <template x-for="city in suggestions" :key="city">
+                                            <button type="button" 
+                                                    x-on:click="selectCity('origin_city', city)" 
+                                                    class="block w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700" 
+                                                    x-text="city"></button>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                {{-- Kota Tujuan --}}
+                                <div class="relative" @click.outside="closeSuggestions('destination_city')">
+                                    <label for="destination_city" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                        Kota Tujuan
+                                    </label>
+                                    <div class="relative">
+                                        <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                                            <svg class="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            </svg>
+                                        </span>
+                                        <input id="destination_city" 
+                                               name="destination_city" 
+                                               type="text" 
+                                               required
+                                               placeholder="Contoh: Semarang"
+                                               autocomplete="off"
+                                               x-on:input="searchCities('destination_city', $event.target.value)"
+                                               x-on:focus="searchCities('destination_city', $event.target.value)"
+                                               class="w-full rounded-lg border-slate-300 py-2.5 pl-9 pr-3 text-sm font-medium text-slate-900 focus:border-blue-600 focus:ring-blue-600">
+                                    </div>
+                                    <div x-cloak x-show="activeField === 'destination_city' && suggestions.length" 
+                                         class="absolute inset-x-0 top-full z-20 mt-1 max-h-48 overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
+                                        <template x-for="city in suggestions" :key="city">
+                                            <button type="button" 
+                                                    x-on:click="selectCity('destination_city', city)" 
+                                                    class="block w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700" 
+                                                    x-text="city"></button>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                {{-- Tanggal Berangkat --}}
+                                <div>
+                                    <label for="departure_date" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                        Tanggal Berangkat
+                                    </label>
+                                    <input id="departure_date" 
+                                           name="departure_date" 
+                                           type="date" 
+                                           required
+                                           min="{{ \Carbon\Carbon::now('Asia/Jakarta')->toDateString() }}"
+                                           value="{{ \Carbon\Carbon::now('Asia/Jakarta')->toDateString() }}"
+                                           class="w-full rounded-lg border-slate-300 py-2.5 px-3 text-sm font-medium text-slate-900 focus:border-blue-600 focus:ring-blue-600">
+                                </div>
+
+                                {{-- Penumpang --}}
+                                <div>
+                                    <label for="passengers" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                        Penumpang
+                                    </label>
+                                    <select id="passengers" 
+                                            name="passengers" 
+                                            class="w-full rounded-lg border-slate-300 py-2.5 px-3 text-sm font-medium text-slate-900 focus:border-blue-600 focus:ring-blue-600">
+                                        <option value="1">1 Penumpang</option>
+                                        <option value="2">2 Penumpang</option>
+                                        <option value="3">3 Penumpang</option>
+                                        <option value="4">4 Penumpang</option>
+                                        <option value="5">5 Penumpang</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            {{-- Tipe Bus (Filter backend) --}}
+                            <div>
+                                <label for="bus_type" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                    Kelas Armada
+                                </label>
+                                <select id="bus_type" 
+                                        name="bus_type" 
+                                        class="w-full rounded-lg border-slate-300 py-2.5 px-3 text-sm font-medium text-slate-900 focus:border-blue-600 focus:ring-blue-600">
+                                    <option value="">Semua Kelas</option>
+                                    <option value="economy">Economy</option>
+                                    <option value="executive">Executive</option>
+                                    <option value="vip">VIP</option>
+                                    <option value="super_vip">Super VIP</option>
+                                </select>
+                            </div>
+
+                            {{-- Tombol Cari Jadwal --}}
+                            <button type="submit" 
+                                    class="w-full flex items-center justify-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-3 text-sm font-bold text-white shadow-xs transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <circle cx="11" cy="11" r="8"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35"/>
+                                </svg>
+                                <span>Cari Jadwal</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </section>
 
-        {{-- Featured Routes Section --}}
-        <section class="site-shell py-14 sm:py-20">
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        {{-- 3. JADWAL BUS (Data database, card terasa seperti tiket dengan visual rute vertikal) --}}
+        <section id="jadwal-bus" class="site-shell py-12 sm:py-16">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between border-b border-slate-200 pb-4">
                 <div>
-                    <p class="eyebrow text-amber-700">JADWAL TERDEKAT</p>
-                    <h2 class="mt-1 text-3xl font-bold tracking-tight text-brand-950">Perjalanan yang dapat dipesan</h2>
+                    <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+                        Jadwal Bus
+                    </h2>
+                    <p class="mt-1 text-xs sm:text-sm text-slate-500">
+                        Pilihan jadwal keberangkatan bus yang tersedia dan dapat dipesan hari ini.
+                    </p>
                 </div>
-                <a href="{{ route('customer.trips.index') }}" class="text-xs font-semibold text-amber-700 hover:text-amber-900">
-                    Lihat semua rute & jadwal &rarr;
+                <a href="{{ route('customer.trips.index') }}" 
+                   class="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-800 transition">
+                    <span>Lihat Semua Jadwal</span>
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
                 </a>
             </div>
 
-            <div class="mt-8 divide-y divide-slate-200 border-y border-slate-200">
+            {{-- Grid Tiket Bus --}}
+            <div class="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                @php
+                    $jakartaNow = \Carbon\Carbon::now('Asia/Jakarta');
+                @endphp
+
                 @forelse($featuredRoutes as $route)
-                    <div class="grid gap-4 py-5 sm:grid-cols-[100px_minmax(0,1fr)_auto] sm:items-center">
+                    @php
+                        $depDateStr = $route->departure_date instanceof \Carbon\Carbon 
+                            ? $route->departure_date->format('Y-m-d') 
+                            : \Carbon\Carbon::parse($route->departure_date)->format('Y-m-d');
+                        
+                        $departureDt = \Carbon\Carbon::parse($depDateStr . ' ' . $route->departure_time, 'Asia/Jakarta');
+                        
+                        $arrivalDt = $route->estimated_arrival_time 
+                            ? \Carbon\Carbon::parse($depDateStr . ' ' . $route->estimated_arrival_time, 'Asia/Jakarta')
+                            : (clone $departureDt)->addHours(3);
+
+                        if ($arrivalDt->lessThan($departureDt)) {
+                            $arrivalDt->addDay();
+                        }
+
+                        // Konteks waktu keberangkatan sesuai instruksi:
+                        // * Berangkat hari ini
+                        // * Berangkat besok
+                        // * Berangkat dalam X jam
+                        // * Perjalanan telah dimulai
+                        // * Keberangkatan telah lewat
+                        if ($jakartaNow->greaterThan($arrivalDt)) {
+                            $timeContext = 'Keberangkatan telah lewat';
+                            $timeBadgeClass = 'bg-slate-100 text-slate-600 border border-slate-200';
+                        } elseif ($jakartaNow->greaterThanOrEqualTo($departureDt) && $jakartaNow->lessThanOrEqualTo($arrivalDt)) {
+                            $timeContext = 'Perjalanan telah dimulai';
+                            $timeBadgeClass = 'bg-amber-50 text-amber-700 border border-amber-200';
+                        } elseif ($jakartaNow->diffInHours($departureDt, false) >= 1 && $jakartaNow->diffInHours($departureDt, false) <= 12) {
+                            $diffHours = (int) $jakartaNow->diffInHours($departureDt, false);
+                            $timeContext = "Berangkat dalam {$diffHours} jam";
+                            $timeBadgeClass = 'bg-amber-50 text-amber-700 border border-amber-200';
+                        } elseif ($departureDt->isToday('Asia/Jakarta')) {
+                            $timeContext = 'Berangkat hari ini';
+                            $timeBadgeClass = 'bg-blue-50 text-blue-700 border border-blue-200';
+                        } elseif ($departureDt->isTomorrow('Asia/Jakarta')) {
+                            $timeContext = 'Berangkat besok';
+                            $timeBadgeClass = 'bg-blue-50 text-blue-700 border border-blue-200';
+                        } else {
+                            $timeContext = 'Berangkat ' . $departureDt->locale('id')->isoFormat('D MMM Y');
+                            $timeBadgeClass = 'bg-slate-100 text-slate-700 border border-slate-200';
+                        }
+                    @endphp
+
+                    {{-- Card Tiket Bus Vertikal Sesuai Referensi --}}
+                    <article class="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-5 shadow-xs transition hover:border-blue-300 hover:shadow-sm">
                         <div>
-                            <p class="text-2xl font-bold tracking-tight text-brand-950 font-mono">
-                                {{ \Carbon\Carbon::parse($route->departure_time)->format('H:i') }}
-                            </p>
-                            <p class="mt-0.5 text-xs text-slate-500 font-medium">
-                                {{ \Carbon\Carbon::parse($route->departure_date)->translatedFormat('d M Y') }}
-                            </p>
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-2 font-bold text-slate-900">
-                                <span>{{ $route->origin_city }}</span>
-                                <span class="text-amber-500">&rarr;</span>
-                                <span>{{ $route->destination_city }}</span>
+                            {{-- Baris Atas: Tanggal, Konteks Waktu, & Status --}}
+                            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3 text-xs">
+                                <span class="font-bold text-slate-700">
+                                    {{ $route->departure_date->translatedFormat('d M Y') }}
+                                </span>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="rounded px-2 py-0.5 text-[11px] font-semibold {{ $timeBadgeClass }}">
+                                        {{ $timeContext }}
+                                    </span>
+                                    <span class="rounded bg-green-50 px-2 py-0.5 text-[11px] font-semibold text-green-700 border border-green-200">
+                                        Tersedia
+                                    </span>
+                                </div>
                             </div>
-                            <p class="mt-1 text-xs text-slate-500">
-                                {{ $route->bus->bus_name }} · <span class="capitalize">{{ str_replace('_', ' ', $route->bus->bus_type) }}</span> · <span class="text-emerald-700 font-semibold">{{ $route->available_seats }} kursi tersedia</span>
-                            </p>
+
+                            {{-- Route Visual Vertikal (07:30 Jepara Terminal │ Semarang Terminal 09:30) --}}
+                            <div class="py-4 space-y-1">
+                                {{-- Keberangkatan --}}
+                                <div class="flex items-start gap-3">
+                                    <div class="w-14 shrink-0 text-right pt-0.5 font-mono text-base font-extrabold text-slate-900">
+                                        {{ \Carbon\Carbon::parse($route->departure_time)->format('H:i') }}
+                                    </div>
+                                    <div class="relative flex flex-col items-center">
+                                        <span class="h-2.5 w-2.5 rounded-full border-2 border-blue-600 bg-white"></span>
+                                        <span class="h-10 w-0.5 bg-slate-300"></span>
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <h4 class="text-sm font-bold text-slate-900 leading-tight">
+                                            {{ $route->origin_city }}
+                                        </h4>
+                                        <p class="text-xs text-slate-500 truncate">
+                                            {{ $route->origin_terminal }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {{-- Kedatangan --}}
+                                <div class="flex items-start gap-3">
+                                    <div class="w-14 shrink-0 text-right pt-0.5 font-mono text-base font-extrabold text-slate-600">
+                                        {{ $route->estimated_arrival_time ? \Carbon\Carbon::parse($route->estimated_arrival_time)->format('H:i') : '--:--' }}
+                                    </div>
+                                    <div class="flex flex-col items-center">
+                                        <span class="h-2.5 w-2.5 rounded-full bg-blue-600"></span>
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <h4 class="text-sm font-bold text-slate-900 leading-tight">
+                                            {{ $route->destination_city }}
+                                        </h4>
+                                        <p class="text-xs text-slate-500 truncate">
+                                            {{ $route->destination_terminal }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Info Bus & Kursi --}}
+                            <div class="border-t border-slate-100 pt-3 flex items-center justify-between text-xs text-slate-600">
+                                <div>
+                                    <span class="font-bold text-slate-900">{{ $route->bus->bus_name }}</span>
+                                    <span class="text-slate-300">·</span>
+                                    <span class="capitalize text-slate-600">{{ str_replace('_', ' ', $route->bus->bus_type) }}</span>
+                                </div>
+                                <div class="font-semibold text-green-700">
+                                    {{ $route->available_seats }} kursi tersedia
+                                </div>
+                            </div>
                         </div>
-                        <div class="flex items-center justify-between gap-5 sm:block sm:text-right">
-                            <p class="text-lg font-bold text-brand-950">
-                                Rp {{ number_format($route->price, 0, ',', '.') }}
-                            </p>
-                            <a href="{{ route('customer.trips.show', $route) }}" class="mt-1 inline-block text-xs font-bold text-amber-700 hover:text-amber-900">
-                                Lihat Detail &rarr;
+
+                        {{-- Harga & Tombol Lihat Detail --}}
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center justify-between gap-3">
+                            <div>
+                                <span class="text-[10px] uppercase font-bold text-slate-400 block">Tarif</span>
+                                <span class="text-lg font-black text-slate-900 font-mono">
+                                    Rp {{ number_format($route->price, 0, ',', '.') }}
+                                </span>
+                            </div>
+
+                            <a href="{{ route('customer.trips.show', $route) }}" 
+                               class="inline-flex items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-xs font-bold text-white shadow-xs transition">
+                                Lihat Detail
                             </a>
                         </div>
-                    </div>
+                    </article>
                 @empty
-                    <div class="py-12 text-center text-sm text-slate-500">
-                        Belum ada jadwal yang tersedia saat ini.
+                    <div class="col-span-full rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
+                        <svg class="mx-auto h-9 w-9 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        <h3 class="mt-2 text-sm font-bold text-slate-900">Belum ada jadwal bus tersedia saat ini</h3>
+                        <p class="mt-1 text-xs text-slate-500 max-w-sm mx-auto">
+                            Silakan lakukan pencarian rute pada form di atas atau cek kembali nanti.
+                        </p>
                     </div>
                 @endforelse
             </div>
         </section>
 
-        {{-- How to Book Section --}}
-        <section id="cara-memesan" class="bg-slate-50 py-14 sm:py-20 border-t border-slate-200">
+        {{-- 4. CARA BOOKING (01 Cari → 02 Pilih Kursi → 03 Isi Data → 04 Bayar → 05 E-Ticket) --}}
+        <section id="cara-booking" class="border-t border-slate-200 bg-white py-12 sm:py-16">
             <div class="site-shell">
-                <p class="eyebrow text-amber-700">CARA BOOKING</p>
-                <div class="mt-2 grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
-                    <div>
-                        <h2 class="text-3xl font-bold tracking-tight text-brand-950">Empat langkah mudah menuju perjalanan Anda.</h2>
-                        <p class="mt-3 text-sm text-slate-600 leading-relaxed">
-                            Pemesanan tiket bus di PO CAN Travel dirancang cepat dan tanpa antrean di loket fisik.
+                <div class="max-w-xl">
+                    <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+                        Cara Booking
+                    </h2>
+                    <p class="mt-1 text-xs sm:text-sm text-slate-500">
+                        Alur pemesanan tiket resmi PO CAN Travel dalam lima langkah mudah.
+                    </p>
+                </div>
+
+                {{-- Alur Horizontal di Desktop, Responsif di Mobile --}}
+                <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                    @php
+                        $bookingSteps = [
+                            ['num' => '01', 'name' => 'Cari', 'desc' => 'Tentukan rute asal, tujuan, dan tanggal perjalanan.'],
+                            ['num' => '02', 'name' => 'Pilih Kursi', 'desc' => 'Pilih jadwal armada dan nomor kursi bus yang diinginkan.'],
+                            ['num' => '03', 'name' => 'Isi Data', 'desc' => 'Lengkapi data identitas penumpang sesuai identitas resmi.'],
+                            ['num' => '04', 'name' => 'Bayar', 'desc' => 'Selesaikan pembayaran simulasi yang telah diverifikasi.'],
+                            ['num' => '05', 'name' => 'E-Ticket', 'desc' => 'Dapatkan e-ticket ber-QR code resmi untuk check-in terminal.'],
+                        ];
+                    @endphp
+
+                    @foreach($bookingSteps as $index => $step)
+                        <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-5 flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="font-mono text-base font-extrabold text-blue-600">
+                                        {{ $step['num'] }}
+                                    </span>
+                                    @if($index < 4)
+                                        <span class="hidden lg:block text-slate-300 font-bold">→</span>
+                                    @endif
+                                </div>
+                                <h3 class="text-base font-bold text-slate-900">
+                                    {{ $step['name'] }}
+                                </h3>
+                                <p class="mt-1 text-xs text-slate-500 leading-relaxed">
+                                    {{ $step['desc'] }}
+                                </p>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+
+        {{-- 5. BENEFIT / INFO (Pilih Kursi, Pembayaran, E-Ticket QR + Kebijakan) --}}
+        <section id="benefit" class="border-t border-slate-200 bg-slate-50 py-12 sm:py-16">
+            <div class="site-shell">
+                <div class="max-w-xl">
+                    <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+                        Keunggulan Layanan
+                    </h2>
+                    <p class="mt-1 text-xs sm:text-sm text-slate-500">
+                        Fitur yang benar-benar tersedia untuk kenyamanan perjalanan Anda.
+                    </p>
+                </div>
+
+                <div class="mt-8 grid gap-6 md:grid-cols-3">
+                    {{-- Benefit 1: Pilih Kursi --}}
+                    <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
+                        <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-600 font-mono font-bold text-xs mb-4">
+                            01
+                        </div>
+                        <h3 class="text-base font-bold text-slate-900">Pilih Kursi</h3>
+                        <p class="mt-2 text-xs leading-relaxed text-slate-600">
+                            Denah kursi bus ditampilkan secara interaktif dan real-time. Anda bebas menentukan posisi nomor kursi favorit sebelum membayar tanpa penentuan acak.
                         </p>
                     </div>
-                    <ol class="grid gap-6 sm:grid-cols-2">
-                        @foreach([
-                            'Cari rute berdasarkan kota asal, tujuan, dan tanggal keberangkatan.',
-                            'Pilih jadwal perjalanan serta nomor kursi bus yang tersedia.',
-                            'Lengkapi identitas penumpang dan periksa ringkasan pesanan.',
-                            'Selesaikan pembayaran simulasi, lalu simpan e-ticket resmi Anda.'
-                        ] as $step => $copy)
-                            <li class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-2">
-                                <span class="font-mono text-sm font-bold text-amber-600">0{{ $step + 1 }}</span>
-                                <p class="text-sm font-medium leading-relaxed text-slate-900">{{ $copy }}</p>
-                            </li>
-                        @endforeach
-                    </ol>
+
+                    {{-- Benefit 2: Pembayaran --}}
+                    <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
+                        <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-600 font-mono font-bold text-xs mb-4">
+                            02
+                        </div>
+                        <h3 class="text-base font-bold text-slate-900">Pembayaran</h3>
+                        <p class="mt-2 text-xs leading-relaxed text-slate-600">
+                            Proses konfirmasi pembayaran terverifikasi langsung dengan sistem reservasi PO CAN Travel. Ringkasan tarif ditampilkan transparan tanpa biaya tersembunyi.
+                        </p>
+                    </div>
+
+                    {{-- Benefit 3: E-Ticket QR --}}
+                    <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
+                        <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-600 font-mono font-bold text-xs mb-4">
+                            03
+                        </div>
+                        <h3 class="text-base font-bold text-slate-900">E-Ticket QR</h3>
+                        <p class="mt-2 text-xs leading-relaxed text-slate-600">
+                            E-Ticket digital terbit instan lengkap dengan kode QR resmi. Tunjukkan layar ponsel kepada petugas terminal atau kondektur untuk boarding cepat tanpa cetak fisik.
+                        </p>
+                    </div>
+                </div>
+
+                {{-- Kebijakan Layanan --}}
+                <div id="kebijakan" class="mt-8 rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
+                    <h3 class="text-sm font-bold text-slate-900">
+                        Kebijakan Pembatalan & Perjalanan
+                    </h3>
+                    <p class="mt-1 text-xs text-slate-600 leading-relaxed">
+                        {{ $settings['cancellation_policy'] ?? 'Pembatalan atau perubahan jadwal tiket dapat dilakukan maksimal 3 jam sebelum waktu keberangkatan yang tertera pada e-ticket.' }}
+                        Penumpang disarankan tiba di terminal keberangkatan minimal 30 menit sebelum jadwal perjalanan bus.
+                    </p>
                 </div>
             </div>
         </section>
 
-        {{-- Cancellation Policy Section --}}
-        <section id="kebijakan-pembatalan" class="site-shell grid gap-8 py-14 sm:py-20 lg:grid-cols-2 items-center border-t border-slate-200">
-            <div>
-                <p class="eyebrow text-amber-700">INFORMASI & KEBIJAKAN</p>
-                <h2 class="mt-1 text-3xl font-bold tracking-tight text-brand-950">
-                    Rencanakan perjalanan dengan informasi yang transparan.
-                </h2>
-                <p class="mt-4 text-sm text-slate-600 leading-relaxed">
-                    Setelah pembayaran berhasil terverifikasi, e-ticket digital dapat langsung ditunjukkan kepada petugas saat proses boarding. Kami menyarankan penumpang untuk tiba di terminal setidaknya 30 menit sebelum jadwal keberangkatan.
-                </p>
-            </div>
-            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-6 sm:p-8 space-y-3">
-                <h3 class="text-sm font-bold uppercase tracking-wider text-slate-800">Kebijakan Pembatalan</h3>
-                <p class="text-xs leading-relaxed text-slate-600">
-                    {{ $settings['cancellation_policy'] ?? 'Untuk pembatalan atau pertanyaan seputar pesanan tiket, silakan hubungi pusat bantuan kami.' }}
-                </p>
-            </div>
-        </section>
-
-        {{-- Ready to Travel CTA --}}
-        <section class="bg-brand-950 py-12 text-white">
+        {{-- 6. CTA (Sederhana: Siap berangkat? Cari jadwal bus dan pesan perjalanan Anda sekarang. Cari Jadwal) --}}
+        <section class="border-t border-slate-800 bg-blue-900 text-white py-12">
             <div class="site-shell flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-wider text-amber-300">SIAP BERANGKAT?</p>
-                    <h2 class="mt-1 text-2xl font-bold tracking-tight">Cari tiket perjalanan bus Anda sekarang.</h2>
+                    <h2 class="text-2xl font-bold tracking-tight">Siap berangkat?</h2>
+                    <p class="mt-1 text-xs sm:text-sm text-blue-100">
+                        Cari jadwal bus dan pesan perjalanan Anda sekarang.
+                    </p>
                 </div>
-                <a href="{{ route('customer.trips.index') }}" class="inline-flex min-h-11 items-center justify-center rounded-lg bg-amber-400 px-6 py-2.5 text-xs font-bold text-brand-950 hover:bg-amber-300 transition shadow-sm">
-                    Cari Perjalanan
-                </a>
+                <div>
+                    <a href="{{ route('customer.trips.index') }}" 
+                       class="inline-flex items-center justify-center rounded-lg bg-white px-5 py-2.5 text-xs font-bold text-blue-900 hover:bg-blue-50 transition shadow-xs">
+                        Cari Jadwal
+                    </a>
+                </div>
             </div>
         </section>
     </main>
 
-    {{-- Footer --}}
-    <footer id="kontak" class="border-t border-slate-200 bg-white">
-        <div class="site-shell grid gap-8 py-12 text-sm sm:grid-cols-3">
-            <div>
-                <div class="flex items-center gap-2.5 font-bold tracking-tight text-brand-950">
-                    <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-950 text-xs font-black text-amber-300">C</span>
-                    <span>{{ $settings['app_name'] ?? 'PO CAN Travel' }}</span>
+    {{-- 7. FOOTER (Dark navy/blue, compact dan profesional) --}}
+    <footer id="kontak" class="border-t border-slate-800 bg-slate-900 text-slate-400">
+        <div class="site-shell py-10">
+            <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 text-xs">
+                {{-- PO CAN Travel & Deskripsi --}}
+                <div class="space-y-2">
+                    <div class="flex items-center gap-2 font-bold text-white">
+                        <span class="flex h-6 w-6 items-center justify-center rounded bg-blue-600 text-xs font-black text-white">C</span>
+                        <span class="text-sm">{{ $settings['app_name'] ?? 'PO CAN Travel' }}</span>
+                    </div>
+                    <p class="text-xs leading-relaxed text-slate-400">
+                        Layanan pemesanan tiket bus antarkota resmi dengan kepastian jadwal dan kenyamanan armada terdepan.
+                    </p>
+                    @if(!empty($settings['footer_address']))
+                        <p class="text-[11px] text-slate-500 pt-1">
+                            {{ $settings['footer_address'] }}
+                        </p>
+                    @endif
                 </div>
-                <p class="mt-3 text-xs leading-relaxed text-slate-500">
-                    {{ $settings['footer_address'] ?? 'Layanan transportasi bus antarkota dengan kenyamanan dan ketepatan waktu terdepan.' }}
-                </p>
+
+                {{-- Jadwal & Cara Booking --}}
+                <div class="space-y-2">
+                    <p class="font-bold text-slate-200">Layanan</p>
+                    <ul class="space-y-1.5">
+                        <li>
+                            <a href="{{ route('customer.trips.index') }}" class="hover:text-white transition">
+                                Jadwal Bus
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#cara-booking" class="hover:text-white transition">
+                                Cara Booking
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ auth()->check() && auth()->user()->role === 'admin' ? route('admin.dashboard') : route('customer.orders.index') }}" 
+                               class="hover:text-white transition">
+                                Pesanan
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                {{-- Kebijakan --}}
+                <div class="space-y-2">
+                    <p class="font-bold text-slate-200">Kebijakan</p>
+                    <ul class="space-y-1.5">
+                        <li>
+                            <a href="#kebijakan" class="hover:text-white transition">
+                                Kebijakan Pembatalan
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#kebijakan" class="hover:text-white transition">
+                                Ketentuan Boarding Terminal
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                {{-- Kontak --}}
+                <div class="space-y-2">
+                    <p class="font-bold text-slate-200">Kontak</p>
+                    <ul class="space-y-1.5">
+                        @if(!empty($settings['contact_email']))
+                            <li>
+                                <a href="mailto:{{ $settings['contact_email'] }}" class="hover:text-white transition">
+                                    {{ $settings['contact_email'] }}
+                                </a>
+                            </li>
+                        @endif
+                        @if(!empty($settings['contact_phone']))
+                            <li>
+                                <a href="tel:{{ preg_replace('/[^0-9+]/', '', $settings['contact_phone']) }}" class="hover:text-white transition">
+                                    {{ $settings['contact_phone'] }}
+                                </a>
+                            </li>
+                        @endif
+                        <li class="text-slate-500">
+                            Operasional: 06:00 – 21:00 WIB
+                        </li>
+                    </ul>
+                </div>
             </div>
 
-            <div>
-                <p class="font-bold text-slate-900">Tautan Layanan</p>
-                <div class="mt-3 grid gap-2 text-xs text-slate-600">
-                    <a href="{{ route('customer.trips.index') }}" class="hover:text-slate-900">Jadwal Perjalanan</a>
-                    <a href="#cara-memesan" class="hover:text-slate-900">Cara Memesan</a>
-                    <a href="#kebijakan-pembatalan" class="hover:text-slate-900">Kebijakan Pembatalan</a>
-                    <a href="#kontak" class="hover:text-slate-900">Kontak</a>
-                </div>
-            </div>
-
-            <div>
-                <p class="font-bold text-slate-900">Hubungi Kami</p>
-                <div class="mt-3 grid gap-2 text-xs text-slate-600">
-                    <a href="mailto:{{ $settings['contact_email'] ?? 'support@pocantravel.com' }}" class="hover:text-slate-900">
-                        {{ $settings['contact_email'] ?? 'support@pocantravel.com' }}
-                    </a>
-                    <a href="tel:{{ preg_replace('/[^0-9+]/', '', $settings['contact_phone'] ?? '081234567890') }}" class="hover:text-slate-900">
-                        {{ $settings['contact_phone'] ?? '081234567890' }}
-                    </a>
-                </div>
+            <div class="mt-8 border-t border-slate-800 pt-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-500">
+                <p>&copy; {{ date('Y') }} {{ $settings['app_name'] ?? 'PO CAN Travel' }}. Seluruh hak cipta dilindungi.</p>
+                <p>Website Resmi Pemesanan Tiket Bus</p>
             </div>
         </div>
     </footer>
+
 </body>
 </html>

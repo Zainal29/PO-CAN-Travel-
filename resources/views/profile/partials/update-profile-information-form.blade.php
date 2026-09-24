@@ -31,10 +31,10 @@
         </div>
 
         @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
-            <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs">
-                <p class="text-amber-800">
+            <div class="rounded-xl border border-blue-200 bg-blue-50 p-4 text-xs">
+                <p class="text-blue-800">
                     Alamat email Anda belum diverifikasi.
-                    <button form="send-verification" class="font-bold underline hover:text-amber-950 ml-1">
+                    <button form="send-verification" class="font-bold underline hover:text-blue-950 ml-1">
                         Klik di sini untuk mengirim ulang email verifikasi.
                     </button>
                 </p>

@@ -12,7 +12,11 @@
     }
 
     :focus-visible {
-        @apply outline-none ring-2 ring-brand-500 ring-offset-2;
+        @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+    }
+
+    [x-cloak] {
+        display: none !important;
     }
 }
 
@@ -22,11 +26,11 @@
     }
 
     .page-heading {
-        @apply text-2xl font-bold tracking-tight text-brand-950 sm:text-3xl;
+        @apply text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl;
     }
 
     .eyebrow {
-        @apply text-xs font-bold uppercase tracking-[0.14em] text-brand-700;
+        @apply text-xs font-bold uppercase tracking-[0.14em] text-blue-600;
     }
 
     .surface {
@@ -38,7 +42,7 @@
     }
 
     .section-title {
-        @apply text-lg font-bold tracking-tight text-brand-950;
+        @apply text-lg font-extrabold tracking-tight text-slate-900;
     }
 
     .field-label {
@@ -46,11 +50,11 @@
     }
 
     .btn-primary {
-        @apply inline-flex min-h-11 items-center justify-center rounded-md bg-brand-950 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-900;
+        @apply inline-flex min-h-10 items-center justify-center rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-100;
     }
 
     .btn-secondary {
-        @apply inline-flex min-h-11 items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-brand-950 transition-colors hover:bg-slate-50;
+        @apply inline-flex min-h-10 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-bold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900;
     }
 
     .status {

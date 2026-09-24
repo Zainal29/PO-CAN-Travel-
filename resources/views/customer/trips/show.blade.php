@@ -3,455 +3,228 @@
 @section('title', 'Detail Perjalanan — PO CAN Travel')
 
 @section('content')
-
 @php
-$canBook = auth()->check() && auth()->user()->role === 'customer';
-
-
-$busTypes = [
-    'economy' => 'Economy',
-    'executive' => 'Executive',
-    'vip' => 'VIP',
-    'super_vip' => 'Super VIP',
-];
-
-$busTypeLabel = $busTypes[$route->bus->bus_type]
-    ?? ucfirst(str_replace('_', ' ', $route->bus->bus_type));
-
-
+    $canBook = auth()->check() && auth()->user()->role === 'customer';
+    $busTypes = [
+        'economy' => 'Economy',
+        'executive' => 'Executive',
+        'vip' => 'VIP',
+        'super_vip' => 'Super VIP',
+    ];
+    $busTypeLabel = $busTypes[$route->bus->bus_type] ?? ucfirst(str_replace('_', ' ', $route->bus->bus_type));
 @endphp
 
-<div class="space-y-5">
+<div class="space-y-6">
+    {{-- Back Link --}}
+    <div>
+        <a href="{{ route('customer.trips.index') }}" 
+           class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            <span>Kembali ke Pencarian</span>
+        </a>
+    </div>
 
-
-{{-- Back --}}
-<a
-    href="{{ route('customer.trips.index') }}"
-    class="inline-flex items-center gap-2 text-sm font-semibold text-gray-500 transition hover:text-gray-900"
->
-    <svg class="h-4 w-4"
-         viewBox="0 0 24 24"
-         fill="none"
-         stroke="currentColor"
-         stroke-width="2">
-        <path d="m15 18-6-6 6-6"/>
-    </svg>
-
-    Kembali ke pencarian
-</a>
-
-{{-- Header --}}
-<div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-
-    <div class="p-6 md:p-8">
-
-        <div class="flex flex-col justify-between gap-5 md:flex-row md:items-start">
-
-            <div class="flex gap-4">
-
-                <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gray-100 text-lg font-bold text-gray-700">
+    {{-- Main Header Card --}}
+    <div class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xs">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between border-b border-slate-100 pb-6">
+            <div class="flex items-center gap-4">
+                <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-blue-900 text-white font-black text-xl shadow-xs">
                     {{ strtoupper(substr($route->bus->bus_name, 0, 2)) }}
                 </div>
-
                 <div>
-                    <p class="text-sm text-gray-500">
+                    <span class="rounded bg-blue-50 px-2.5 py-0.5 text-xs font-bold text-blue-700 border border-blue-200 uppercase tracking-wide">
                         {{ $busTypeLabel }}
-                    </p>
-
-                    <h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900">
+                    </span>
+                    <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 mt-1">
                         {{ $route->bus->bus_name }}
                     </h1>
-
-                    <p class="mt-1 text-sm text-gray-500">
-                        {{ $route->bus->bus_code }}
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        Kode Bus: <span class="font-mono font-semibold text-slate-700">{{ $route->bus->bus_code }}</span>
                         @if($route->bus->plate_number)
-                            · {{ $route->bus->plate_number }}
+                            · Nomor Polisi: <span class="font-mono font-semibold text-slate-700">{{ $route->bus->plate_number }}</span>
                         @endif
                     </p>
                 </div>
-
             </div>
 
-            <span class="inline-flex w-fit rounded-full bg-green-50 px-3 py-1.5 text-xs font-bold text-green-700">
-                Tersedia
-            </span>
-
+            <div class="flex items-center gap-2">
+                <span class="rounded-md bg-green-50 px-3 py-1 text-xs font-bold text-green-700 border border-green-200">
+                    Tersedia
+                </span>
+            </div>
         </div>
 
-        {{-- Route --}}
-        <div class="mt-8 rounded-2xl bg-gray-50 p-5 md:p-6">
+        {{-- Route Visual Sederhana (Origin → Destination) --}}
+        <div class="mt-6 rounded-xl bg-slate-50 p-5 sm:p-6 border border-slate-100">
+            <div class="grid gap-6 sm:grid-cols-[1fr_auto_1fr] items-center">
+                {{-- Asal --}}
+                <div class="space-y-0.5">
+                    <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Keberangkatan</span>
+                    <p class="text-2xl font-black font-mono text-slate-900">
+                        {{ \Carbon\Carbon::parse($route->departure_time)->format('H:i') }} <span class="text-xs font-sans font-medium text-slate-400">WIB</span>
+                    </p>
+                    <h3 class="text-base font-bold text-slate-900">{{ $route->origin_city }}</h3>
+                    <p class="text-xs text-slate-500">{{ $route->origin_terminal }}</p>
+                </div>
 
-            <div class="grid gap-6 md:grid-cols-[1fr_auto_1fr] md:items-center">
+                {{-- Connector Arrow --}}
+                <div class="flex sm:flex-col items-center justify-center text-blue-600 font-bold">
+                    <span class="text-xs text-slate-400 uppercase font-semibold sm:hidden mb-1">Menuju</span>
+                    <span class="text-2xl sm:text-3xl leading-none">↓</span>
+                </div>
 
+                {{-- Tujuan --}}
+                <div class="space-y-0.5 sm:text-right">
+                    <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Kedatangan (Estimasi)</span>
+                    <p class="text-2xl font-black font-mono text-slate-700">
+                        {{ $route->estimated_arrival_time ? \Carbon\Carbon::parse($route->estimated_arrival_time)->format('H:i') : '--:--' }} <span class="text-xs font-sans font-medium text-slate-400">WIB</span>
+                    </p>
+                    <h3 class="text-base font-bold text-slate-900">{{ $route->destination_city }}</h3>
+                    <p class="text-xs text-slate-500">{{ $route->destination_terminal }}</p>
+                </div>
+            </div>
+
+            <div class="mt-5 border-t border-slate-200/80 pt-3 flex flex-wrap gap-4 text-xs text-slate-600 font-medium">
                 <div>
-                    <p class="text-xs font-medium text-gray-400">
-                        Berangkat
-                    </p>
-
-                    <p class="mt-1 text-3xl font-bold tracking-tight text-gray-900">
-                        {{ \Carbon\Carbon::parse($route->departure_time)->format('H:i') }}
-                    </p>
-
-                    <p class="mt-1 text-sm font-semibold text-gray-700">
-                        {{ $route->origin_city }}
-                    </p>
-
-                    <p class="mt-1 text-xs text-gray-500">
-                        {{ $route->origin_terminal }}
-                    </p>
+                    <span class="text-slate-400">Tanggal:</span>
+                    <strong class="text-slate-800">{{ $route->departure_date->translatedFormat('l, d F Y') }}</strong>
                 </div>
-
-                <div class="flex items-center justify-center">
-
-                    <div class="hidden h-px w-20 bg-gray-300 md:block"></div>
-
-                    <div class="mx-3 flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-500">
-                        <svg class="h-4 w-4"
-                             viewBox="0 0 24 24"
-                             fill="none"
-                             stroke="currentColor"
-                             stroke-width="2">
-                            <path d="M5 12h14"/>
-                            <path d="m13 6 6 6-6 6"/>
-                        </svg>
-                    </div>
-
-                    <div class="hidden h-px w-20 bg-gray-300 md:block"></div>
-
+                <div>
+                    <span class="text-slate-400">Kursi Tersedia:</span>
+                    <strong class="text-green-700">{{ $route->available_seats }} dari {{ $route->bus->total_seats }} kursi</strong>
                 </div>
-
-                <div class="md:text-right">
-
-                    <p class="text-xs font-medium text-gray-400">
-                        Perkiraan tiba
-                    </p>
-
-                    <p class="mt-1 text-3xl font-bold tracking-tight text-gray-900">
-                        {{ \Carbon\Carbon::parse($route->estimated_arrival_time)->format('H:i') }}
-                    </p>
-
-                    <p class="mt-1 text-sm font-semibold text-gray-700">
-                        {{ $route->destination_city }}
-                    </p>
-
-                    <p class="mt-1 text-xs text-gray-500">
-                        {{ $route->destination_terminal }}
-                    </p>
-
-                </div>
-
             </div>
-
-            <div class="mt-6 border-t border-gray-200 pt-5">
-
-                <div class="flex flex-wrap gap-x-6 gap-y-3 text-xs text-gray-500">
-
-                    <span>
-                        <strong class="text-gray-700">Tanggal:</strong>
-                        {{ $route->departure_date->locale('id')->translatedFormat('d F Y') }}
-                    </span>
-
-                    <span>
-                        <strong class="text-gray-700">Kursi:</strong>
-                        {{ $route->available_seats }} tersedia
-                    </span>
-
-                    <span>
-                        <strong class="text-gray-700">Kapasitas:</strong>
-                        {{ $route->bus->total_seats }} kursi
-                    </span>
-
-                </div>
-
-            </div>
-
         </div>
-
     </div>
 
-</div>
+    {{-- Details & Booking Sidebar Layout --}}
+    <div class="grid gap-6 lg:grid-cols-[1fr_340px]">
+        {{-- Left Details Column --}}
+        <div class="space-y-6">
+            {{-- Detail Fasilitas Bus --}}
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
+                <h2 class="text-base font-bold text-slate-900">Fasilitas Armada</h2>
 
-{{-- Content --}}
-<div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
-
-    {{-- Information --}}
-    <div class="space-y-5">
-
-        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-
-            <h2 class="text-lg font-bold text-gray-900">
-                Detail perjalanan
-            </h2>
-
-            <div class="mt-5 grid gap-5 sm:grid-cols-2">
-
-                <div>
-                    <p class="text-xs font-medium text-gray-400">
-                        Kota asal
-                    </p>
-
-                    <p class="mt-1 text-sm font-semibold text-gray-900">
-                        {{ $route->origin_city }}
-                    </p>
-                </div>
-
-                <div>
-                    <p class="text-xs font-medium text-gray-400">
-                        Kota tujuan
-                    </p>
-
-                    <p class="mt-1 text-sm font-semibold text-gray-900">
-                        {{ $route->destination_city }}
-                    </p>
-                </div>
-
-                <div>
-                    <p class="text-xs font-medium text-gray-400">
-                        Terminal keberangkatan
-                    </p>
-
-                    <p class="mt-1 text-sm font-semibold text-gray-900">
-                        {{ $route->origin_terminal }}
-                    </p>
-                </div>
-
-                <div>
-                    <p class="text-xs font-medium text-gray-400">
-                        Terminal tujuan
-                    </p>
-
-                    <p class="mt-1 text-sm font-semibold text-gray-900">
-                        {{ $route->destination_terminal }}
-                    </p>
-                </div>
-
-                <div>
-                    <p class="text-xs font-medium text-gray-400">
-                        Kelas bus
-                    </p>
-
-                    <p class="mt-1 text-sm font-semibold text-gray-900">
-                        {{ $busTypeLabel }}
-                    </p>
-                </div>
-
-                <div>
-                    <p class="text-xs font-medium text-gray-400">
-                        Nomor kendaraan
-                    </p>
-
-                    <p class="mt-1 text-sm font-semibold text-gray-900">
-                        {{ $route->bus->plate_number ?: '-' }}
-                    </p>
-                </div>
-
-            </div>
-
-        </div>
-
-        {{-- Facilities --}}
-        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-
-            <h2 class="text-lg font-bold text-gray-900">
-                Fasilitas bus
-            </h2>
-
-            @if(!empty($route->bus->facilities))
-
-                <div class="mt-5 grid gap-3 sm:grid-cols-2">
-
-                    @foreach($route->bus->facilities as $facility)
-
-                        <div class="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
-
-                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-gray-500">
-                                <svg class="h-4 w-4"
-                                     viewBox="0 0 24 24"
-                                     fill="none"
-                                     stroke="currentColor"
-                                     stroke-width="2">
-                                    <path d="M5 12h14"/>
-                                    <path d="m13 6 6 6-6 6"/>
+                @if(!empty($route->bus->facilities))
+                    <div class="grid gap-2.5 sm:grid-cols-2">
+                        @foreach($route->bus->facilities as $facility)
+                            <div class="flex items-center gap-2.5 rounded-lg border border-slate-100 bg-slate-50 px-3.5 py-2.5 text-xs font-semibold text-slate-700">
+                                <svg class="h-4 w-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                                 </svg>
+                                <span>{{ $facility }}</span>
                             </div>
-
-                            <span class="text-sm font-medium text-gray-700">
-                                {{ $facility }}
-                            </span>
-
-                        </div>
-
-                    @endforeach
-
-                </div>
-
-            @else
-
-                <p class="mt-4 text-sm text-gray-500">
-                    Informasi fasilitas belum tersedia.
-                </p>
-
-            @endif
-
-        </div>
-
-        {{-- Description --}}
-        @if($route->bus->description)
-
-            <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-
-                <h2 class="text-lg font-bold text-gray-900">
-                    Tentang bus
-                </h2>
-
-                <p class="mt-4 text-sm leading-6 text-gray-600">
-                    {{ $route->bus->description }}
-                </p>
-
-            </div>
-
-        @endif
-
-        {{-- Reviews --}}
-        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <div class="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
-                <div>
-                    <h2 class="text-lg font-bold text-gray-900">Rating dan review</h2>
-                    <p class="mt-1 text-sm text-gray-500">
-                        @if($route->reviews->isNotEmpty())
-                            {{ number_format($route->reviews->avg('rating'), 1, ',', '.') }}/5 dari {{ $route->reviews->count() }} review
-                        @else
-                            Belum ada review untuk perjalanan ini.
-                        @endif
-                    </p>
-                </div>
-                @if($route->reviews->isNotEmpty())
-                    <span class="text-2xl font-bold text-amber-600">{{ number_format($route->reviews->avg('rating'), 1, ',', '.') }}</span>
-                @endif
-            </div>
-
-            @if($route->reviews->isNotEmpty())
-                <div class="mt-5 space-y-4">
-                    @foreach($route->reviews->sortByDesc('created_at')->take(5) as $review)
-                        <article class="border-t border-gray-100 pt-4 first:border-t-0 first:pt-0">
-                            <div class="flex items-center justify-between gap-3">
-                                <p class="font-semibold text-gray-900">{{ $review->user->name }}</p>
-                                <span class="text-sm font-semibold text-amber-600">{{ $review->rating }}/5</span>
-                            </div>
-                            @if($review->comment)
-                                <p class="mt-2 text-sm leading-6 text-gray-600">{{ $review->comment }}</p>
-                            @endif
-                        </article>
-                    @endforeach
-                </div>
-            @endif
-        </div>
-
-    </div>
-
-    {{-- Booking Card --}}
-    <aside class="h-fit lg:sticky lg:top-5">
-
-        <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-
-            <div class="p-6">
-
-                <p class="text-xs font-medium text-gray-500">
-                    Harga tiket
-                </p>
-
-                <p class="mt-1 text-3xl font-bold tracking-tight text-gray-900">
-                    Rp {{ number_format($route->price, 0, ',', '.') }}
-                </p>
-
-                <p class="mt-1 text-xs text-gray-500">
-                    per penumpang
-                </p>
-
-                <div class="my-6 border-t border-gray-100"></div>
-
-                <div class="flex items-center justify-between text-sm">
-
-                    <span class="text-gray-500">
-                        Kursi tersedia
-                    </span>
-
-                    <span class="font-bold text-gray-900">
-                        {{ $route->available_seats }}
-                    </span>
-
-                </div>
-
-                <div class="mt-3 flex items-center justify-between text-sm">
-
-                    <span class="text-gray-500">
-                        Kelas bus
-                    </span>
-
-                    <span class="font-semibold text-gray-900">
-                        {{ $busTypeLabel }}
-                    </span>
-
-                </div>
-
-                @if($route->status === 'available' && $route->available_seats > 0)
-
-                    <a
-                        href="{{ $canBook ? route('customer.bookings.create', $route) : route('login') }}"
-                        class="mt-6 block rounded-xl bg-gray-900 px-4 py-3.5 text-center text-sm font-bold text-white transition hover:bg-gray-700"
-                    >
-                        {{ $canBook ? 'Pilih Kursi' : 'Masuk untuk Memesan' }}
-                    </a>
-
-                    @if(!$canBook)
-
-                        <p class="mt-3 text-center text-xs leading-5 text-gray-500">
-                            Silakan masuk menggunakan akun customer
-                            untuk melanjutkan pemesanan.
-                        </p>
-
-                    @endif
-
-                @else
-
-                    <div class="mt-6 rounded-xl bg-gray-100 px-4 py-3.5 text-center text-sm font-semibold text-gray-500">
-                        Perjalanan tidak tersedia
+                        @endforeach
                     </div>
-
+                @else
+                    <p class="text-xs text-slate-500">Informasi fasilitas bus belum ditambahkan.</p>
                 @endif
-
             </div>
 
-            <div class="border-t border-gray-100 bg-gray-50 px-6 py-4">
+            {{-- Deskripsi Bus --}}
+            @if($route->bus->description)
+                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-2">
+                    <h2 class="text-base font-bold text-slate-900">Tentang Bus Ini</h2>
+                    <p class="text-xs leading-relaxed text-slate-600">{{ $route->bus->description }}</p>
+                </div>
+            @endif
 
-                <div class="flex gap-3">
-
-                    <svg class="mt-0.5 h-4 w-4 shrink-0 text-gray-400"
-                         viewBox="0 0 24 24"
-                         fill="none"
-                         stroke="currentColor"
-                         stroke-width="2">
-                        <circle cx="12" cy="12" r="9"/>
-                        <path d="M12 8v4"/>
-                        <path d="M12 16h.01"/>
-                    </svg>
-
-                    <p class="text-xs leading-5 text-gray-500">
-                        Harga yang ditampilkan adalah harga tiket
-                        untuk satu penumpang.
-                    </p>
-
+            {{-- Reviews & Rating Pelanggan --}}
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-900">Ulasan & Rating Penumpang</h2>
+                        <p class="text-xs text-slate-500">
+                            @if($route->reviews->isNotEmpty())
+                                Rata-rata {{ number_format($route->reviews->avg('rating'), 1, ',', '.') }}/5 dari {{ $route->reviews->count() }} ulasan
+                            @else
+                                Belum ada ulasan untuk rute perjalanan ini.
+                            @endif
+                        </p>
+                    </div>
+                    @if($route->reviews->isNotEmpty())
+                        <div class="text-xl font-bold font-mono text-amber-600 bg-amber-50 px-3 py-1 rounded-lg border border-amber-200">
+                            ★ {{ number_format($route->reviews->avg('rating'), 1, ',', '.') }}
+                        </div>
+                    @endif
                 </div>
 
+                @if($route->reviews->isNotEmpty())
+                    <div class="space-y-3 divide-y divide-slate-100">
+                        @foreach($route->reviews->sortByDesc('created_at')->take(5) as $review)
+                            <div class="pt-3 first:pt-0 space-y-1">
+                                <div class="flex items-center justify-between text-xs">
+                                    <span class="font-bold text-slate-800">{{ $review->user->name }}</span>
+                                    <span class="text-amber-500 font-semibold">★ {{ $review->rating }}/5</span>
+                                </div>
+                                @if($review->comment)
+                                    <p class="text-xs text-slate-600 leading-relaxed">{{ $review->comment }}</p>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
             </div>
-
         </div>
 
-    </aside>
+        {{-- Right Sticky Booking Card --}}
+        <aside class="h-fit lg:sticky lg:top-20">
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-5">
+                <div>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Harga Tiket Resmi</span>
+                    <p class="text-3xl font-black text-slate-900 font-mono mt-1">
+                        Rp {{ number_format($route->price, 0, ',', '.') }}
+                    </p>
+                    <p class="text-[11px] text-slate-500 mt-0.5">Per orang, termasuk jatah bagasi & asuransi</p>
+                </div>
 
+                <div class="border-t border-slate-100 pt-4 space-y-2 text-xs">
+                    <div class="flex justify-between">
+                        <span class="text-slate-500">Kelas Armada</span>
+                        <span class="font-semibold text-slate-800">{{ $busTypeLabel }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-500">Sisa Kursi</span>
+                        <span class="font-bold text-green-700">{{ $route->available_seats }} Kursi</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-500">Kapasitas Total</span>
+                        <span class="font-semibold text-slate-800">{{ $route->bus->total_seats }} Kursi</span>
+                    </div>
+                </div>
+
+                {{-- CTA Button --}}
+                <div class="border-t border-slate-100 pt-4 space-y-2">
+                    @if($route->status === 'available' && $route->available_seats > 0)
+                        <a href="{{ $canBook ? route('customer.bookings.create', $route) : route('login') }}" 
+                           class="w-full flex items-center justify-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 py-3 px-4 text-xs font-bold text-white shadow-xs transition">
+                            <span>{{ $canBook ? 'Pesan Sekarang' : 'Masuk untuk Memesan' }}</span>
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                            </svg>
+                        </a>
+                        @if(!$canBook)
+                            <p class="text-center text-[11px] text-slate-500 leading-normal">
+                                Silakan login dengan akun pelanggan untuk melanjutkan pemilihan kursi.
+                            </p>
+                        @endif
+                    @else
+                        <div class="rounded-lg bg-slate-100 py-3 text-center text-xs font-semibold text-slate-500">
+                            Perjalanan Tidak Tersedia
+                        </div>
+                    @endif
+                </div>
+
+                <div class="border-t border-slate-100 pt-3 text-[11px] text-slate-500 flex items-start gap-2">
+                    <svg class="h-4 w-4 text-slate-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 8V5m0 14a9 9 0 110-18 9 9 0 010 18z"/>
+                    </svg>
+                    <span>Konfirmasi nomor kursi akan Anda pilih langsung pada langkah berikutnya.</span>
+                </div>
+            </div>
+        </aside>
+    </div>
 </div>
-
-
-</div>
-
 @endsection

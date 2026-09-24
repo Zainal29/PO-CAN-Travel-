@@ -14,12 +14,16 @@ use RuntimeException;
 class OrderController extends Controller
 {
     public function __construct(
-        private OrderCancellationService $cancellationService
+        private OrderCancellationService $cancellationService,
+        private \App\Services\OrderScheduleSyncService $scheduleSyncService
     ) {
     }
 
     public function index(Request $request): View
     {
+        // Otomatis sinkronkan status check-in & selesai berdasarkan jadwal
+        $this->scheduleSyncService->syncAllActive();
+
         $query = Order::with([
             'user',
             'route.bus',
@@ -58,36 +62,29 @@ class OrderController extends Controller
         return view('admin.orders.index', compact('orders'));
     }
 
-    // public function show(Order $order): View
-    // {
-    //     $order->load([
-    //         'user',
-    //         'route.bus',
-    //         'details',
-    //         'payment',
-    //     ]);
-
-    //     return view('admin.orders.show', compact('order'));
-    // }
-
     public function show(Order $order): View
-{
-    // Jika order ter-soft-delete, restore dulu atau tampilkan pesan
-    if ($order->trashed()) {
-        return redirect()
-            ->route('admin.orders.index')
-            ->with('error', 'Order ini sudah diarsipkan.');
+    {
+        // Jika order ter-soft-delete, restore dulu atau tampilkan pesan
+        if ($order->trashed()) {
+            return redirect()
+                ->route('admin.orders.index')
+                ->with('error', 'Order ini sudah diarsipkan.');
+        }
+
+        // Sinkronkan status jadwal order secara otomatis
+        $order = $this->scheduleSyncService->syncOrder($order);
+
+        $order->load([
+            'user',
+            'route.bus',
+            'details',
+            'payment',
+        ]);
+
+        $scheduleContext = $this->scheduleSyncService->getScheduleContext($order);
+
+        return view('admin.orders.show', compact('order', 'scheduleContext'));
     }
-
-    $order->load([
-        'user',
-        'route.bus',
-        'details',
-        'payment',
-    ]);
-
-    return view('admin.orders.show', compact('order'));
-}
 
     public function updateStatus(
         Request $request,

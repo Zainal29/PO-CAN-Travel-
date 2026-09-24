@@ -139,14 +139,22 @@
     </div>
 @else
     {{-- Customer Profile / General Auth Layout --}}
-    <nav class="border-b border-slate-200 bg-white">
-        <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 sm:px-6">
-            <a href="{{ route('customer.dashboard') }}" class="flex items-center gap-2 font-bold text-brand-950">
-                <span class="flex h-7 w-7 items-center justify-center rounded bg-brand-950 text-xs font-black text-amber-300">C</span>
-                PO CAN Travel
+    <nav class="border-b border-slate-200 bg-white sticky top-0 z-30 shadow-xs">
+        <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3.5 sm:px-6">
+            <a href="{{ route('customer.dashboard') }}" class="flex items-center gap-2.5 font-extrabold text-slate-900 group">
+                <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-600 text-white shadow-xs group-hover:bg-blue-700 transition">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm-11-7h13V6.5c0-.83-.67-1.5-1.5-1.5h-10c-.83 0-1.5.67-1.5 1.5V10z"/>
+                    </svg>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-sm font-extrabold tracking-tight text-slate-900 leading-tight">PO CAN</span>
+                    <span class="text-[10px] font-bold text-blue-600 tracking-wider uppercase leading-none">Travel</span>
+                </div>
             </a>
-            <a href="{{ route('customer.dashboard') }}" class="text-sm font-semibold text-slate-600 hover:text-brand-950">
-                &larr; Kembali ke dashboard
+            <a href="{{ route('customer.dashboard') }}" class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-blue-600 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                Kembali ke Dashboard
             </a>
         </div>
     </nav>

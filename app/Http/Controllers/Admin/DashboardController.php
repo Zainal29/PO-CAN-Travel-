@@ -16,6 +16,9 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        // Otomatis sinkronkan status check-in & selesai sesuai jadwal real-time
+        app(\App\Services\OrderScheduleSyncService::class)->syncAllActive();
+
         // 1. Statistik Utama
         $totalRevenue = Payment::where('status', 'verified')->sum('amount');
         $pendingOrders = Order::where('order_status', 'pending')->count();
