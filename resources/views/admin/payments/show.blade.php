@@ -109,27 +109,6 @@
 
                 </div>
 
-                @if($payment->payment_proof)
-                    <div class="mt-8">
-
-                        <h4 class="font-semibold mb-3">
-                            Bukti Pembayaran
-                        </h4>
-
-                        <a
-                            href="{{ Storage::url($payment->payment_proof) }}"
-                            target="_blank"
-                        >
-                            <img
-                                src="{{ Storage::url($payment->payment_proof) }}"
-                                alt="Bukti pembayaran"
-                                class="max-w-md rounded-lg border"
-                            >
-                        </a>
-
-                    </div>
-                @endif
-
                 @if($payment->notes)
                     <div class="mt-6 p-4 bg-gray-50 rounded-lg">
                         <strong>Catatan:</strong>
@@ -138,69 +117,6 @@
                             {{ $payment->notes }}
                         </p>
                     </div>
-                @endif
-
-                @if($payment->status === 'pending')
-
-                    <div class="mt-8 grid md:grid-cols-2 gap-6">
-
-                        <form
-                            method="POST"
-                            action="{{ route('admin.payments.verify', $payment) }}"
-                        >
-                            @csrf
-                            @method('PATCH')
-
-                            <label class="block mb-2 font-medium">
-                                Catatan Verifikasi
-                            </label>
-
-                            <textarea
-                                name="notes"
-                                rows="3"
-                                class="w-full rounded-lg border-gray-300"
-                                placeholder="Catatan admin..."
-                            ></textarea>
-
-                            <button
-                                type="submit"
-                                class="mt-3 w-full px-4 py-2 bg-green-600 text-white rounded-lg"
-                                onclick="return confirm('Verifikasi pembayaran ini?')"
-                            >
-                                Verifikasi Pembayaran
-                            </button>
-                        </form>
-
-                        <form
-                            method="POST"
-                            action="{{ route('admin.payments.reject', $payment) }}"
-                        >
-                            @csrf
-                            @method('PATCH')
-
-                            <label class="block mb-2 font-medium">
-                                Alasan Penolakan
-                            </label>
-
-                            <textarea
-                                name="notes"
-                                rows="3"
-                                required
-                                class="w-full rounded-lg border-gray-300"
-                                placeholder="Jelaskan alasan penolakan..."
-                            ></textarea>
-
-                            <button
-                                type="submit"
-                                class="mt-3 w-full px-4 py-2 bg-red-600 text-white rounded-lg"
-                                onclick="return confirm('Tolak pembayaran ini?')"
-                            >
-                                Tolak Pembayaran
-                            </button>
-                        </form>
-
-                    </div>
-
                 @endif
 
             </div>

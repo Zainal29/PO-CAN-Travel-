@@ -78,7 +78,7 @@ class RouteController extends Controller
         $bus = Bus::findOrFail($data['bus_id']);
 
         $bookedSeats = $route->orders()
-            ->whereIn('order_status', ['pending', 'confirmed', 'paid'])
+            ->whereIn('order_status', ['pending', 'paid'])
             ->sum('total_passengers');
 
         if ($data['available_seats'] > $bus->total_seats) {

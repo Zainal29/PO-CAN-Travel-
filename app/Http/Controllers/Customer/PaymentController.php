@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePaymentRequest;
 use App\Models\Order;
 use App\Services\PaymentService;
-use App\Services\QrCodeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use RuntimeException;
@@ -14,16 +13,25 @@ use RuntimeException;
 class PaymentController extends Controller
 {
     public function __construct(
-        private PaymentService $paymentService,
-        private QrCodeService $qrCodeService
+        private PaymentService $paymentService
     ) {
     }
 
-    public function create(Order $order): View
+    public function create(Order $order): View|RedirectResponse
     {
         abort_unless(
             $order->user_id === auth()->id(),
             403
+        );
+
+        if ($order->order_status === 'paid' || $order->payment?->status === 'verified') {
+            return redirect()->route('customer.orders.show', $order);
+        }
+
+        abort_if(
+            in_array($order->order_status, ['cancelled', 'expired', 'completed'], true),
+            403,
+            'Pesanan ini tidak dapat dibayar.'
         );
 
         $order->load([
@@ -31,18 +39,9 @@ class PaymentController extends Controller
             'payment',
         ]);
 
-        $accountInfo = implode("\n", [
-            'Transfer ke:',
-            'Bank: BCA',
-            'No. Rek: 1234567890',
-            'Atas Nama: PO CAN Travel',
-            'Nominal: Rp ' . number_format($order->total_price, 0, ',', '.'),
-        ]);
-        $paymentQrCode = $this->qrCodeService->dataUri($accountInfo);
-
         return view(
             'customer.payments.create',
-            compact('order', 'paymentQrCode')
+            compact('order')
         );
     }
 
@@ -59,20 +58,12 @@ class PaymentController extends Controller
             $this->paymentService->submit(
                 $order,
                 $request->payment_method,
-                $request->file('payment_proof'),
-                $request->transaction_id,
-                $request->notes
+                $request->payer_name,
+                $request->payer_phone
             );
 
             return redirect()
-                ->route(
-                    'customer.orders.show',
-                    $order
-                )
-                ->with(
-                    'success',
-                    'Data pembayaran berhasil dikirim dan menunggu verifikasi admin.'
-                );
+                ->route('customer.payments.success', $order);
         } catch (RuntimeException $e) {
             return back()
                 ->withInput()
@@ -80,5 +71,20 @@ class PaymentController extends Controller
                     'payment' => $e->getMessage(),
                 ]);
         }
+    }
+
+    public function success(Order $order): View
+    {
+        abort_unless($order->user_id === auth()->id(), 403);
+
+        $order->load(['route.bus', 'payment']);
+
+        abort_unless(
+            $order->order_status === 'paid'
+            && $order->payment?->status === 'verified',
+            404
+        );
+
+        return view('customer.payments.success', compact('order'));
     }
 }

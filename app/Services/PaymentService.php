@@ -4,9 +4,8 @@ namespace App\Services;
 
 use App\Models\Order;
 use App\Models\Payment;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class PaymentService
@@ -14,25 +13,31 @@ class PaymentService
     public function submit(
         Order $order,
         string $paymentMethod,
-        ?UploadedFile $paymentProof = null,
-        ?string $transactionId = null,
-        ?string $notes = null
+        string $payerName,
+        string $payerPhone
     ): Payment {
         return DB::transaction(function () use (
             $order,
             $paymentMethod,
-            $paymentProof,
-            $transactionId,
-            $notes
+            $payerName,
+            $payerPhone
         ) {
+            if (! auth()->check() || auth()->id() !== $order->user_id) {
+                throw new RuntimeException('Anda tidak memiliki akses untuk membayar order ini.');
+            }
+
+            if (! in_array($paymentMethod, ['bca', 'bri', 'qris'], true)) {
+                throw new RuntimeException('Metode pembayaran simulasi tidak valid.');
+            }
+
             $order = Order::query()
                 ->whereKey($order->id)
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            if (! in_array($order->order_status, ['pending', 'confirmed'], true)) {
+            if ($order->order_status !== 'pending') {
                 throw new RuntimeException(
-                    'Order tidak dapat menerima pembayaran pada status saat ini.'
+                    'Order hanya dapat dibayar saat berstatus pending.'
                 );
             }
 
@@ -50,46 +55,54 @@ class PaymentService
                 ->first();
 
             if (! $payment) {
-                $payment = $order->payment()->create([
-                    'payment_method' => $paymentMethod,
-                    'amount' => $order->total_price,
-                    'status' => 'unpaid',
-                ]);
+                throw new RuntimeException('Data pembayaran order tidak tersedia.');
             }
 
-            if ($payment->status === 'verified') {
+            if (! in_array($payment->status, ['unpaid', 'rejected'], true)) {
                 throw new RuntimeException(
-                    'Pembayaran sudah diverifikasi.'
+                    'Pembayaran order ini tidak dapat diproses ulang.'
                 );
             }
 
-            $proofPath = $payment->payment_proof;
-
-            if ($paymentProof) {
-                if ($proofPath) {
-                    Storage::disk('public')->delete($proofPath);
-                }
-
-                $proofPath = $paymentProof->store(
-                    'payment-proofs',
-                    'public'
-                );
-            }
+            $transactionId = $this->newTransactionId();
+            $notes = "Simulasi pembayaran\nPembayar: {$payerName}\nTelepon: {$payerPhone}";
 
             $payment->update([
                 'payment_method' => $paymentMethod,
-                'payment_proof' => $proofPath,
+                'payment_proof' => null,
                 'transaction_id' => $transactionId,
                 'amount' => $order->total_price,
-                'status' => 'pending',
+                'status' => 'verified',
+                'paid_at' => now(),
                 'notes' => $notes,
             ]);
 
             $order->update([
-                'payment_status' => 'pending',
+                'payment_status' => 'verified',
+                'order_status' => 'paid',
+                'ticket_code' => $order->ticket_code ?? $this->newTicketCode(),
+                'ticket_issued_at' => $order->ticket_issued_at ?? now(),
             ]);
 
             return $payment->fresh('order');
         });
+    }
+
+    private function newTransactionId(): string
+    {
+        do {
+            $transactionId = 'PAY-' . now()->format('Ymd') . '-' . Str::upper(Str::random(6));
+        } while (Payment::query()->where('transaction_id', $transactionId)->exists());
+
+        return $transactionId;
+    }
+
+    private function newTicketCode(): string
+    {
+        do {
+            $ticketCode = 'CAN-' . now()->format('ymd') . '-' . Str::upper(Str::random(6));
+        } while (Order::query()->where('ticket_code', $ticketCode)->exists());
+
+        return $ticketCode;
     }
 }

@@ -32,7 +32,9 @@ class OrderController extends Controller
         }
 
         if ($request->filled('payment_status')) {
-            $query->where('payment_status', $request->payment_status);
+            $query->whereHas('payment', function ($paymentQuery) use ($request) {
+                $paymentQuery->where('status', $request->payment_status);
+            });
         }
 
         if ($request->filled('search')) {
@@ -94,14 +96,12 @@ class OrderController extends Controller
         $validated = $request->validate([
             'order_status' => [
                 'required',
-                'in:confirmed,completed',
+                'in:completed',
             ],
         ]);
 
-        $allowedTransition = ($order->order_status === 'pending'
-                && $validated['order_status'] === 'confirmed')
-            || ($order->order_status === 'paid'
-                && $validated['order_status'] === 'completed');
+        $allowedTransition = $order->order_status === 'paid'
+            && $validated['order_status'] === 'completed';
 
         if (! $allowedTransition) {
             return back()->with('error', 'Perubahan status tidak sesuai alur order.');
@@ -149,8 +149,8 @@ class OrderController extends Controller
         );
 
         if (
-            $order->payment_status !== 'verified'
-            || ! in_array($order->order_status, ['paid', 'confirmed'], true)
+            $order->payment?->status !== 'verified'
+            || $order->order_status !== 'paid'
             || $departureAt->isPast()
         ) {
             return back()->with('error', 'Order ini belum memenuhi syarat check-in.');

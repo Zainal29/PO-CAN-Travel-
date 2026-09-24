@@ -163,16 +163,16 @@
 
         </div>
 
-        @if (in_array($order->order_status, ['pending', 'confirmed'], true) && $order->payment_status !== 'verified')
+        @if ($order->order_status === 'pending' && in_array($order->payment?->status, ['unpaid', 'rejected'], true))
 
             <a href="{{ route('customer.payments.create', $order) }}"
                class="mt-6 block rounded-lg bg-gray-900 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-gray-700">
-                {{ $order->payment_status === 'pending' ? 'Perbarui Pembayaran' : 'Bayar Sekarang' }}
+                {{ $order->payment?->status === 'rejected' ? 'Bayar Lagi' : 'Bayar Sekarang' }}
             </a>
 
         @endif
 
-        @if ($order->payment_status === 'verified' && $order->ticket_code)
+        @if ($order->payment?->status === 'verified' && $order->ticket_code)
             <a href="{{ route('customer.orders.ticket', $order) }}"
                class="mt-3 block rounded-lg border border-gray-900 px-4 py-3 text-center text-sm font-semibold text-gray-900 hover:bg-gray-100">
                 Lihat E-Ticket
@@ -285,8 +285,8 @@
             ];
         @endphp
 
-        <span class="inline-flex w-fit rounded-full px-3 py-1.5 text-sm font-semibold {{ $paymentClasses[$order->payment_status] ?? 'bg-gray-100 text-gray-600' }}">
-            {{ ucfirst($order->payment_status) }}
+        <span class="inline-flex w-fit rounded-full px-3 py-1.5 text-sm font-semibold {{ $paymentClasses[$order->payment?->status] ?? 'bg-gray-100 text-gray-600' }}">
+            {{ ucfirst($order->payment?->status ?? 'unpaid') }}
         </span>
 
     </div>

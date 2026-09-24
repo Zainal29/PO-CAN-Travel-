@@ -1,441 +1,396 @@
-# PROMPT PERBAIKAN SISTEM PO CAN TRAVEL
+Lanjutkan dari hasil audit read-only terakhir.
 
-## KONTEKS PROJECT
-- **Nama:** PO CAN Travel
-- **Framework:** Laravel 10, PHP 8.4, MySQL
-- **Frontend:** Blade + Tailwind CSS + Alpine.js + Vite
-- **Auth:** Laravel Breeze
-- **Testing:** PHPUnit
+Status audit saat ini adalah NEED FIX. Sekarang lakukan PERBAIKAN kode berdasarkan temuan audit tersebut.
 
-## DOKUMEN REFERENSI
-Saya telah mengupload 3 dokumen referensi:
-- ERD.txt (struktur database)
-- PRD.txt (kebutuhan bisnis)
-- SRS.txt (kebutuhan sistem)
+ATURAN UTAMA:
 
-**WAJIB:** Baca ketiga dokumen ini sebelum melakukan perubahan. Jika ada konflik antara kode existing dan dokumen, jelaskan konfliknya terlebih dahulu.
+1. Jangan mengubah scope di luar sistem order/payment.
+2. Jangan membuat payment gateway eksternal.
+3. Payment tetap simulasi internal.
+4. Jangan menghapus data legacy secara destruktif.
+5. Pertahankan DB::transaction(), locking, seats_released, dan e-ticket yang sudah berjalan.
+6. Setelah setiap perubahan, periksa dampaknya terhadap test yang sudah ada.
+7. Jangan menganggap FormRequest sebagai satu-satunya pengaman; business rule wajib divalidasi di service.
+8. Jangan menambahkan status baru kecuali benar-benar diperlukan.
 
-## ATURAN WAJIB
-1. Prioritas: ERD → SRS → PRD → kode aktual
-2. Gunakan `DB::transaction()` untuk operasi yang mengubah `available_seats`
-3. Server-side validation wajib untuk semua input
-4. Jangan percaya data dari frontend (harga, kursi, dll)
-5. Gunakan Laravel conventions (FormRequest, Service jika kompleks)
-6. Layout admin menggunakan `<x-app-layout>` dan `<x-slot name="header">`
-7. Model untuk tabel `routes` adalah `TravelRoute` (dengan `protected $table = 'routes'`)
-8. Jalankan `php artisan test` setelah setiap perubahan
-9. Baca file yang akan dimodifikasi SEBELUM memberikan kode
+KONTRAK STATUS FINAL:
 
-## DAFTAR MASALAH YANG HARUS DIPERBAIKI
+ORDER:
+pending → paid
+pending → cancelled
+pending → expired
+paid → completed
 
-### MASALAH 1 (KRITIS): Bug Pilih Kursi - Tidak Bisa Ganti Kursi
-**File:** `resources/views/customer/bookings/create.blade.php`
+Tidak boleh:
+pending → confirmed
+confirmed → cancelled
+paid → cancelled
+paid → expired
+cancelled → paid
+expired → paid
+completed → paid
+completed → cancelled
+completed → expired
 
-**Deskripsi Bug:**
-User tidak bisa memilih kursi dari grid jika semua penumpang sudah punya kursi. 
-Contoh skenario:
-1. User klik kursi 3 → kursi 3 jadi terpilih (hitam)
-2. User klik kursi 6 → tidak ada respons, kursi 6 tidak bisa dipilih
-3. Tapi jika user pilih dari dropdown di form penumpang, bisa ganti
+PAYMENT:
+unpaid → verified
+unpaid → rejected
+rejected → verified
 
-**Root Cause:**
-Fungsi `selectSeat(seat)` di Alpine.js hanya mencari penumpang yang belum punya kursi (`!passenger.seat_number`). Jika semua penumpang sudah punya kursi, fungsi return tanpa melakukan apa-apa.
+Jika status pending payment digunakan:
+pending → verified
+pending → rejected
 
-**Yang Harus Diperbaiki:**
-1. Modifikasi fungsi `selectSeat(seat)` agar:
-   - Jika user klik kursi yang sudah dipilih → deselect (hapus dari penumpang tersebut)
-   - Jika user klik kursi baru dan ada penumpang tanpa kursi → assign ke penumpang tersebut
-   - Jika user klik kursi baru dan SEMUA penumpang sudah punya kursi → ganti kursi penumpang terakhir (atau tampilkan konfirmasi)
+SOURCE OF TRUTH:
+payments.status adalah satu-satunya source of truth payment.
 
-2. Tambahkan fungsi `deselectSeat(seat)` yang menghapus kursi dari penumpang yang memilikinya
+orders.payment_status hanya legacy/derived compatibility dan tidak boleh digunakan sebagai sumber keputusan business logic.
 
-3. Pastikan fungsi `isSelected(seat)` dan `isBooked(seat)` bekerja dengan benar
+PERBAIKAN WAJIB:
 
-4. Test scenario:
-   - Pilih kursi 3 → kursi 3 hitam
-   - Pilih kursi 6 → kursi 6 hitam, kursi 3 putih (karena diganti)
-   - Klik kursi 6 lagi → kursi 6 putih (deselect)
-   - Pilih kursi 3 lagi → kursi 3 hitam
+1. HAPUS/NONAKTIFKAN CONFIRMED
 
----
+Cari seluruh penggunaan:
 
-### MASALAH 2: Sistem Pembayaran dengan QR Code
-**File yang dimodifikasi:**
-- `composer.json` (tambah dependency)
-- `app/Http/Controllers/Customer/PaymentController.php`
-- `resources/views/customer/payments/create.blade.php`
-- `resources/views/customer/orders/show.blade.php` (e-tiket)
+* confirmed
+* pending → confirmed
+* confirmed → cancelled
+* filter order_status confirmed
+* validasi confirmed sebagai active order
+* tombol/aksi konfirmasi admin
+* test yang menganggap confirmed sebagai status aktif
 
-**Yang Harus Ditambahkan:**
+Sesuaikan dengan kontrak status baru.
 
-**A. QR Code Info Rekening (Halaman Pembayaran):**
-- Install library: `composer require endroid/qr-code:^4.0`
-- Generate QR code yang berisi teks info rekening:
-Transfer ke:
-Bank: BCA
-No. Rek: 1234567890
-Atas Nama: PO CAN Travel
-Nominal: Rp 60.000
+Jangan sekadar menghapus string jika menyebabkan route/controller/test rusak. Periksa alurnya secara menyeluruh.
 
-- Tampilkan QR code di halaman pembayaran dengan instruksi: "Scan QR code untuk melihat info rekening"
-- Tetap pertahankan form upload bukti transfer manual (sebagai fallback)
+2. CANCELLATION
 
-**B. QR Code E-Tiket (Setelah Pembayaran Verified):**
-- Setelah `order_status` menjadi `paid` atau `completed`, tampilkan e-tiket
-- QR code e-tiket berisi:
-Order: PO-20260924-5QB8WD
-Penumpang: Muhammad Zainal Arief
-Rute: Jepara → Semarang
-Tanggal: 25 September 2026, 10:00
-Kursi: 17
+OrderCancellationService hanya boleh membatalkan order yang masih pending.
 
-- Tambahkan tombol "Download E-Tiket" (bisa download sebagai gambar PNG)
-- QR code ini akan digunakan untuk check-in di admin
+Aturan:
+pending + unpaid → cancelled + rejected
+pending + rejected → cancelled + rejected
 
-**C. Validasi QR Code di Admin:**
-- Di `app/Http/Controllers/Admin/OrderController.php`, tambahkan method untuk validasi QR code saat check-in
-- Admin bisa scan QR code e-tiket untuk memverifikasi order
+Jika:
+paid → tolak
+completed → tolak
+cancelled → tolak
+expired → tolak
+confirmed → tolak/tidak lagi didukung
 
----
+Pastikan kursi dikembalikan tepat satu kali.
 
-### MASALAH 3: Dropdown Kota Tidak Sinkron dengan Seeder
-**File yang dimodifikasi:**
-- `app/Http/Controllers/Customer/TripController.php` (method `suggestion`)
-- `database/seeders/RouteSeeder.php` (jika perlu update)
-- `resources/views/customer/trips/index.blade.php` (UI autocomplete)
+Pastikan cancel berulang tidak menggandakan available_seats.
 
-**Yang Harus Diperbaiki:**
+3. EXPIRATION
 
-1. **Validasi Endpoint API:**
-   - Buka browser, akses: `http://localhost:8000/api/cities/suggestion?q=jep`
-   - Harus mengembalikan JSON dengan daftar kota yang mengandung "jep"
-   - Jika kosong, berarti ada masalah di query atau data
+Expiration hanya berlaku untuk pending order yang expired_at <= now().
 
-2. **Perbaiki Query di Controller:**
-   - Pastikan query mengambil dari kolom `origin_city` DAN `destination_city` di tabel `routes`
-   - Gunakan `DISTINCT` untuk menghindari duplikasi
-   - Batasi hasil maksimal 10 kota
-   - Minimal 2 karakter untuk trigger suggestion
+Hasil:
+pending + unpaid → expired + rejected
+pending + rejected → expired + rejected
 
-3. **Update Seeder (Jika Perlu):**
-   - Pastikan `RouteSeeder.php` memiliki data rute dengan kota yang beragam
-   - Contoh: Jepara, Semarang, Kudus, Jakarta, Surabaya, Yogyakarta, dll
-   - Jalankan: `php artisan db:seed --class=RouteSeeder`
+Order paid/completed/cancelled tidak boleh berubah menjadi expired.
 
-4. **Perbaiki UI Autocomplete:**
-   - Pastikan Alpine.js fetch API bekerja dengan benar
-   - Tampilkan dropdown suggestion di bawah input
-   - User bisa klik suggestion untuk mengisi input otomatis
-   - Debounce 300ms untuk menghindari request berlebihan
+Pastikan seats hanya dikembalikan satu kali.
 
-5. **Test:**
-   - Ketik "jep" → muncul "Jepara"
-   - Ketik "sem" → muncul "Semarang"
-   - Ketik "kud" → muncul "Kudus"
-   - Ketik "jak" → muncul "Jakarta" (jika ada di seeder)
+4. PAYMENT SERVICE
 
----
+PaymentService harus menjadi business-rule guard utama.
 
-### MASALAH 4: Bug di Halaman Cari Perjalanan
-**File yang dimodifikasi:**
-- `app/Http/Controllers/Customer/TripController.php` (method `index`)
-- `resources/views/customer/trips/index.blade.php`
+Validasi di dalam service:
 
-**Yang Harus Diperbaiki:**
+* order harus dimiliki customer yang melakukan pembayaran
+* order harus pending
+* order belum expired
+* order bukan cancelled/completed/paid
+* payment harus tersedia
+* payment.status harus unpaid/rejected atau pending jika memang digunakan
+* payment method hanya bca, bri, qris
+* nominal harus berasal dari order.total_price
+* jangan menerima nominal dari frontend
+* pembayaran yang sudah verified tidak boleh diproses lagi
 
-1. **Validasi Filter:**
-   - Filter harga, kelas bus, waktu keberangkatan harus bekerja dengan benar
-   - Sorting (harga termurah, terpagi, dll) harus bekerja
-   - Pagination harus mempertahankan filter saat pindah halaman
+Jika ownership sebelumnya hanya ada di PaymentController, pindahkan/duplikasi validasi yang diperlukan ke service agar direct service call juga aman.
 
-2. **Validasi Pencarian:**
-   - Jika tidak ada hasil, tampilkan pesan yang jelas
-   - Jika user tidak mengisi kota asal/tujuan/tanggal, tampilkan error
-   - Pastikan query tidak menghasilkan duplikasi
+Gunakan DB::transaction().
+Lock order dan payment dengan tepat.
 
-3. **Performance:**
-   - Pastikan query tidak N+1 problem (gunakan eager loading)
-   - Tambahkan index di database jika perlu
+Hasil pembayaran berhasil:
+payments.status = verified
+payments.payment_method = bca/bri/qris
+payments.amount = order.total_price
+payments.transaction_id = transaction ID internal
+payments.paid_at = now()
+orders.order_status = paid
 
----
+Jika orders.payment_status masih dipertahankan untuk compatibility:
+orders.payment_status = verified
 
-### MASALAH 5: Admin Dashboard - Statistik Lengkap dengan Chart
-**File yang dimodifikasi:**
-- `app/Http/Controllers/Admin/DashboardController.php`
-- `resources/views/admin/dashboard.blade.php`
+5. PAYMENT METHOD
 
-**Yang Harus Ditambahkan:**
+Audit seluruh project untuk:
+transfer
+virtual_account
+e_wallet
+cash
 
-**A. Statistik Detail:**
-1. **Ringkasan Umum:**
-   - Total pendapatan (verified)
-   - Total order (semua status)
-   - Order pending (belum bayar)
-   - Pembayaran menunggu verifikasi
-   - Armada aktif
-   - Rute aktif
+Pastikan tidak ada lagi yang menjadi pilihan aktif.
 
-2. **Detail per Bus:**
-   - Berapa banyak order yang menggunakan bus ini
-   - Berapa total penumpang
-   - Berapa sisa kursi tersedia (akumulasi dari semua rute)
-   - Okupansi rate (%)
+Semua pilihan aktif harus:
+bca
+bri
+qris
 
-3. **Detail per Rute:**
-   - Berapa banyak order per rute
-   - Berapa total penumpang
-   - Pendapatan per rute
-   - Okupansi rate (%)
+Sangat penting:
+Periksa BookingService.
 
-4. **Detail Pembayaran:**
-   - Berapa yang sudah verified
-   - Berapa yang pending
-   - Berapa yang rejected
-   - Berapa yang unpaid
+Pastikan BookingService TIDAK lagi membuat:
 
-**B. Visualisasi Chart (Gunakan Chart.js via CDN):**
+'payment_method' => 'transfer'
 
-1. **Bar Chart - Pendapatan 6 Bulan Terakhir:**
-   - X-axis: Bulan (Jan, Feb, Mar, Apr, Mei, Jun)
-   - Y-axis: Total pendapatan (Rp)
-   - Warna: Hijau (#10b981)
+karena enum final hanya:
+bca
+bri
+qris
 
-2. **Bar Chart - Okupansi Top 5 Rute:**
-   - X-axis: Nama rute (Jepara → Semarang, dll)
-   - Y-axis: Okupansi (%)
-   - Warna: Biru (#3b82f6)
-   - Max Y-axis: 100%
+Jika payment_method memang seharusnya dipilih saat pembayaran, gunakan pendekatan yang kompatibel dengan schema saat ini dan jangan membuat booking gagal karena enum.
 
-3. **Pie Chart - Distribusi Order per Status:**
-   - Label: pending, confirmed, paid, cancelled, completed, expired
-   - Warna berbeda untuk setiap status
-   - Tampilkan persentase
+6. INVALID STATE PROTECTION
 
-4. **Line Chart - Trend Order per Hari (7 hari terakhir):**
-   - X-axis: Tanggal
-   - Y-axis: Jumlah order
-   - Warna: Ungu (#8b5cf6)
+Pastikan aplikasi tidak menghasilkan kombinasi:
 
-**C. Query untuk Data Chart:**
+pending + verified
+paid + unpaid
+paid + rejected
+cancelled + verified
+expired + verified
+cancelled + pending payment
+expired + pending payment
 
-```php
-// 1. Pendapatan 6 bulan terakhir
-$revenueByMonth = Payment::where('status', 'verified')
-    ->where('paid_at', '>=', now()->subMonths(6))
-    ->selectRaw('DATE_FORMAT(paid_at, "%Y-%m") as month, SUM(amount) as total')
-    ->groupBy('month')
-    ->orderBy('month')
-    ->get();
+Jika ditemukan data inconsistent dari legacy fixture, jangan diam-diam menganggap valid.
 
-// 2. Okupansi per rute (top 5)
-$routeOccupancy = TravelRoute::with(['bus', 'orders' => function($q) {
-        $q->whereIn('order_status', ['paid', 'completed']);
-    }])
-    ->where('status', 'available')
-    ->get()
-    ->map(function($route) {
-        $totalPassengers = $route->orders->sum('total_passengers');
-        $totalSeats = $route->bus->total_seats;
-        $occupancy = $totalSeats > 0 ? ($totalPassengers / $totalSeats) * 100 : 0;
-        return [
-            'route' => $route->origin_city . ' → ' . $route->destination_city,
-            'occupancy' => round($occupancy, 2)
-        ];
-    })
-    ->sortByDesc('occupancy')
-    ->take(5)
-    ->values();
+Service harus menolak operasi yang akan menghasilkan kombinasi invalid.
 
-// 3. Order per status
-$ordersByStatus = Order::selectRaw('order_status, COUNT(*) as total')
-    ->groupBy('order_status')
-    ->get();
+7. ADMIN UI
 
-// 4. Trend order 7 hari terakhir
-$ordersTrend = Order::where('created_at', '>=', now()->subDays(7))
-    ->selectRaw('DATE(created_at) as date, COUNT(*) as total')
-    ->groupBy('date')
-    ->orderBy('date')
-    ->get();
+Audit seluruh view admin payment/order.
 
-// 5. Statistik per bus
-$busStats = Bus::with(['routes.orders' => function($q) {
-        $q->whereIn('order_status', ['paid', 'completed']);
-    }])
-    ->where('status', 'active')
-    ->get()
-    ->map(function($bus) {
-        $totalPassengers = $bus->routes->flatMap->orders->sum('total_passengers');
-        $totalSeats = $bus->total_seats * $bus->routes->count(); // Asumsi
-        $occupancy = $totalSeats > 0 ? ($totalPassengers / $totalSeats) * 100 : 0;
-        return [
-            'bus_name' => $bus->bus_name,
-            'total_passengers' => $totalPassengers,
-            'occupancy' => round($occupancy, 2)
-        ];
-    });
+Hapus/nonaktifkan UI lama:
 
-    D. Implementasi Chart.js di View:
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-    <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 class="font-bold text-slate-900 mb-4">Pendapatan 6 Bulan Terakhir</h3>
-        <canvas id="revenueChart"></canvas>
-    </div>
-    
-    <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 class="font-bold text-slate-900 mb-4">Okupansi Top 5 Rute</h3>
-        <canvas id="occupancyChart"></canvas>
-    </div>
-    
-    <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 class="font-bold text-slate-900 mb-4">Distribusi Order per Status</h3>
-        <canvas id="orderStatusChart"></canvas>
-    </div>
-    
-    <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 class="font-bold text-slate-900 mb-4">Trend Order 7 Hari Terakhir</h3>
-        <canvas id="trendChart"></canvas>
-    </div>
-</div>
+* Verifikasi Pembayaran
+* Tolak Pembayaran
+* Upload bukti pembayaran
+* Transfer
+* Virtual Account
+* E-Wallet
+* Cash
 
-<script>
-// Revenue Chart
-new Chart(document.getElementById('revenueChart'), {
-    type: 'bar',
-    data: {
-        labels: {!! json_encode($revenueByMonth->pluck('month')) !!},
-        datasets: [{
-            label: 'Pendapatan (Rp)',
-            data: {!! json_encode($revenueByMonth->pluck('total')) !!},
-            backgroundColor: '#10b981'
-        }]
-    },
-    options: {
-        responsive: true,
-        scales: {
-            y: { beginAtZero: true }
-        }
-    }
-});
+Payment sekarang simulasi internal.
 
-// Occupancy Chart
-new Chart(document.getElementById('occupancyChart'), {
-    type: 'bar',
-    data: {
-        labels: {!! json_encode($routeOccupancy->pluck('route')) !!},
-        datasets: [{
-            label: 'Okupansi (%)',
-            data: {!! json_encode($routeOccupancy->pluck('occupancy')) !!},
-            backgroundColor: '#3b82f6'
-        }]
-    },
-    options: {
-        responsive: true,
-        scales: {
-            y: { beginAtZero: true, max: 100 }
-        }
-    }
-});
+Admin boleh melihat:
 
-// Order Status Chart
-new Chart(document.getElementById('orderStatusChart'), {
-    type: 'pie',
-    data: {
-        labels: {!! json_encode($ordersByStatus->pluck('order_status')) !!},
-        datasets: [{
-            data: {!! json_encode($ordersByStatus->pluck('total')) !!},
-            backgroundColor: ['#fbbf24', '#3b82f6', '#10b981', '#ef4444', '#6b7280', '#8b5cf6']
-        }]
-    },
-    options: {
-        responsive: true
-    }
-});
+* payment method
+* payment status
+* transaction ID
+* amount
+* paid_at
+* informasi order/customer
 
-// Trend Chart
-new Chart(document.getElementById('trendChart'), {
-    type: 'line',
-    data: {
-        labels: {!! json_encode($ordersTrend->pluck('date')) !!},
-        datasets: [{
-            label: 'Jumlah Order',
-            data: {!! json_encode($ordersTrend->pluck('total')) !!},
-            borderColor: '#8b5cf6',
-            backgroundColor: '#8b5cf6',
-            tension: 0.1
-        }]
-    },
-    options: {
-        responsive: true,
-        scales: {
-            y: { beginAtZero: true }
-        }
-    }
-});
-</script>
+Tetapi tidak boleh ada flow manual verification/rejection yang bertentangan dengan payment simulation.
 
-MASALAH 6: Admin Bisa Mengecek Detail Pembayaran, Bus, dan Penumpang
-File yang dimodifikasi:
-app/Http/Controllers/Admin/DashboardController.php
-resources/views/admin/dashboard.blade.php
-Yang Harus Ditambahkan:
-Tabel Detail Pembayaran:
-Tampilkan 10 pembayaran terbaru dengan:
-Kode order
-Nama penumpang (dari order_details)
-Metode pembayaran
-Jumlah
-Status (pending/verified/rejected)
-Tanggal
-Tombol "Verifikasi" yang mengarah ke halaman detail pembayaran
-Tabel Detail Bus:
-Tampilkan semua bus aktif dengan:
-Nama bus
-Tipe (Economy/Executive/VIP/Super VIP)
-Total kursi
-Jumlah rute aktif
-Total penumpang (dari order yang paid/completed)
-Sisa kursi tersedia (akumulasi)
-Okupansi (%)
-Tabel Detail Rute:
-Tampilkan rute dengan:
-Asal → Tujuan
-Tanggal & Waktu
-Harga
-Kursi tersedia / Total kursi
-Jumlah penumpang
-Status (available/full)
-INSTRUKSI EKSEKUSI
-KERJAKAN SATU MASALAH PER SATU WAKTU dengan urutan:
-MASALAH 1 (Bug Pilih Kursi) - KRITIS, blocking user
-MASALAH 3 (Dropdown Kota) - Penting untuk UX
-MASALAH 4 (Bug Cari Perjalanan) - Penting untuk UX
-MASALAH 2 (QR Code Pembayaran) - Fitur baru
-MASALAH 5 (Admin Dashboard Chart) - Fitur baru
-MASALAH 6 (Detail Admin) - Fitur baru
-Untuk Setiap Masalah:
-Baca file yang relevan SEBELUM mengubah
-Jelaskan apa yang akan diubah dan mengapa
-Berikan kode LENGKAP (bukan snippet) agar mudah di-copy paste
-Jalankan php artisan test setelah perubahan
-Test manual di browser jika memungkinkan
-Laporkan hasil sebelum lanjut ke masalah berikutnya
-Jika Ada Konflik:
-Jika kode existing berbeda dengan yang saya jelaskan, jelaskan perbedaannya
-Jika ada konflik dengan ERD/SRS/PRD, jelaskan konfliknya
-Tanyakan konfirmasi sebelum mengubah struktur database
-Validasi Akhir:
-Setelah semua masalah selesai, jalankan:
+8. CUSTOMER PAYMENT UI
 
+Pastikan flow:
+
+Booking
+→ pending + unpaid
+→ Bayar
+→ pilih BCA/BRI/QRIS
+→ isi payer_name
+→ isi payer_phone
+→ submit
+→ verified
+→ order paid
+→ e-ticket
+
+Jika pembayaran gagal/rejected:
+
+pending + rejected
+→ customer dapat Bayar Lagi
+→ pilih metode
+→ submit
+→ verified
+→ paid
+
+Jika order expired:
+expired + rejected
+→ tidak bisa bayar lagi
+
+Jika order cancelled:
+cancelled + rejected
+→ tidak bisa bayar lagi
+
+9. LEGACY payment_proof
+
+Jangan hapus payment_proof secara destruktif pada perubahan ini.
+
+Jika masih ada:
+
+* kolom
+* fillable
+* migration compatibility
+
+biarkan sebagai legacy compatibility.
+
+Namun:
+
+* jangan tampilkan upload payment proof di UI aktif
+* jangan jadikan payment_proof sebagai business logic
+* jangan gunakan payment_proof untuk menentukan payment status
+
+10. orders.payment_status
+
+Untuk saat ini JANGAN hapus kolom.
+
+Pastikan:
+
+* tidak dipakai sebagai source of truth
+* tidak dipakai untuk menentukan apakah pembayaran berhasil
+* tidak dipakai untuk authorization payment
+* jika masih ditulis, nilainya harus derived/synchronized dengan payments.status
+
+Dokumentasikan dengan comment yang jelas jika diperlukan.
+
+11. TEST WAJIB
+
+Tambahkan atau perbaiki test untuk:
+
+A. Payment success
+
+* BCA
+* BRI
+* QRIS
+
+B. Ownership
+
+* customer tidak dapat membayar order milik customer lain
+* direct PaymentService call juga ditolak jika ownership invalid
+
+C. Status
+
+* pending + unpaid → paid + verified
+* pending + rejected → paid + verified
+* paid tidak bisa dibayar lagi
+* completed tidak bisa dibayar
+* cancelled tidak bisa dibayar
+* expired tidak bisa dibayar
+
+D. Invalid combinations
+
+* cancelled + verified tidak boleh
+* expired + verified tidak boleh
+* pending + verified tidak boleh
+* paid + rejected tidak boleh
+
+E. Cancellation
+
+* pending + unpaid → cancelled + rejected
+* pending + rejected → cancelled + rejected
+* seats kembali
+* cancellation kedua tidak menambah seats lagi
+* paid tidak dapat dibatalkan
+
+F. Expiration
+
+* pending + unpaid → expired + rejected
+* pending + rejected → expired + rejected
+* seats kembali
+* expiration kedua tidak menambah seats lagi
+* paid tidak menjadi expired
+
+G. Security/integrity
+
+* frontend tidak dapat memanipulasi amount
+* amount selalu dari orders.total_price
+* payment method invalid ditolak oleh service
+* transaction ID dibuat server
+* double payment ditolak
+
+H. Booking
+
+* booking baru tidak menggunakan payment method legacy seperti transfer
+* booking menghasilkan state awal pending + unpaid
+
+I. Regression
+
+* jalankan seluruh test suite.
+
+12. ATOMICITY
+
+Pastikan update berikut berada dalam transaction yang sama:
+
+payment update
++
+order update
++
+transaction ID
++
+paid_at
+
+Jika salah satu operasi gagal, perubahan harus rollback.
+
+Tambahkan test yang relevan jika memungkinkan tanpa membuat implementasi terlalu kompleks.
+
+13. DOUBLE PAYMENT / CONCURRENCY
+
+Periksa apakah locking saat ini cukup untuk mencegah dua request pembayaran terhadap order yang sama.
+
+Pastikan hanya satu request dapat mengubah payment menjadi verified.
+
+Jika database/test environment sulit melakukan true concurrent test, minimal tambahkan test sequential double-submit dan dokumentasikan keterbatasan concurrency test.
+
+14. AUDIT SETELAH PERBAIKAN
+
+Setelah selesai, jalankan:
+
+php artisan optimize:clear
 php artisan test
-php artisan route:list
-php artisan config:clear
-php artisan cache:clear
-Laporkan hasil akhir: berapa test yang lulus, apakah ada error, dan fitur apa saja yang sudah berhasil diperbaiki.
-CATATAN PENTING
-JANGAN mengubah struktur database untuk Masalah 1, 3, 4
-BOLEH tambah library endroid/qr-code untuk Masalah 2
-BOLEH tambah CDN Chart.js untuk Masalah 5 (tidak perlu install package)
-JANGAN hapus fitur yang sudah ada (login password, upload bukti transfer, dll)
-PASTIKAN semua fitur lama tetap berfungsi setelah perubahan
+
+Kemudian jalankan pencarian:
+
+grep -RInE "payment_status|payment_proof|payment_method|order_status|confirmed|transfer|virtual_account|e_wallet|cash|payments.verify|payments.reject|Bayar Sekarang|Bayar Lagi|upload" app routes resources/views tests database --exclude-dir=node_modules
+
+Periksa hasil grep satu per satu.
+
+JANGAN menyimpulkan PASS hanya karena test hijau.
+
+Lakukan audit kedua terhadap business logic.
+
+LAPORAN AKHIR HARUS BERISI:
+
+1. File yang diubah
+2. Perubahan setiap file
+3. State machine final
+4. Payment source of truth final
+5. Status `confirmed`
+6. Status `orders.payment_status`
+7. Status `payment_proof`
+8. Payment method final
+9. Cancellation flow
+10. Expiration flow
+11. Rejected payment retry flow
+12. Double-payment protection
+13. Ownership protection
+14. Atomicity
+15. Seat restoration
+16. Hasil grep legacy
+17. Hasil seluruh test
+18. Jumlah test dan assertion
+19. Apakah masih ada NEED FIX
+20. Potensi risiko yang masih tersisa
+
+KRITIS:
+Jangan hanya memperbaiki error test.
+Tujuan utama adalah memastikan implementasi benar-benar sesuai kontrak business logic, bukan sekadar membuat test hijau.

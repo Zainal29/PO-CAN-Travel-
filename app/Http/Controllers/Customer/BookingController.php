@@ -35,7 +35,6 @@ class BookingController extends Controller
                 $query->where('route_id', $route->id)
                     ->whereIn('order_status', [
                         'pending',
-                        'confirmed',
                         'paid',
                     ]);
             })

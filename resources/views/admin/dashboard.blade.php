@@ -140,7 +140,7 @@
             {{-- Pending Payments --}}
             <div class="rounded-2xl border border-slate-200 bg-white shadow-sm">
                 <div class="border-b border-slate-100 px-6 py-4">
-                    <h3 class="font-bold text-slate-900">Menunggu Verifikasi Pembayaran</h3>
+                    <h3 class="font-bold text-slate-900">Pembayaran Terbaru</h3>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left">
@@ -159,7 +159,7 @@
                                 <td class="px-6 py-4 text-slate-600">{{ ucfirst(str_replace('_', ' ', $payment->payment_method)) }}</td>
                                 <td class="px-6 py-4 text-slate-900">Rp {{ number_format($payment->amount, 0, ',', '.') }}</td>
                                 <td class="px-6 py-4">
-                                    <a href="{{ route('admin.payments.show', $payment) }}" class="text-sm font-semibold text-amber-700 hover:text-amber-900 underline decoration-amber-300 underline-offset-2">Verifikasi</a>
+                                    <a href="{{ route('admin.payments.show', $payment) }}" class="text-sm font-semibold text-amber-700 hover:text-amber-900 underline decoration-amber-300 underline-offset-2">Lihat Detail</a>
                                 </td>
                             </tr>
                             @empty
@@ -178,7 +178,7 @@
                 <h3 class="font-bold text-slate-900">10 Pembayaran Terbaru</h3>
             </div>
             <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm">
+                <table class="w-full min-w-[900px] text-left text-sm">
                     <thead class="bg-slate-50 text-xs font-semibold uppercase text-slate-500">
                         <tr>
                             <th class="px-6 py-3">Kode Order</th>
@@ -192,17 +192,25 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                         @forelse($recentPayments as $payment)
+                            @php
+                                $paymentStatusClasses = [
+                                    'pending' => 'bg-amber-100 text-amber-700',
+                                    'verified' => 'bg-emerald-100 text-emerald-700',
+                                    'rejected' => 'bg-red-100 text-red-700',
+                                    'unpaid' => 'bg-slate-100 text-slate-700',
+                                ];
+                            @endphp
                             <tr>
                                 <td class="px-6 py-4 font-medium text-slate-900">{{ $payment->order?->order_code ?? '-' }}</td>
                                 <td class="px-6 py-4 text-slate-600">{{ $payment->order?->details?->pluck('passenger_name')->join(', ') ?: '-' }}</td>
                                 <td class="px-6 py-4 text-slate-600">{{ ucfirst(str_replace('_', ' ', $payment->payment_method)) }}</td>
                                 <td class="px-6 py-4 text-slate-900">Rp {{ number_format($payment->amount, 0, ',', '.') }}</td>
-                                <td class="px-6 py-4"><span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">{{ ucfirst($payment->status) }}</span></td>
-                                <td class="px-6 py-4 text-slate-600">{{ $payment->created_at?->format('d/m/Y H:i') }}</td>
+                                <td class="px-6 py-4"><span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold {{ $paymentStatusClasses[$payment->status] ?? 'bg-slate-100 text-slate-700' }}">{{ ucfirst($payment->status) }}</span></td>
+                                <td class="px-6 py-4 text-slate-600">{{ $payment->created_at?->format('d M Y H:i') ?? '-' }}</td>
                                 <td class="px-6 py-4"><a href="{{ route('admin.payments.show', $payment) }}" class="font-semibold text-amber-700 hover:text-amber-900">Detail</a></td>
                             </tr>
                         @empty
-                            <tr><td colspan="7" class="px-6 py-8 text-center text-slate-500">Belum ada pembayaran.</td></tr>
+                            <tr><td colspan="7" class="px-6 py-8 text-center text-sm text-slate-500">Belum ada data pembayaran.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -210,15 +218,35 @@
         </div>
 
         <div class="rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <div class="border-b border-slate-100 px-6 py-4"><h3 class="font-bold text-slate-900">Detail Armada Aktif</h3></div>
+            <div class="border-b border-slate-100 px-6 py-4">
+                <h3 class="font-bold text-slate-900">Detail Armada Aktif</h3>
+            </div>
             <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-slate-50 text-xs font-semibold uppercase text-slate-500"><tr><th class="px-6 py-3">Bus</th><th class="px-6 py-3">Tipe</th><th class="px-6 py-3">Kapasitas</th><th class="px-6 py-3">Rute Aktif</th><th class="px-6 py-3">Penumpang</th><th class="px-6 py-3">Sisa Kursi</th><th class="px-6 py-3">Okupansi</th></tr></thead>
+                <table class="w-full min-w-[900px] text-left text-sm">
+                    <thead class="bg-slate-50 text-xs font-semibold uppercase text-slate-500">
+                        <tr>
+                            <th class="px-6 py-3">Bus</th>
+                            <th class="px-6 py-3">Tipe</th>
+                            <th class="px-6 py-3">Kursi</th>
+                            <th class="px-6 py-3">Rute Aktif</th>
+                            <th class="px-6 py-3">Penumpang</th>
+                            <th class="px-6 py-3">Sisa Kursi</th>
+                            <th class="px-6 py-3">Okupansi</th>
+                        </tr>
+                    </thead>
                     <tbody class="divide-y divide-slate-100">
                         @forelse($busStats as $bus)
-                            <tr><td class="px-6 py-4 font-medium text-slate-900">{{ $bus['name'] }}</td><td class="px-6 py-4 text-slate-600">{{ ucfirst(str_replace('_', ' ', $bus['type'])) }}</td><td class="px-6 py-4">{{ $bus['total_seats'] }}</td><td class="px-6 py-4">{{ $bus['routes'] }}</td><td class="px-6 py-4">{{ $bus['passengers'] }}</td><td class="px-6 py-4">{{ $bus['available_seats'] }}</td><td class="px-6 py-4 font-semibold">{{ number_format($bus['occupancy'], 2, ',', '.') }}%</td></tr>
+                            <tr>
+                                <td class="px-6 py-4 font-medium text-slate-900">{{ $bus['name'] }}</td>
+                                <td class="px-6 py-4 text-slate-600">{{ ucfirst(str_replace('_', ' ', $bus['type'])) }}</td>
+                                <td class="px-6 py-4 text-slate-600">{{ $bus['total_seats'] }}</td>
+                                <td class="px-6 py-4 text-slate-600">{{ $bus['routes'] }}</td>
+                                <td class="px-6 py-4 text-slate-600">{{ $bus['passengers'] }}</td>
+                                <td class="px-6 py-4 text-slate-600">{{ $bus['available_seats'] }}</td>
+                                <td class="px-6 py-4 font-semibold text-slate-900">{{ number_format($bus['occupancy'], 2, ',', '.') }}%</td>
+                            </tr>
                         @empty
-                            <tr><td colspan="7" class="px-6 py-8 text-center text-slate-500">Belum ada armada aktif.</td></tr>
+                            <tr><td colspan="7" class="px-6 py-8 text-center text-sm text-slate-500">Belum ada armada aktif.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -226,15 +254,37 @@
         </div>
 
         <div class="rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <div class="border-b border-slate-100 px-6 py-4"><h3 class="font-bold text-slate-900">Detail Rute</h3></div>
+            <div class="border-b border-slate-100 px-6 py-4">
+                <h3 class="font-bold text-slate-900">Detail Rute</h3>
+            </div>
             <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-slate-50 text-xs font-semibold uppercase text-slate-500"><tr><th class="px-6 py-3">Rute</th><th class="px-6 py-3">Jadwal</th><th class="px-6 py-3">Harga</th><th class="px-6 py-3">Kursi</th><th class="px-6 py-3">Order</th><th class="px-6 py-3">Penumpang</th><th class="px-6 py-3">Pendapatan</th><th class="px-6 py-3">Status</th></tr></thead>
+                <table class="w-full min-w-[1100px] text-left text-sm">
+                    <thead class="bg-slate-50 text-xs font-semibold uppercase text-slate-500">
+                        <tr>
+                            <th class="px-6 py-3">Rute</th>
+                            <th class="px-6 py-3">Jadwal</th>
+                            <th class="px-6 py-3">Harga</th>
+                            <th class="px-6 py-3">Kursi</th>
+                            <th class="px-6 py-3">Order</th>
+                            <th class="px-6 py-3">Penumpang</th>
+                            <th class="px-6 py-3">Pendapatan</th>
+                            <th class="px-6 py-3">Status</th>
+                        </tr>
+                    </thead>
                     <tbody class="divide-y divide-slate-100">
                         @forelse($routeDetails as $route)
-                            <tr><td class="px-6 py-4 font-medium text-slate-900">{{ $route['label'] }}</td><td class="px-6 py-4 text-slate-600">{{ $route['departure_date']->format('d/m/Y') }} {{ \Carbon\Carbon::parse($route['departure_time'])->format('H:i') }}</td><td class="px-6 py-4">Rp {{ number_format($route['price'], 0, ',', '.') }}</td><td class="px-6 py-4">{{ $route['available_seats'] }} / {{ $route['total_seats'] }}</td><td class="px-6 py-4">{{ $route['orders'] }}</td><td class="px-6 py-4">{{ $route['passengers'] }}</td><td class="px-6 py-4">Rp {{ number_format($route['revenue'], 0, ',', '.') }}</td><td class="px-6 py-4"><span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold">{{ ucfirst($route['status']) }}</span></td></tr>
+                            <tr>
+                                <td class="px-6 py-4 font-medium text-slate-900">{{ $route['route'] }}</td>
+                                <td class="px-6 py-4 text-slate-600">{{ $route['departure'] }}</td>
+                                <td class="px-6 py-4 text-slate-600">Rp {{ number_format($route['price'], 0, ',', '.') }}</td>
+                                <td class="px-6 py-4 text-slate-600">{{ $route['available_seats'] }} / {{ $route['total_seats'] }}</td>
+                                <td class="px-6 py-4 text-slate-600">{{ $route['orders'] }}</td>
+                                <td class="px-6 py-4 text-slate-600">{{ $route['passengers'] }}</td>
+                                <td class="px-6 py-4 text-slate-900">Rp {{ number_format($route['revenue'], 0, ',', '.') }}</td>
+                                <td class="px-6 py-4"><span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold {{ $route['status'] === 'available' ? 'bg-emerald-100 text-emerald-700' : ($route['status'] === 'full' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700') }}">{{ ucfirst($route['status']) }}</span></td>
+                            </tr>
                         @empty
-                            <tr><td colspan="8" class="px-6 py-8 text-center text-slate-500">Belum ada data rute.</td></tr>
+                            <tr><td colspan="8" class="px-6 py-8 text-center text-sm text-slate-500">Belum ada data rute.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

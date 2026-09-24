@@ -136,7 +136,7 @@
                                     </td>
 
                                     <td class="px-6 py-4">
-                                        {{ ucfirst($order->payment_status) }}
+                                        {{ ucfirst($order->payment?->status ?? 'unpaid') }}
                                     </td>
 
                                     <td class="px-6 py-4">

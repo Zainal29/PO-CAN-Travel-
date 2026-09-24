@@ -100,10 +100,6 @@ Route::middleware('auth')->group(function () {
             ->name('payments.index');
         Route::get('payments/{payment}', [\App\Http\Controllers\Admin\PaymentController::class, 'show'])
             ->name('payments.show');
-        Route::patch('payments/{payment}/verify', [\App\Http\Controllers\Admin\PaymentController::class, 'verify'])
-            ->name('payments.verify');
-        Route::patch('payments/{payment}/reject', [\App\Http\Controllers\Admin\PaymentController::class, 'reject'])
-            ->name('payments.reject');
     });
 
     Route::middleware(['auth', 'customer'])
@@ -164,6 +160,11 @@ Route::middleware('auth')->group(function () {
             CustomerPaymentController::class,
             'store',
         ])->name('payments.store');
+
+        Route::get('/orders/{order}/payment/success', [
+            CustomerPaymentController::class,
+            'success',
+        ])->name('payments.success');
     });
 
 require __DIR__.'/auth.php';

@@ -100,7 +100,7 @@ class OrderController extends Controller
     {
         abort_unless($order->user_id === auth()->id(), 403);
         abort_unless(
-            $order->payment_status === 'verified'
+            $order->payment?->status === 'verified'
             && $order->ticket_code,
             404
         );
@@ -117,7 +117,7 @@ class OrderController extends Controller
     {
         abort_unless($order->user_id === auth()->id(), 403);
         abort_unless(
-            $order->payment_status === 'verified' && $order->ticket_code,
+            $order->payment?->status === 'verified' && $order->ticket_code,
             404
         );
 

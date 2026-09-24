@@ -160,14 +160,23 @@ class ReviewTest extends TestCase
             'status' => 'available',
         ]);
 
-        return Order::create([
+        $order = Order::create([
             'user_id' => $user->id,
             'route_id' => $route->id,
             'order_code' => 'PO-REVIEW-' . $user->id . '-' . $status,
             'total_passengers' => 2,
             'total_price' => 150000,
-            'payment_status' => 'verified',
+            'payment_status' => in_array($status, ['paid', 'completed'], true) ? 'verified' : 'unpaid',
             'order_status' => $status,
         ]);
+
+        $order->payment()->create([
+            'payment_method' => 'bca',
+            'amount' => 150000,
+            'status' => in_array($status, ['paid', 'completed'], true) ? 'verified' : 'unpaid',
+            'paid_at' => in_array($status, ['paid', 'completed'], true) ? now() : null,
+        ]);
+
+        return $order;
     }
 }

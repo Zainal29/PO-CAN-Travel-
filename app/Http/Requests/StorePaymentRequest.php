@@ -16,27 +16,28 @@ class StorePaymentRequest extends FormRequest
         return [
             'payment_method' => [
                 'required',
-                'in:transfer,virtual_account,e_wallet,cash',
+                'in:bca,bri,qris',
             ],
 
-            'payment_proof' => [
-                'nullable',
-                'image',
-                'mimes:jpg,jpeg,png,webp',
-                'max:5120',
-            ],
-
-            'transaction_id' => [
-                'nullable',
+            'payer_name' => [
+                'required',
                 'string',
-                'max:100',
+                'max:255',
             ],
 
-            'notes' => [
-                'nullable',
+            'payer_phone' => [
+                'required',
                 'string',
-                'max:1000',
+                'max:20',
             ],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'payer_name' => trim((string) $this->input('payer_name')),
+            'payer_phone' => trim((string) $this->input('payer_phone')),
+        ]);
     }
 }

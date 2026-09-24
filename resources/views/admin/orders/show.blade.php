@@ -81,7 +81,7 @@
                     <div>
                         <span class="text-gray-500">Status Pembayaran</span>
                         <p>
-                            {{ ucfirst($order->payment_status) }}
+                            {{ ucfirst($order->payment?->status ?? 'unpaid') }}
                         </p>
                     </div>
 
@@ -229,22 +229,6 @@
 
                     </div>
 
-                    @if($order->payment->payment_proof)
-                        <div class="mt-6">
-                            <p class="text-gray-500 mb-2">
-                                Bukti Pembayaran
-                            </p>
-
-                            <a
-                                href="{{ Storage::url($order->payment->payment_proof) }}"
-                                target="_blank"
-                                class="text-indigo-600"
-                            >
-                                Lihat Bukti Pembayaran
-                            </a>
-                        </div>
-                    @endif
-
                 </div>
             @endif
 
@@ -324,7 +308,7 @@
                     </form>
                 @endif
 
-                @if ($order->payment_status === 'verified' && in_array($order->order_status, ['paid', 'confirmed'], true) && ! $order->checked_in_at)
+                @if ($order->payment?->status === 'verified' && in_array($order->order_status, ['paid', 'confirmed'], true) && ! $order->checked_in_at)
                     <form method="POST" action="{{ route('admin.orders.check-in', $order) }}" class="mt-6">
                         @csrf
                         @method('PATCH')

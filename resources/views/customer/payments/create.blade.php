@@ -27,22 +27,6 @@
 </div>
 
 <div class="grid gap-6 lg:grid-cols-3">
-
-    <div class="rounded-xl border border-amber-200 bg-amber-50 p-6 shadow-sm lg:col-span-3">
-        <div class="flex flex-col gap-5 sm:flex-row sm:items-center">
-            <img src="{{ $paymentQrCode }}" alt="QR code informasi rekening" class="h-40 w-40 rounded-lg bg-white p-2">
-            <div>
-                <h2 class="text-lg font-bold text-amber-900">Informasi rekening</h2>
-                <p class="mt-1 text-sm text-amber-800">Scan QR code untuk melihat info rekening.</p>
-                <p class="mt-3 whitespace-pre-line text-sm leading-6 text-amber-900">Transfer ke:
-Bank: BCA
-No. Rek: 1234567890
-Atas Nama: PO CAN Travel
-Nominal: Rp {{ number_format($order->total_price, 0, ',', '.') }}</p>
-            </div>
-        </div>
-    </div>
-
     {{-- Form --}}
     <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2">
 
@@ -50,10 +34,9 @@ Nominal: Rp {{ number_format($order->total_price, 0, ',', '.') }}</p>
             Data Pembayaran
         </h2>
 
-        <form method="POST"
-              action="{{ route('customer.payments.store', $order) }}"
-              enctype="multipart/form-data"
-              class="mt-6 space-y-6">
+          <p class="mt-1 text-sm text-gray-500">Ini adalah simulasi pembayaran internal aplikasi.</p>
+
+          <form method="POST" action="{{ route('customer.payments.store', $order) }}" class="mt-6 space-y-6">
 
             @csrf
 
@@ -74,24 +57,16 @@ Nominal: Rp {{ number_format($order->total_price, 0, ',', '.') }}</p>
                         Pilih metode pembayaran
                     </option>
 
-                    <option value="transfer"
-                        @selected(old('payment_method', $order->payment?->payment_method) === 'transfer')>
-                        Transfer Bank
+                    <option value="bca" @selected(old('payment_method', $order->payment?->payment_method) === 'bca')>
+                        BCA
                     </option>
 
-                    <option value="virtual_account"
-                        @selected(old('payment_method', $order->payment?->payment_method) === 'virtual_account')>
-                        Virtual Account
+                    <option value="bri" @selected(old('payment_method', $order->payment?->payment_method) === 'bri')>
+                        BRI
                     </option>
 
-                    <option value="e_wallet"
-                        @selected(old('payment_method', $order->payment?->payment_method) === 'e_wallet')>
-                        E-Wallet
-                    </option>
-
-                    <option value="cash"
-                        @selected(old('payment_method', $order->payment?->payment_method) === 'cash')>
-                        Cash
+                    <option value="qris" @selected(old('payment_method', $order->payment?->payment_method) === 'qris')>
+                        QRIS
                     </option>
 
                 </select>
@@ -104,27 +79,9 @@ Nominal: Rp {{ number_format($order->total_price, 0, ',', '.') }}</p>
             </div>
 
             <div>
-                <label for="transaction_id"
-                       class="mb-2 block text-sm font-medium text-gray-700">
-                    ID Transaksi
-                    <span class="font-normal text-gray-400">(opsional)</span>
-                </label>
-
-                <input
-                    id="transaction_id"
-                    name="transaction_id"
-                    type="text"
-                    value="{{ old('transaction_id', $order->payment?->transaction_id) }}"
-                    maxlength="100"
-                    placeholder="Contoh: TRX123456789"
-                    class="w-full rounded-lg border-gray-300 focus:border-gray-900 focus:ring-gray-900"
-                >
-
-                <p class="mt-1 text-xs text-gray-500">
-                    Isi jika Anda memiliki nomor referensi transaksi.
-                </p>
-
-                @error('transaction_id')
+                <label for="payer_name" class="mb-2 block text-sm font-medium text-gray-700">Nama Pembayar</label>
+                <input id="payer_name" name="payer_name" type="text" value="{{ old('payer_name', $order->user->name) }}" maxlength="255" required class="w-full rounded-lg border-gray-300 focus:border-gray-900 focus:ring-gray-900">
+                @error('payer_name')
                     <p class="mt-1 text-sm text-red-600">
                         {{ $message }}
                     </p>
@@ -132,57 +89,9 @@ Nominal: Rp {{ number_format($order->total_price, 0, ',', '.') }}</p>
             </div>
 
             <div>
-                <label for="payment_proof"
-                       class="mb-2 block text-sm font-medium text-gray-700">
-                    Bukti Pembayaran
-                    <span class="font-normal text-gray-400">(opsional)</span>
-                </label>
-
-                <input
-                    id="payment_proof"
-                    name="payment_proof"
-                    type="file"
-                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
-                    class="block w-full rounded-lg border border-gray-300 bg-white text-sm text-gray-700 file:mr-4 file:border-0 file:bg-gray-100 file:px-4 file:py-2.5 file:text-sm file:font-medium"
-                >
-
-                <p class="mt-1 text-xs text-gray-500">
-                    Format JPG, JPEG, PNG, atau WEBP. Maksimal 5 MB.
-                </p>
-
-                @if ($order->payment?->payment_proof)
-
-                    <p class="mt-2 text-xs text-gray-500">
-                        Bukti pembayaran sebelumnya sudah tersimpan.
-                        Upload file baru hanya jika ingin menggantinya.
-                    </p>
-
-                @endif
-
-                @error('payment_proof')
-                    <p class="mt-1 text-sm text-red-600">
-                        {{ $message }}
-                    </p>
-                @enderror
-            </div>
-
-            <div>
-                <label for="notes"
-                       class="mb-2 block text-sm font-medium text-gray-700">
-                    Catatan
-                    <span class="font-normal text-gray-400">(opsional)</span>
-                </label>
-
-                <textarea
-                    id="notes"
-                    name="notes"
-                    rows="4"
-                    maxlength="1000"
-                    placeholder="Tambahkan catatan jika diperlukan..."
-                    class="w-full rounded-lg border-gray-300 focus:border-gray-900 focus:ring-gray-900"
-                >{{ old('notes', $order->payment?->notes) }}</textarea>
-
-                @error('notes')
+                <label for="payer_phone" class="mb-2 block text-sm font-medium text-gray-700">Nomor Telepon</label>
+                <input id="payer_phone" name="payer_phone" type="text" value="{{ old('payer_phone', $order->user->phone) }}" maxlength="20" required class="w-full rounded-lg border-gray-300 focus:border-gray-900 focus:ring-gray-900">
+                @error('payer_phone')
                     <p class="mt-1 text-sm text-red-600">
                         {{ $message }}
                     </p>
@@ -193,7 +102,7 @@ Nominal: Rp {{ number_format($order->total_price, 0, ',', '.') }}</p>
 
                 <button type="submit"
                         class="w-full rounded-lg bg-gray-900 px-5 py-3 text-sm font-semibold text-white hover:bg-gray-700">
-                    Kirim Pembayaran
+                    Bayar Sekarang
                 </button>
 
             </div>
@@ -280,8 +189,7 @@ Nominal: Rp {{ number_format($order->total_price, 0, ',', '.') }}</p>
             </h3>
 
             <p class="mt-2 text-sm leading-6 text-yellow-700">
-                Pastikan data pembayaran yang Anda masukkan sudah benar.
-                Pembayaran akan diperiksa oleh admin sebelum pesanan dinyatakan lunas.
+                Setelah form valid, pembayaran simulasi akan langsung dinyatakan berhasil.
             </p>
 
         </div>

@@ -96,19 +96,21 @@ class DashboardController extends Controller
         });
 
         $routeDetails = TravelRoute::with(['bus', 'orders' => function ($query) {
-            $query->whereIn('order_status', ['paid', 'completed']);
+            $query->whereIn('order_status', ['paid', 'completed'])->with('payment');
         }])->latest('departure_date')->latest('departure_time')->get()->map(function (TravelRoute $route) {
+            $orders = $route->orders;
+
             return [
-                'id' => $route->id,
-                'label' => $route->origin_city . ' → ' . $route->destination_city,
-                'departure_date' => $route->departure_date,
-                'departure_time' => $route->departure_time,
+                'route' => $route->origin_city . ' → ' . $route->destination_city,
+                'departure' => $route->departure_date->format('d M Y') . ' ' . $route->departure_time,
                 'price' => $route->price,
                 'available_seats' => $route->available_seats,
                 'total_seats' => $route->bus?->total_seats ?? 0,
-                'orders' => $route->orders->count(),
-                'passengers' => $route->orders->sum('total_passengers'),
-                'revenue' => $route->orders->sum('total_price'),
+                'passengers' => $orders->sum('total_passengers'),
+                'orders' => $orders->count(),
+                'revenue' => $orders->sum(fn ($order) => $order->payment?->status === 'verified'
+                    ? (float) $order->payment->amount
+                    : 0),
                 'status' => $route->status,
             ];
         });
@@ -126,7 +128,7 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        $recentPayments = Payment::with(['order.user', 'order.details', 'order.route'])
+        $recentPayments = Payment::with(['order.user', 'order.details'])
             ->latest()
             ->take(10)
             ->get();

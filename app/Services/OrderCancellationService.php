@@ -15,14 +15,15 @@ class OrderCancellationService
                 ->with(['route.bus', 'payment'])
                 ->findOrFail($order->id);
 
-            if (in_array($order->order_status, [
-                'cancelled',
-                'paid',
-                'completed',
-                'expired',
-            ], true)) {
+            if ($order->order_status !== 'pending') {
                 throw new \RuntimeException(
                     'Pesanan tidak dapat dibatalkan pada status saat ini.'
+                );
+            }
+
+            if ($order->payment?->status === 'verified') {
+                throw new \RuntimeException(
+                    'Pesanan dengan pembayaran terverifikasi tidak dapat dibatalkan.'
                 );
             }
 
@@ -105,6 +106,12 @@ class OrderCancellationService
                 $order->expired_at->isFuture()
             ) {
                 return $order;
+            }
+
+            if ($order->payment?->status === 'verified') {
+                throw new \RuntimeException(
+                    'Order dengan pembayaran terverifikasi tidak dapat kedaluwarsa.'
+                );
             }
 
             $this->restoreSeats($order);

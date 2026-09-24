@@ -90,7 +90,6 @@ class BookingService
                         ->where('route_id', $routeId)
                         ->whereIn('order_status', [
                             'pending',
-                            'confirmed',
                             'paid',
                         ]);
                 })
@@ -168,7 +167,7 @@ class BookingService
             }
 
             $order->payment()->create([
-                'payment_method' => 'transfer',
+                'payment_method' => 'bca',
                 'amount' => $totalPrice,
                 'status' => 'unpaid',
             ]);

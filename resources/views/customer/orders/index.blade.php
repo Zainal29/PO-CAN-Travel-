@@ -112,8 +112,8 @@
 
                         <td class="px-5 py-4">
 
-                            <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold {{ $paymentStatusClasses[$order->payment_status] ?? 'bg-gray-100 text-gray-600' }}">
-                                {{ ucfirst($order->payment_status) }}
+                            <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold {{ $paymentStatusClasses[$order->payment?->status] ?? 'bg-gray-100 text-gray-600' }}">
+                                {{ ucfirst($order->payment?->status ?? 'unpaid') }}
                             </span>
 
                         </td>
