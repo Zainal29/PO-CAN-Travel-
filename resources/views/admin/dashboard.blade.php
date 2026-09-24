@@ -16,7 +16,7 @@
     <div class="mx-auto max-w-7xl px-4 py-7 sm:px-6 lg:px-8 space-y-8">
         
         {{-- 1. Statistik Utama --}}
-        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
             <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                 <p class="text-sm font-medium text-slate-500">Total Pendapatan (Verified)</p>
                 <h2 class="mt-2 text-2xl font-bold text-slate-900">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</h2>
@@ -51,6 +51,49 @@
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
                     Siap beroperasi
                 </div>
+            </div>
+
+            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <p class="text-sm font-medium text-slate-500">Total Order</p>
+                <h2 class="mt-2 text-2xl font-bold text-slate-900">{{ $totalOrders }}</h2>
+                <p class="mt-3 text-xs font-semibold text-slate-600">Semua status</p>
+            </div>
+
+            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <p class="text-sm font-medium text-slate-500">Rute Aktif</p>
+                <h2 class="mt-2 text-2xl font-bold text-slate-900">{{ $activeRoutes }}</h2>
+                <p class="mt-3 text-xs font-semibold text-slate-600">Dapat dipesan</p>
+            </div>
+        </div>
+
+        <div class="grid gap-6 lg:grid-cols-2">
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h3 class="font-bold text-slate-900">Pendapatan 6 Bulan Terakhir</h3>
+                <div class="mt-4 h-72"><canvas id="revenueChart"></canvas></div>
+            </div>
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h3 class="font-bold text-slate-900">Okupansi Top 5 Rute</h3>
+                <div class="mt-4 h-72"><canvas id="occupancyChart"></canvas></div>
+            </div>
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h3 class="font-bold text-slate-900">Distribusi Order per Status</h3>
+                <div class="mt-4 h-72"><canvas id="orderStatusChart"></canvas></div>
+            </div>
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h3 class="font-bold text-slate-900">Trend Order 7 Hari Terakhir</h3>
+                <div class="mt-4 h-72"><canvas id="trendChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 class="font-bold text-slate-900">Ringkasan Pembayaran</h3>
+            <div class="mt-4 grid gap-3 sm:grid-cols-4">
+                @foreach(['verified' => 'Verified', 'pending' => 'Pending', 'rejected' => 'Rejected', 'unpaid' => 'Unpaid'] as $status => $label)
+                    <div class="rounded-xl bg-slate-50 p-4">
+                        <p class="text-xs font-semibold uppercase text-slate-500">{{ $label }}</p>
+                        <p class="mt-1 text-xl font-bold text-slate-900">{{ $paymentCounts[$status] ?? 0 }}</p>
+                    </div>
+                @endforeach
             </div>
         </div>
 
@@ -130,6 +173,74 @@
             </div>
         </div>
 
+        <div class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div class="border-b border-slate-100 px-6 py-4">
+                <h3 class="font-bold text-slate-900">10 Pembayaran Terbaru</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-slate-50 text-xs font-semibold uppercase text-slate-500">
+                        <tr>
+                            <th class="px-6 py-3">Kode Order</th>
+                            <th class="px-6 py-3">Penumpang</th>
+                            <th class="px-6 py-3">Metode</th>
+                            <th class="px-6 py-3">Jumlah</th>
+                            <th class="px-6 py-3">Status</th>
+                            <th class="px-6 py-3">Tanggal</th>
+                            <th class="px-6 py-3">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @forelse($recentPayments as $payment)
+                            <tr>
+                                <td class="px-6 py-4 font-medium text-slate-900">{{ $payment->order?->order_code ?? '-' }}</td>
+                                <td class="px-6 py-4 text-slate-600">{{ $payment->order?->details?->pluck('passenger_name')->join(', ') ?: '-' }}</td>
+                                <td class="px-6 py-4 text-slate-600">{{ ucfirst(str_replace('_', ' ', $payment->payment_method)) }}</td>
+                                <td class="px-6 py-4 text-slate-900">Rp {{ number_format($payment->amount, 0, ',', '.') }}</td>
+                                <td class="px-6 py-4"><span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">{{ ucfirst($payment->status) }}</span></td>
+                                <td class="px-6 py-4 text-slate-600">{{ $payment->created_at?->format('d/m/Y H:i') }}</td>
+                                <td class="px-6 py-4"><a href="{{ route('admin.payments.show', $payment) }}" class="font-semibold text-amber-700 hover:text-amber-900">Detail</a></td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="7" class="px-6 py-8 text-center text-slate-500">Belum ada pembayaran.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div class="border-b border-slate-100 px-6 py-4"><h3 class="font-bold text-slate-900">Detail Armada Aktif</h3></div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-slate-50 text-xs font-semibold uppercase text-slate-500"><tr><th class="px-6 py-3">Bus</th><th class="px-6 py-3">Tipe</th><th class="px-6 py-3">Kapasitas</th><th class="px-6 py-3">Rute Aktif</th><th class="px-6 py-3">Penumpang</th><th class="px-6 py-3">Sisa Kursi</th><th class="px-6 py-3">Okupansi</th></tr></thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @forelse($busStats as $bus)
+                            <tr><td class="px-6 py-4 font-medium text-slate-900">{{ $bus['name'] }}</td><td class="px-6 py-4 text-slate-600">{{ ucfirst(str_replace('_', ' ', $bus['type'])) }}</td><td class="px-6 py-4">{{ $bus['total_seats'] }}</td><td class="px-6 py-4">{{ $bus['routes'] }}</td><td class="px-6 py-4">{{ $bus['passengers'] }}</td><td class="px-6 py-4">{{ $bus['available_seats'] }}</td><td class="px-6 py-4 font-semibold">{{ number_format($bus['occupancy'], 2, ',', '.') }}%</td></tr>
+                        @empty
+                            <tr><td colspan="7" class="px-6 py-8 text-center text-slate-500">Belum ada armada aktif.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div class="border-b border-slate-100 px-6 py-4"><h3 class="font-bold text-slate-900">Detail Rute</h3></div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-slate-50 text-xs font-semibold uppercase text-slate-500"><tr><th class="px-6 py-3">Rute</th><th class="px-6 py-3">Jadwal</th><th class="px-6 py-3">Harga</th><th class="px-6 py-3">Kursi</th><th class="px-6 py-3">Order</th><th class="px-6 py-3">Penumpang</th><th class="px-6 py-3">Pendapatan</th><th class="px-6 py-3">Status</th></tr></thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @forelse($routeDetails as $route)
+                            <tr><td class="px-6 py-4 font-medium text-slate-900">{{ $route['label'] }}</td><td class="px-6 py-4 text-slate-600">{{ $route['departure_date']->format('d/m/Y') }} {{ \Carbon\Carbon::parse($route['departure_time'])->format('H:i') }}</td><td class="px-6 py-4">Rp {{ number_format($route['price'], 0, ',', '.') }}</td><td class="px-6 py-4">{{ $route['available_seats'] }} / {{ $route['total_seats'] }}</td><td class="px-6 py-4">{{ $route['orders'] }}</td><td class="px-6 py-4">{{ $route['passengers'] }}</td><td class="px-6 py-4">Rp {{ number_format($route['revenue'], 0, ',', '.') }}</td><td class="px-6 py-4"><span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold">{{ ucfirst($route['status']) }}</span></td></tr>
+                        @empty
+                            <tr><td colspan="8" class="px-6 py-8 text-center text-slate-500">Belum ada data rute.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         {{-- 3. Quick Action --}}
         <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -144,4 +255,52 @@
         </div>
 
     </div>
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    const chartOptions = { responsive: true, maintainAspectRatio: false };
+    const revenue = @json($revenueByMonth);
+    const occupancy = @json($routeStats);
+    const statuses = @json($statusLabels);
+    const statusCounts = @json($ordersByStatus);
+    const trend = @json($ordersTrend);
+
+    new Chart(document.getElementById('revenueChart'), {
+        type: 'bar',
+        data: {
+            labels: revenue.map(item => item.label),
+            datasets: [{ label: 'Pendapatan (Rp)', data: revenue.map(item => item.total), backgroundColor: '#10b981' }],
+        },
+        options: chartOptions,
+    });
+
+    new Chart(document.getElementById('occupancyChart'), {
+        type: 'bar',
+        data: {
+            labels: occupancy.map(item => item.route),
+            datasets: [{ label: 'Okupansi (%)', data: occupancy.map(item => item.occupancy), backgroundColor: '#3b82f6' }],
+        },
+        options: { ...chartOptions, scales: { y: { beginAtZero: true, max: 100 } } },
+    });
+
+    new Chart(document.getElementById('orderStatusChart'), {
+        type: 'pie',
+        data: {
+            labels: statuses,
+            datasets: [{ data: statuses.map(status => statusCounts[status] ?? 0), backgroundColor: ['#fbbf24', '#3b82f6', '#10b981', '#ef4444', '#6b7280', '#8b5cf6'] }],
+        },
+        options: chartOptions,
+    });
+
+    new Chart(document.getElementById('trendChart'), {
+        type: 'line',
+        data: {
+            labels: trend.map(item => item.label),
+            datasets: [{ label: 'Jumlah Order', data: trend.map(item => item.total), borderColor: '#8b5cf6', backgroundColor: '#8b5cf6', tension: 0.2 }],
+        },
+        options: { ...chartOptions, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } },
+    });
+</script>
+@endpush
 </x-app-layout>

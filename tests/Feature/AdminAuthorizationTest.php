@@ -40,7 +40,13 @@ class AdminAuthorizationTest extends TestCase
             ->actingAs($admin)
             ->get('/admin/dashboard');
 
-        $response->assertOk();
+        $response
+            ->assertOk()
+            ->assertSee('cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js')
+            ->assertSee('new Chart(document.getElementById(\'revenueChart\')', false)
+            ->assertSee('10 Pembayaran Terbaru')
+            ->assertSee('Detail Armada Aktif')
+            ->assertSee('Detail Rute');
     }
 
     public function test_admin_can_access_management_pages(): void

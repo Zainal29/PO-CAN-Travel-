@@ -15,5 +15,6 @@
     @endif
     @if(isset($header))<header class="border-b border-slate-200 bg-white"><div class="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">{{ $header }}</div></header>@endif
     <main>{{ $slot }}</main>
+    @stack('scripts')
 </body>
 </html>
