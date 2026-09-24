@@ -31,4 +31,22 @@ class Bus extends Model
     {
         return $this->hasMany(TravelRoute::class, 'bus_id');
     }
+
+    /**
+     * URL Foto Bus resmi dengan fallback gambar berkualitas jika foto belum diunggah.
+     */
+    public function getImageUrlAttribute(): string
+    {
+        if (! empty($this->image)) {
+            if (str_starts_with($this->image, 'http://') || str_starts_with($this->image, 'https://')) {
+                return $this->image;
+            }
+            if (str_starts_with($this->image, 'images/')) {
+                return asset($this->image);
+            }
+            return asset('storage/' . $this->image);
+        }
+
+        return asset('images/hero-bus.jpg');
+    }
 }

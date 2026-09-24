@@ -86,9 +86,15 @@
         {{-- 2. HERO + SEARCH (Search menjadi focal point, visual foto bus relevan, biru-putih-slate) --}}
         <section class="relative border-b border-slate-200 bg-slate-900 text-white overflow-hidden">
             {{-- Background Bus Image dengan Overlay Biru Gelap --}}
+            @php
+                $heroBg = !empty($settings['hero_image']) ? asset('storage/' . $settings['hero_image']) : asset('images/hero-bus.jpg');
+                $heroBadge = $settings['hero_badge'] ?? 'Tiket Resmi Bus Antarkota';
+                $heroTitle = $settings['hero_title'] ?? 'Perjalanan Anda, dimulai dari jadwal yang tepat.';
+                $heroSubtitle = $settings['hero_subtitle'] ?? 'Pesan tiket bus antarkota resmi PO CAN Travel dengan jadwal terkonfirmasi, kepastian nomor kursi pilihan sendiri, dan kemudahan e-ticket instan.';
+            @endphp
             <div class="absolute inset-0 z-0">
-                <img src="{{ asset('images/hero-bus.jpg') }}" 
-                     alt="Armada Bus PO CAN Travel" 
+                <img src="{{ $heroBg }}" 
+                     alt="Armada Bus {{ $settings['app_name'] ?? 'PO CAN Travel' }}" 
                      class="w-full h-full object-cover object-center opacity-40">
                 <div class="absolute inset-0 bg-slate-900/80"></div>
             </div>
@@ -99,15 +105,15 @@
                     <div class="max-w-2xl space-y-5">
                         <div class="inline-flex items-center gap-2 rounded-md bg-blue-900/80 border border-blue-700/60 px-3 py-1 text-xs font-semibold text-blue-200">
                             <span class="h-2 w-2 rounded-full bg-blue-400"></span>
-                            <span>Tiket Resmi Bus Antarkota</span>
+                            <span>{{ $heroBadge }}</span>
                         </div>
 
                         <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
-                            Perjalanan Anda, dimulai dari jadwal yang tepat.
+                            {{ $heroTitle }}
                         </h1>
 
                         <p class="text-sm sm:text-base leading-relaxed text-slate-300 max-w-xl">
-                            Pesan tiket bus antarkota resmi PO CAN Travel dengan jadwal terkonfirmasi, kepastian nomor kursi pilihan sendiri, dan kemudahan e-ticket instan.
+                            {{ $heroSubtitle }}
                         </p>
 
                         {{-- Feature Kecil --}}
@@ -343,89 +349,121 @@
                         }
                     @endphp
 
-                    {{-- Card Tiket Bus Vertikal Sesuai Referensi --}}
-                    <article class="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-5 shadow-xs transition hover:border-blue-300 hover:shadow-sm">
+                    {{-- Card Tiket Bus Visual dengan Foto Armada (Gaya Traveloka / Tiket.com / RedBus) --}}
+                    <article class="flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs transition duration-200 hover:-translate-y-1 hover:border-blue-400 hover:shadow-md group">
                         <div>
-                            {{-- Baris Atas: Tanggal, Konteks Waktu, & Status --}}
-                            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3 text-xs">
-                                <span class="font-bold text-slate-700">
-                                    {{ $route->departure_date->translatedFormat('d M Y') }}
-                                </span>
-                                <div class="flex items-center gap-1.5">
-                                    <span class="rounded px-2 py-0.5 text-[11px] font-semibold {{ $timeBadgeClass }}">
+                            {{-- Foto Bus & Overlays --}}
+                            <div class="relative h-44 w-full overflow-hidden bg-slate-900">
+                                <img src="{{ $route->bus->image_url }}" 
+                                     alt="{{ $route->bus->bus_name }}" 
+                                     class="h-full w-full object-cover object-center transition duration-500 group-hover:scale-105"
+                                     loading="lazy"
+                                     onerror="this.src='{{ asset('images/hero-bus.jpg') }}'">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent"></div>
+                                
+                                {{-- Badge Kelas Bus & Konteks Waktu --}}
+                                <div class="absolute top-3 inset-x-3 flex items-center justify-between gap-2">
+                                    <span class="rounded-lg bg-blue-600/90 backdrop-blur-xs px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wider text-white shadow-sm">
+                                        {{ str_replace('_', ' ', $route->bus->bus_type) }}
+                                    </span>
+                                    <span class="rounded-lg bg-black/60 backdrop-blur-xs px-2 py-1 text-[11px] font-semibold text-white shadow-sm">
                                         {{ $timeContext }}
                                     </span>
-                                    <span class="rounded bg-green-50 px-2 py-0.5 text-[11px] font-semibold text-green-700 border border-green-200">
-                                        Tersedia
+                                </div>
+
+                                {{-- Info Armada di Atas Foto --}}
+                                <div class="absolute bottom-2.5 inset-x-3 flex items-center justify-between text-white">
+                                    <span class="text-sm font-black drop-shadow-sm truncate pr-2">
+                                        {{ $route->bus->bus_name }}
+                                    </span>
+                                    <span class="shrink-0 text-[10px] font-mono font-semibold bg-white/20 backdrop-blur-xs px-1.5 py-0.5 rounded text-slate-100">
+                                        {{ $route->bus->bus_code }}
                                     </span>
                                 </div>
                             </div>
 
-                            {{-- Route Visual Vertikal (07:30 Jepara Terminal │ Semarang Terminal 09:30) --}}
-                            <div class="py-4 space-y-1">
-                                {{-- Keberangkatan --}}
-                                <div class="flex items-start gap-3">
-                                    <div class="w-14 shrink-0 text-right pt-0.5 font-mono text-base font-extrabold text-slate-900">
-                                        {{ \Carbon\Carbon::parse($route->departure_time)->format('H:i') }}
+                            <div class="p-4 sm:p-5">
+                                {{-- Baris Tanggal & Ketersediaan Kursi --}}
+                                <div class="flex items-center justify-between border-b border-slate-100 pb-3 text-xs">
+                                    <span class="font-bold text-slate-700">
+                                        {{ $route->departure_date->translatedFormat('d M Y') }}
+                                    </span>
+                                    <span class="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700 border border-emerald-200">
+                                        {{ $route->available_seats }} kursi tersedia
+                                    </span>
+                                </div>
+
+                                {{-- Route Visual Vertikal (07:30 Jepara │ Semarang 09:30) --}}
+                                <div class="py-3.5 space-y-1">
+                                    {{-- Keberangkatan --}}
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-14 shrink-0 text-right pt-0.5 font-mono text-base font-black text-slate-900">
+                                            {{ \Carbon\Carbon::parse($route->departure_time)->format('H:i') }}
+                                        </div>
+                                        <div class="relative flex flex-col items-center">
+                                            <span class="h-2.5 w-2.5 rounded-full border-2 border-blue-600 bg-white shadow-xs"></span>
+                                            <span class="h-9 w-0.5 bg-slate-300"></span>
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <h4 class="text-sm font-bold text-slate-900 leading-tight">
+                                                {{ $route->origin_city }}
+                                            </h4>
+                                            <p class="text-xs text-slate-500 truncate">
+                                                {{ $route->origin_terminal }}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div class="relative flex flex-col items-center">
-                                        <span class="h-2.5 w-2.5 rounded-full border-2 border-blue-600 bg-white"></span>
-                                        <span class="h-10 w-0.5 bg-slate-300"></span>
-                                    </div>
-                                    <div class="min-w-0 flex-1">
-                                        <h4 class="text-sm font-bold text-slate-900 leading-tight">
-                                            {{ $route->origin_city }}
-                                        </h4>
-                                        <p class="text-xs text-slate-500 truncate">
-                                            {{ $route->origin_terminal }}
-                                        </p>
+
+                                    {{-- Kedatangan --}}
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-14 shrink-0 text-right pt-0.5 font-mono text-base font-black text-slate-600">
+                                            {{ $route->estimated_arrival_time ? \Carbon\Carbon::parse($route->estimated_arrival_time)->format('H:i') : '--:--' }}
+                                        </div>
+                                        <div class="flex flex-col items-center">
+                                            <span class="h-2.5 w-2.5 rounded-full bg-blue-600 shadow-xs"></span>
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <h4 class="text-sm font-bold text-slate-900 leading-tight">
+                                                {{ $route->destination_city }}
+                                            </h4>
+                                            <p class="text-xs text-slate-500 truncate">
+                                                {{ $route->destination_terminal }}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
 
-                                {{-- Kedatangan --}}
-                                <div class="flex items-start gap-3">
-                                    <div class="w-14 shrink-0 text-right pt-0.5 font-mono text-base font-extrabold text-slate-600">
-                                        {{ $route->estimated_arrival_time ? \Carbon\Carbon::parse($route->estimated_arrival_time)->format('H:i') : '--:--' }}
+                                {{-- Fasilitas Mini Chips --}}
+                                @if(!empty($route->bus->facilities) && is_array($route->bus->facilities))
+                                    <div class="border-t border-slate-100 pt-2.5 flex flex-wrap gap-1.5">
+                                        @foreach(array_slice($route->bus->facilities, 0, 3) as $facility)
+                                            <span class="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">
+                                                {{ $facility }}
+                                            </span>
+                                        @endforeach
+                                        @if(count($route->bus->facilities) > 3)
+                                            <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">
+                                                +{{ count($route->bus->facilities) - 3 }}
+                                            </span>
+                                        @endif
                                     </div>
-                                    <div class="flex flex-col items-center">
-                                        <span class="h-2.5 w-2.5 rounded-full bg-blue-600"></span>
-                                    </div>
-                                    <div class="min-w-0 flex-1">
-                                        <h4 class="text-sm font-bold text-slate-900 leading-tight">
-                                            {{ $route->destination_city }}
-                                        </h4>
-                                        <p class="text-xs text-slate-500 truncate">
-                                            {{ $route->destination_terminal }}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{-- Info Bus & Kursi --}}
-                            <div class="border-t border-slate-100 pt-3 flex items-center justify-between text-xs text-slate-600">
-                                <div>
-                                    <span class="font-bold text-slate-900">{{ $route->bus->bus_name }}</span>
-                                    <span class="text-slate-300">·</span>
-                                    <span class="capitalize text-slate-600">{{ str_replace('_', ' ', $route->bus->bus_type) }}</span>
-                                </div>
-                                <div class="font-semibold text-green-700">
-                                    {{ $route->available_seats }} kursi tersedia
-                                </div>
+                                @endif
                             </div>
                         </div>
 
                         {{-- Harga & Tombol Lihat Detail --}}
-                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center justify-between gap-3">
+                        <div class="border-t border-slate-100 bg-slate-50/60 p-4 flex items-center justify-between gap-3">
                             <div>
-                                <span class="text-[10px] uppercase font-bold text-slate-400 block">Tarif</span>
-                                <span class="text-lg font-black text-slate-900 font-mono">
+                                <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Tarif per kursi</span>
+                                <span class="text-lg font-black text-blue-900 font-mono">
                                     Rp {{ number_format($route->price, 0, ',', '.') }}
                                 </span>
                             </div>
 
                             <a href="{{ route('customer.trips.show', $route) }}" 
-                               class="inline-flex items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-xs font-bold text-white shadow-xs transition">
-                                Lihat Detail
+                               class="inline-flex items-center justify-center gap-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 px-4 py-2 text-xs font-bold text-white shadow-xs transition group-hover:shadow-sm">
+                                <span>Pesan Tiket</span>
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                             </a>
                         </div>
                     </article>

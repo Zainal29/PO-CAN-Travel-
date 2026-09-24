@@ -59,12 +59,18 @@
             {{-- Route Visualization Card --}}
             <div class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm space-y-6">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-4">
-                    <div>
-                        <h2 class="text-base font-bold text-slate-900">Jadwal & Rute Armada</h2>
-                        <p class="text-xs text-slate-500 mt-0.5">Informasi rute dan estimasi waktu perjalanan</p>
+                    <div class="flex items-center gap-3">
+                        <img src="{{ $order->route->bus->image_url }}" 
+                             alt="{{ $order->route->bus->bus_name }}" 
+                             class="h-12 w-16 rounded-xl object-cover border border-slate-200 shadow-xs shrink-0"
+                             onerror="this.src='{{ asset('images/hero-bus.jpg') }}'">
+                        <div>
+                            <h2 class="text-base font-bold text-slate-900">Jadwal & Rute Armada</h2>
+                            <p class="text-xs text-slate-500 mt-0.5">{{ $order->route->bus->bus_name }} ({{ $order->route->bus->bus_code }})</p>
+                        </div>
                     </div>
                     <span class="rounded-lg bg-blue-50 border border-blue-200/60 px-3 py-1 text-xs font-bold text-blue-700 uppercase tracking-wide">
-                        {{ $order->route->bus->bus_name }}
+                        {{ str_replace('_', ' ', $order->route->bus->bus_type) }}
                     </span>
                 </div>
 

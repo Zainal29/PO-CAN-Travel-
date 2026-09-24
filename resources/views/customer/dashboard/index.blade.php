@@ -132,12 +132,19 @@
 
                     {{-- Bus & Seat Info --}}
                     <div class="flex flex-wrap items-center justify-between gap-3 text-xs border-t border-slate-100 pt-3">
-                        <div>
-                            <span class="font-bold text-slate-900">{{ $nextOrder->route->bus->bus_name }}</span>
-                            <span class="text-slate-400">·</span>
-                            <span class="capitalize text-slate-600">{{ str_replace('_', ' ', $nextOrder->route->bus->bus_type) }}</span>
-                            <span class="text-slate-400">·</span>
-                            <span class="text-slate-700 font-semibold">{{ $nextOrder->total_passengers }} Penumpang</span>
+                        <div class="flex items-center gap-3">
+                            <img src="{{ $nextOrder->route->bus->image_url }}" 
+                                 alt="{{ $nextOrder->route->bus->bus_name }}" 
+                                 class="h-10 w-14 rounded-lg object-cover border border-slate-200 shadow-xs shrink-0"
+                                 onerror="this.src='{{ asset('images/hero-bus.jpg') }}'">
+                            <div>
+                                <span class="font-bold text-slate-900 block">{{ $nextOrder->route->bus->bus_name }}</span>
+                                <div class="text-[11px] text-slate-500 mt-0.5">
+                                    <span class="capitalize text-slate-600 font-medium">{{ str_replace('_', ' ', $nextOrder->route->bus->bus_type) }}</span>
+                                    <span class="text-slate-400">·</span>
+                                    <span class="text-slate-700 font-semibold">{{ $nextOrder->total_passengers }} Penumpang</span>
+                                </div>
+                            </div>
                         </div>
                         <div class="font-mono font-bold text-base text-slate-900">
                             Rp {{ number_format($nextOrder->total_price, 0, ',', '.') }}

@@ -31,14 +31,15 @@ class AutoCheckInAndCompletionTest extends TestCase
         ]);
 
         // Rute yang berangkat 1 jam yang lalu, tiba 2 jam ke depan
+        $depTime = Carbon::now('Asia/Jakarta')->subHours(2);
         $route = TravelRoute::create([
             'bus_id' => $bus->id,
             'origin_city' => 'Jepara',
             'origin_terminal' => 'Terminal Jepara',
             'destination_city' => 'Semarang',
             'destination_terminal' => 'Terminal Terboyo',
-            'departure_date' => Carbon::today('Asia/Jakarta')->toDateString(),
-            'departure_time' => Carbon::now('Asia/Jakarta')->subHour()->format('H:i'),
+            'departure_date' => $depTime->toDateString(),
+            'departure_time' => $depTime->format('H:i'),
             'estimated_arrival_time' => Carbon::now('Asia/Jakarta')->addHours(2)->format('H:i'),
             'price' => 50000,
             'available_seats' => 29,
@@ -94,16 +95,17 @@ class AutoCheckInAndCompletionTest extends TestCase
             'status' => 'active',
         ]);
 
-        // Rute yang berangkat 3 jam lalu dan tiba 1 jam lalu
+        $depTime = Carbon::now('Asia/Jakarta')->subHours(3);
+        $arrTime = Carbon::now('Asia/Jakarta')->subHour();
         $route = TravelRoute::create([
             'bus_id' => $bus->id,
             'origin_city' => 'Jepara',
             'origin_terminal' => 'Terminal Jepara',
             'destination_city' => 'Semarang',
             'destination_terminal' => 'Terminal Terboyo',
-            'departure_date' => Carbon::today('Asia/Jakarta')->toDateString(),
-            'departure_time' => Carbon::now('Asia/Jakarta')->subHours(3)->format('H:i'),
-            'estimated_arrival_time' => Carbon::now('Asia/Jakarta')->subHour()->format('H:i'),
+            'departure_date' => $depTime->toDateString(),
+            'departure_time' => $depTime->format('H:i'),
+            'estimated_arrival_time' => $arrTime->format('H:i'),
             'price' => 50000,
             'available_seats' => 29,
             'status' => 'available',

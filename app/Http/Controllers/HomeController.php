@@ -37,15 +37,7 @@ class HomeController extends Controller
             ->limit(3)
             ->get();
 
-        $settings = Setting::query()
-            ->whereIn('key', [
-                'app_name',
-                'contact_email',
-                'contact_phone',
-                'footer_address',
-                'cancellation_policy',
-            ])
-            ->pluck('value', 'key');
+        $settings = Setting::all()->pluck('value', 'key');
 
         return view('welcome', compact('featuredRoutes', 'fleet', 'settings'));
     }

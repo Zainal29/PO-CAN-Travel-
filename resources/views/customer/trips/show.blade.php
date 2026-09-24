@@ -30,8 +30,15 @@
     <div class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xs">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between border-b border-slate-100 pb-6">
             <div class="flex items-center gap-4">
-                <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-blue-900 text-white font-black text-xl shadow-xs">
-                    {{ strtoupper(substr($route->bus->bus_name, 0, 2)) }}
+                {{-- Foto Thumbnail Bus --}}
+                <div class="relative h-16 w-24 sm:h-20 sm:w-28 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-900 shadow-xs">
+                    <img src="{{ $route->bus->image_url }}" 
+                         alt="{{ $route->bus->bus_name }}" 
+                         class="h-full w-full object-cover"
+                         onerror="this.src='{{ asset('images/hero-bus.jpg') }}'">
+                    <span class="absolute bottom-1 right-1 rounded bg-black/70 px-1.5 py-0.5 text-[9px] font-bold text-white">
+                        Armada
+                    </span>
                 </div>
                 <div>
                     <span class="rounded bg-blue-50 px-2.5 py-0.5 text-xs font-bold text-blue-700 border border-blue-200 uppercase tracking-wide">
@@ -103,6 +110,38 @@
     <div class="grid gap-6 lg:grid-cols-[1fr_340px]">
         {{-- Left Details Column --}}
         <div class="space-y-6">
+            {{-- Showcase Visual Bus (Foto Banner Armada) --}}
+            <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs">
+                <div class="relative h-56 sm:h-72 w-full overflow-hidden bg-slate-950">
+                    <img src="{{ $route->bus->image_url }}" 
+                         alt="{{ $route->bus->bus_name }}" 
+                         class="h-full w-full object-cover object-center"
+                         onerror="this.src='{{ asset('images/hero-bus.jpg') }}'">
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-black/30"></div>
+                    
+                    <div class="absolute top-4 inset-x-4 flex items-center justify-between">
+                        <span class="rounded-lg bg-blue-600/90 backdrop-blur-xs px-3 py-1 text-xs font-extrabold uppercase text-white shadow-xs">
+                            {{ $busTypeLabel }}
+                        </span>
+                        <span class="rounded-lg bg-black/60 backdrop-blur-xs px-2.5 py-1 text-xs font-semibold text-white">
+                            {{ $route->bus->total_seats }} Total Kursi
+                        </span>
+                    </div>
+
+                    <div class="absolute bottom-4 inset-x-4 flex items-end justify-between text-white">
+                        <div>
+                            <p class="text-[11px] uppercase tracking-wider text-blue-300 font-bold">Armada Resmi PO CAN Travel</p>
+                            <h3 class="text-xl sm:text-2xl font-black">{{ $route->bus->bus_name }}</h3>
+                        </div>
+                        @if($route->bus->plate_number)
+                            <span class="font-mono text-xs bg-white/20 backdrop-blur-xs px-2.5 py-1 rounded-md font-bold text-slate-100">
+                                {{ $route->bus->plate_number }}
+                            </span>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
             {{-- Detail Fasilitas Bus --}}
             <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
                 <h2 class="text-base font-bold text-slate-900">Fasilitas Armada</h2>
