@@ -72,6 +72,41 @@ class TripSearchFilterTest extends TestCase
             ->assertSee('1 jadwal tersedia untuk rute ini');
     }
 
+    public function test_city_suggestions_include_unique_origin_and_destination_cities(): void
+    {
+        $bus = $this->createBus('BUS-CITY', 'Bus Kota', 'economy', 'active');
+        $route = $this->createRoute($bus, now()->addDay()->toDateString(), '10:00', 10, 75000);
+        $route->update([
+            'origin_city' => 'Jakarta',
+            'destination_city' => 'Jambi',
+        ]);
+
+        $response = $this->getJson(route('api.cities.suggestion', ['q' => 'ja']));
+
+        $response
+            ->assertOk()
+            ->assertJson(['Jakarta', 'Jambi']);
+    }
+
+    public function test_search_can_sort_routes_by_lowest_price(): void
+    {
+        $date = now()->addDay()->toDateString();
+        $cheapBus = $this->createBus('BUS-CHEAP', 'Bus Murah', 'economy', 'active');
+        $expensiveBus = $this->createBus('BUS-EXPENSIVE', 'Bus Mahal', 'economy', 'active');
+
+        $this->createRoute($expensiveBus, $date, '08:00', 10, 150000);
+        $this->createRoute($cheapBus, $date, '09:00', 10, 50000);
+
+        $this->get(route('customer.trips.index', [
+            'origin_city' => 'Jepara',
+            'destination_city' => 'Semarang',
+            'departure_date' => $date,
+            'sort_by' => 'price_asc',
+        ]))
+            ->assertOk()
+            ->assertSeeInOrder(['Bus Murah', 'Bus Mahal']);
+    }
+
     private function createBus(string $code, string $name, string $type, string $status): Bus
     {
         return Bus::create([
@@ -84,9 +119,9 @@ class TripSearchFilterTest extends TestCase
         ]);
     }
 
-    private function createRoute(Bus $bus, string $date, string $time, int $seats, int $price): void
+    private function createRoute(Bus $bus, string $date, string $time, int $seats, int $price): TravelRoute
     {
-        TravelRoute::create([
+        return TravelRoute::create([
             'bus_id' => $bus->id,
             'origin_city' => 'Jepara',
             'origin_terminal' => 'Terminal Jepara',

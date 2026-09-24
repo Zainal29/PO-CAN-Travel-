@@ -10,7 +10,7 @@
 <body class="bg-white text-slate-900 antialiased">
     <header class="relative z-20 bg-slate-950 text-white">
         <nav class="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
-            <a href="{{ route('home') }}" class="flex items-center gap-3"><span class="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-400 text-base font-black text-slate-950">C</span><span><span class="block text-lg font-bold leading-none">PO CAN Travel</span><span class="mt-1 block text-[10px] font-semibold tracking-[0.18em] text-slate-400">BUS TICKET BOOKING</span></span></a>
+            <a href="{{ route('home') }}" class="flex items-center gap-3"><span class="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-400 text-base font-black text-slate-950">C</span><span><span class="block text-lg font-bold leading-none">{{ $settings['app_name'] ?? 'PO CAN Travel' }}</span><span class="mt-1 block text-[10px] font-semibold tracking-[0.18em] text-slate-400">BUS TICKET BOOKING</span></span></a>
             <div class="flex items-center gap-2 text-sm font-semibold">
                 <a href="{{ route('customer.trips.index') }}" class="hidden rounded-lg px-3 py-2 text-slate-300 hover:text-white sm:block">Jadwal perjalanan</a>
                 @auth
@@ -47,12 +47,36 @@
 
         <section class="border-b border-slate-200 bg-slate-50"><div class="mx-auto grid max-w-7xl gap-6 px-5 py-7 sm:grid-cols-3 sm:px-8"><div class="flex gap-3"><span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-amber-200 bg-amber-50 text-sm font-black text-amber-700">1</span><div><h2 class="font-bold">Pilih jadwal</h2><p class="mt-1 text-sm text-slate-600">Temukan rute dan waktu yang Anda butuhkan.</p></div></div><div class="flex gap-3"><span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-amber-200 bg-amber-50 text-sm font-black text-amber-700">2</span><div><h2 class="font-bold">Pilih kursi</h2><p class="mt-1 text-sm text-slate-600">Kursi yang sudah dipesan tidak dapat dipilih lagi.</p></div></div><div class="flex gap-3"><span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-amber-200 bg-amber-50 text-sm font-black text-amber-700">3</span><div><h2 class="font-bold">Selesaikan pembayaran</h2><p class="mt-1 text-sm text-slate-600">Kirim bukti pembayaran lalu pantau statusnya.</p></div></div></div></section>
 
+        <section id="cara-memesan" class="mx-auto max-w-7xl px-5 py-16 sm:px-8">
+            <div class="max-w-2xl">
+                <p class="text-sm font-bold tracking-wide text-amber-700">CARA MEMESAN</p>
+                <h2 class="mt-2 text-3xl font-black">Pesan tiket dalam tujuh langkah</h2>
+                <p class="mt-3 leading-7 text-slate-600">Ikuti alur sederhana berikut untuk mendapatkan tiket dan memantau pesanan Anda.</p>
+            </div>
+            <div class="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                @foreach([
+                    'Cari perjalanan berdasarkan kota dan tanggal',
+                    'Pilih perjalanan yang masih tersedia',
+                    'Pilih kursi yang diinginkan',
+                    'Isi data penumpang dengan benar',
+                    'Lakukan pembayaran sesuai total pesanan',
+                    'Unggah bukti pembayaran',
+                    'Tunggu verifikasi dari admin',
+                ] as $step => $description)
+                    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <span class="text-sm font-black text-amber-600">{{ str_pad($step + 1, 2, '0', STR_PAD_LEFT) }}</span>
+                        <p class="mt-3 font-bold text-slate-900">{{ $description }}</p>
+                    </div>
+                @endforeach
+            </div>
+        </section>
+
         <section class="mx-auto max-w-7xl px-5 py-16 sm:px-8"><div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p class="text-sm font-bold tracking-wide text-amber-700">JADWAL TERDEKAT</p><h2 class="mt-2 text-3xl font-black">Perjalanan yang dapat dipesan</h2></div><a href="{{ route('customer.trips.index') }}" class="w-fit text-sm font-bold text-slate-900 underline decoration-amber-400 decoration-2 underline-offset-4">Lihat semua jadwal</a></div>
             <div class="mt-8 grid gap-5 lg:grid-cols-3">@forelse($featuredRoutes as $travelRoute)<article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div class="flex items-center justify-between"><span class="rounded bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">{{ strtoupper(str_replace('_', ' ', $travelRoute->bus->bus_type)) }}</span><span class="text-xs font-semibold text-emerald-700">{{ $travelRoute->available_seats }} kursi tersedia</span></div><h3 class="mt-5 text-xl font-black">{{ $travelRoute->origin_city }} <span class="text-amber-600">→</span> {{ $travelRoute->destination_city }}</h3><p class="mt-2 text-sm text-slate-500">{{ $travelRoute->bus->bus_name }}</p><div class="mt-5 grid grid-cols-2 border-y border-slate-100 py-4"><div><p class="text-xs font-bold text-slate-400">BERANGKAT</p><p class="mt-1 font-bold">{{ \Carbon\Carbon::parse($travelRoute->departure_time)->format('H:i') }}</p></div><div><p class="text-xs font-bold text-slate-400">TANGGAL</p><p class="mt-1 font-bold">{{ $travelRoute->departure_date->format('d M Y') }}</p></div></div><div class="mt-5 flex items-end justify-between"><div><p class="text-xs text-slate-500">Mulai dari</p><p class="text-lg font-black">Rp {{ number_format($travelRoute->price, 0, ',', '.') }}</p></div><a href="{{ route('customer.trips.show', $travelRoute) }}" class="rounded-lg bg-slate-900 px-3 py-2 text-sm font-bold text-white hover:bg-slate-700">Detail</a></div></article>@empty<div class="lg:col-span-3 rounded-2xl border border-dashed border-slate-300 p-8 text-center"><h3 class="font-bold">Jadwal belum tersedia</h3><p class="mt-2 text-sm text-slate-600">Admin dapat menambahkan perjalanan melalui panel admin.</p></div>@endforelse</div>
         </section>
 
         <section class="bg-slate-950 py-16 text-white"><div class="mx-auto max-w-7xl px-5 sm:px-8"><div class="max-w-2xl"><p class="text-sm font-bold tracking-wide text-amber-300">ARMADA</p><h2 class="mt-2 text-3xl font-black">Bus yang digunakan untuk perjalanan Anda</h2><p class="mt-3 leading-7 text-slate-300">Informasi tipe bus, kapasitas, dan fasilitas tersedia di setiap detail perjalanan.</p></div><div class="mt-8 grid gap-4 md:grid-cols-3">@forelse($fleet as $bus)<article class="border border-slate-700 bg-slate-900 p-5"><div class="flex items-center justify-between"><span class="text-xs font-bold tracking-wide text-amber-300">{{ $bus->bus_code }}</span><span class="text-xs text-slate-400">{{ $bus->total_seats }} kursi</span></div><h3 class="mt-5 text-xl font-bold">{{ $bus->bus_name }}</h3><p class="mt-2 text-sm text-slate-400">{{ ucfirst(str_replace('_', ' ', $bus->bus_type)) }} · {{ $bus->plate_number }}</p><div class="mt-5 border-t border-slate-700 pt-4 text-sm text-slate-300">{{ !empty($bus->facilities) ? implode(' · ', array_slice($bus->facilities, 0, 3)) : 'Informasi fasilitas tersedia pada detail perjalanan.' }}</div></article>@empty<div class="border border-slate-700 p-5 text-sm text-slate-400 md:col-span-3">Data armada akan tampil setelah ditambahkan admin.</div>@endforelse</div></div></section>
     </main>
-    <footer class="bg-slate-900 text-slate-400"><div class="mx-auto flex max-w-7xl flex-col gap-3 px-5 py-8 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-8"><div><p class="font-bold text-white">PO CAN Travel</p><p class="mt-1">Platform pemesanan tiket bus.</p></div><div class="flex gap-5"><a href="{{ route('customer.trips.index') }}" class="hover:text-white">Jadwal perjalanan</a><a href="{{ route('login') }}" class="hover:text-white">Masuk</a></div></div></footer>
+    <footer id="kontak" class="bg-slate-900 text-slate-400"><div class="mx-auto grid max-w-7xl gap-8 px-5 py-10 text-sm sm:px-8 md:grid-cols-3"><div><p class="font-bold text-white">{{ $settings['app_name'] ?? 'PO CAN Travel' }}</p><p class="mt-2">Platform pemesanan tiket bus.</p><p class="mt-2">{{ $settings['footer_address'] ?? 'Alamat belum tersedia.' }}</p></div><div><p class="font-bold text-white">Bantuan</p><div class="mt-3 grid gap-2"><a href="#cara-memesan" class="hover:text-white">Cara Memesan</a><a href="#kebijakan-pembatalan" class="hover:text-white">Kebijakan Pembatalan</a><a href="#kontak" class="hover:text-white">Kontak</a></div></div><div><p class="font-bold text-white">Hubungi kami</p><div class="mt-3 grid gap-2"><a href="mailto:{{ $settings['contact_email'] ?? 'support@pocantravel.com' }}" class="hover:text-white">{{ $settings['contact_email'] ?? 'support@pocantravel.com' }}</a><a href="tel:{{ $settings['contact_phone'] ?? '081234567890' }}" class="hover:text-white">{{ $settings['contact_phone'] ?? '081234567890' }}</a></div></div></div><div id="kebijakan-pembatalan" class="border-t border-slate-800"><div class="mx-auto max-w-7xl px-5 py-4 text-xs leading-5 text-slate-500 sm:px-8">Kebijakan pembatalan: {{ $settings['cancellation_policy'] ?? 'Hubungi customer service untuk informasi pembatalan.' }}</div></div></footer>
 </body>
 </html>

@@ -351,6 +351,51 @@
 
 </div>
 
+{{-- Review perjalanan --}}
+@if ($order->order_status === 'completed')
+    <div class="mt-6 rounded-xl border border-amber-200 bg-white p-6 shadow-sm">
+        <h2 class="font-bold text-gray-900">Review Perjalanan</h2>
+
+        @if ($order->review)
+            <p class="mt-2 text-sm text-gray-600">
+                Anda sudah memberikan rating {{ $order->review->rating }}/5 untuk perjalanan ini.
+            </p>
+            @if ($order->review->comment)
+                <p class="mt-3 rounded-lg bg-gray-50 p-4 text-sm text-gray-700">{{ $order->review->comment }}</p>
+            @endif
+        @else
+            <p class="mt-1 text-sm text-gray-500">Bagikan pengalaman Anda setelah perjalanan selesai.</p>
+
+            <form method="POST" action="{{ route('customer.orders.review', $order) }}" class="mt-5 space-y-4">
+                @csrf
+
+                <div>
+                    <label for="rating" class="mb-2 block text-sm font-medium text-gray-700">Rating</label>
+                    <select id="rating" name="rating" required class="w-full rounded-lg border-gray-300 focus:border-amber-500 focus:ring-amber-500 sm:w-48">
+                        <option value="">Pilih rating</option>
+                        @for ($rating = 5; $rating >= 1; $rating--)
+                            <option value="{{ $rating }}" @selected(old('rating') == $rating)>{{ $rating }}/5</option>
+                        @endfor
+                    </select>
+                    @error('rating')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="comment" class="mb-2 block text-sm font-medium text-gray-700">Komentar</label>
+                    <textarea id="comment" name="comment" rows="3" maxlength="2000" class="w-full rounded-lg border-gray-300 focus:border-amber-500 focus:ring-amber-500" placeholder="Ceritakan pengalaman Anda...">{{ old('comment') }}</textarea>
+                    @error('comment')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <button type="submit" class="rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-gray-700">Kirim Review</button>
+            </form>
+        @endif
+    </div>
+@endif
+
 {{-- Pembatalan --}}
 @if (
     in_array($order->order_status, ['pending', 'confirmed'], true)

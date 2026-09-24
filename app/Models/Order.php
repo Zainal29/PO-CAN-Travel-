@@ -33,6 +33,7 @@ class Order extends Model
         'expired_at' => 'datetime',
         'ticket_issued_at' => 'datetime',
         'checked_in_at' => 'datetime',
+        'seats_released' => 'boolean',
     ];
 
     public function user()
@@ -56,5 +57,10 @@ class Order extends Model
     public function payment()
     {
         return $this->hasOne(Payment::class);
+    }
+
+    public function review()
+    {
+        return $this->hasOne(Review::class);
     }
 }

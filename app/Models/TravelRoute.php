@@ -42,4 +42,16 @@ class TravelRoute extends Model
     {
         return $this->hasMany(Order::class, 'route_id');
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class, 'route_id');
+    }
+
+    public function averageRating(): ?float
+    {
+        $average = $this->reviews()->avg('rating');
+
+        return $average === null ? null : round((float) $average, 1);
+    }
 }

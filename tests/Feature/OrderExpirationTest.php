@@ -58,6 +58,7 @@ class OrderExpirationTest extends TestCase
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
             'order_status' => 'expired',
+            'seats_released' => true,
         ]);
         $this->assertDatabaseHas('payments', [
             'order_id' => $order->id,

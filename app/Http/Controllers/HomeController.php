@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bus;
+use App\Models\Setting;
 use App\Models\TravelRoute;
 use Carbon\Carbon;
 use Illuminate\View\View;
@@ -36,6 +37,16 @@ class HomeController extends Controller
             ->limit(3)
             ->get();
 
-        return view('welcome', compact('featuredRoutes', 'fleet'));
+        $settings = Setting::query()
+            ->whereIn('key', [
+                'app_name',
+                'contact_email',
+                'contact_phone',
+                'footer_address',
+                'cancellation_policy',
+            ])
+            ->pluck('value', 'key');
+
+        return view('welcome', compact('featuredRoutes', 'fleet', 'settings'));
     }
 }

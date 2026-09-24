@@ -68,7 +68,7 @@ $hasCompleteSearch =
         </p>
     </div>
 
-    <form method="GET" action="{{ route('customer.trips.index') }}" class="p-5 md:p-6">
+    <form method="GET" action="{{ route('customer.trips.index') }}" class="p-5 md:p-6" x-data="cityAutocomplete()">
 
         <div class="grid gap-4 lg:grid-cols-[1fr_1fr_180px_150px_auto]">
 
@@ -79,7 +79,7 @@ $hasCompleteSearch =
                     Kota asal
                 </label>
 
-                <div class="relative">
+                <div class="relative" @click.outside="closeSuggestions('origin_city')">
                     <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                         <svg class="h-4 w-4"
                              viewBox="0 0 24 24"
@@ -96,9 +96,17 @@ $hasCompleteSearch =
                         name="origin_city"
                         type="text"
                         value="{{ request('origin_city') }}"
+                        autocomplete="off"
+                        x-on:input="searchCities('origin_city', $event.target.value)"
+                        x-on:focus="searchCities('origin_city', $event.target.value)"
                         placeholder="Contoh: Jepara"
                         class="w-full rounded-xl border-gray-300 py-3 pl-10 pr-3 text-sm focus:border-gray-900 focus:ring-gray-900"
                     >
+                    <div x-cloak x-show="activeField === 'origin_city' && suggestions.length" class="absolute inset-x-0 top-full z-10 mt-1 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+                        <template x-for="city in suggestions" :key="city">
+                            <button type="button" x-on:click="selectCity('origin_city', city)" class="block w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50" x-text="city"></button>
+                        </template>
+                    </div>
                 </div>
             </div>
 
@@ -109,7 +117,7 @@ $hasCompleteSearch =
                     Kota tujuan
                 </label>
 
-                <div class="relative">
+                <div class="relative" @click.outside="closeSuggestions('destination_city')">
                     <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                         <svg class="h-4 w-4"
                              viewBox="0 0 24 24"
@@ -126,9 +134,17 @@ $hasCompleteSearch =
                         name="destination_city"
                         type="text"
                         value="{{ request('destination_city') }}"
+                        autocomplete="off"
+                        x-on:input="searchCities('destination_city', $event.target.value)"
+                        x-on:focus="searchCities('destination_city', $event.target.value)"
                         placeholder="Contoh: Semarang"
                         class="w-full rounded-xl border-gray-300 py-3 pl-10 pr-3 text-sm focus:border-gray-900 focus:ring-gray-900"
                     >
+                    <div x-cloak x-show="activeField === 'destination_city' && suggestions.length" class="absolute inset-x-0 top-full z-10 mt-1 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+                        <template x-for="city in suggestions" :key="city">
+                            <button type="button" x-on:click="selectCity('destination_city', city)" class="block w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50" x-text="city"></button>
+                        </template>
+                    </div>
                 </div>
             </div>
 
@@ -222,6 +238,16 @@ $hasCompleteSearch =
                                 {{ $label }}
                             </option>
                         @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label for="sort_by" class="mb-2 block text-xs font-semibold text-gray-600">Urutkan</label>
+                    <select id="sort_by" name="sort_by" class="w-full rounded-xl border-gray-300 bg-white text-sm focus:border-gray-900 focus:ring-gray-900">
+                        <option value="departure_earliest" @selected(request('sort_by', 'departure_earliest') === 'departure_earliest')>Keberangkatan terpagi</option>
+                        <option value="departure_latest" @selected(request('sort_by') === 'departure_latest')>Keberangkatan terbaru</option>
+                        <option value="price_asc" @selected(request('sort_by') === 'price_asc')>Harga termurah</option>
+                        <option value="price_desc" @selected(request('sort_by') === 'price_desc')>Harga termahal</option>
                     </select>
                 </div>
 

@@ -65,6 +65,16 @@ class SearchTripRequest extends FormRequest
                 'numeric',
                 'min:0',
             ],
+
+            'sort_by' => [
+                'nullable',
+                Rule::in([
+                    'price_asc',
+                    'price_desc',
+                    'departure_earliest',
+                    'departure_latest',
+                ]),
+            ],
         ];
     }
 

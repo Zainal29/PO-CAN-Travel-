@@ -92,6 +92,13 @@
                         </p>
                     </div>
 
+                    <div>
+                        <span class="text-gray-500">Kursi</span>
+                        <p class="font-semibold {{ $order->seats_released ? 'text-green-700' : 'text-red-700' }}">
+                            {{ $order->seats_released ? 'Sudah dilepas' : 'Belum dilepas' }}
+                        </p>
+                    </div>
+
                 </div>
             </div>
 
@@ -281,6 +288,38 @@
                             onclick="return confirm('Batalkan order ini?')"
                         >
                             Batalkan Order
+                        </button>
+                    </form>
+                @endif
+
+                @if(in_array($order->order_status, ['cancelled', 'expired'], true) && ! $order->seats_released)
+                    <div class="mt-6 rounded-lg border border-yellow-300 bg-yellow-50 p-4 text-sm text-yellow-800">
+                        Order ini sudah {{ $order->order_status === 'cancelled' ? 'dibatalkan' : 'kedaluwarsa' }}, tetapi kursinya belum dilepas.
+                    </div>
+
+                    <form method="POST" action="{{ route('admin.orders.release-seats', $order) }}" class="mt-3">
+                        @csrf
+                        @method('PATCH')
+                        <button
+                            type="submit"
+                            class="rounded-lg bg-yellow-600 px-4 py-2 text-white"
+                            onclick="return confirm('Lepaskan kursi dari order ini?')"
+                        >
+                            Lepaskan Kursi
+                        </button>
+                    </form>
+                @endif
+
+                @if(in_array($order->order_status, ['cancelled', 'expired', 'completed'], true))
+                    <form method="POST" action="{{ route('admin.orders.archive', $order) }}" class="mt-6">
+                        @csrf
+                        @method('DELETE')
+                        <button
+                            type="submit"
+                            class="rounded-lg border border-gray-300 px-4 py-2 text-gray-700"
+                            onclick="return confirm('Arsipkan order ini?')"
+                        >
+                            Arsipkan Order
                         </button>
                     </form>
                 @endif

@@ -312,6 +312,41 @@ $busTypeLabel = $busTypes[$route->bus->bus_type]
 
         @endif
 
+        {{-- Reviews --}}
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div class="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+                <div>
+                    <h2 class="text-lg font-bold text-gray-900">Rating dan review</h2>
+                    <p class="mt-1 text-sm text-gray-500">
+                        @if($route->reviews->isNotEmpty())
+                            {{ number_format($route->reviews->avg('rating'), 1, ',', '.') }}/5 dari {{ $route->reviews->count() }} review
+                        @else
+                            Belum ada review untuk perjalanan ini.
+                        @endif
+                    </p>
+                </div>
+                @if($route->reviews->isNotEmpty())
+                    <span class="text-2xl font-bold text-amber-600">{{ number_format($route->reviews->avg('rating'), 1, ',', '.') }}</span>
+                @endif
+            </div>
+
+            @if($route->reviews->isNotEmpty())
+                <div class="mt-5 space-y-4">
+                    @foreach($route->reviews->sortByDesc('created_at')->take(5) as $review)
+                        <article class="border-t border-gray-100 pt-4 first:border-t-0 first:pt-0">
+                            <div class="flex items-center justify-between gap-3">
+                                <p class="font-semibold text-gray-900">{{ $review->user->name }}</p>
+                                <span class="text-sm font-semibold text-amber-600">{{ $review->rating }}/5</span>
+                            </div>
+                            @if($review->comment)
+                                <p class="mt-2 text-sm leading-6 text-gray-600">{{ $review->comment }}</p>
+                            @endif
+                        </article>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+
     </div>
 
     {{-- Booking Card --}}

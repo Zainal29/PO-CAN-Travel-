@@ -484,6 +484,17 @@
                 return this.bookedSeats.includes(Number(seat));
             },
 
+            deselectSeat(seat) {
+                const selectedSeat = String(seat);
+                const passenger = this.passengers.find(
+                    passenger => passenger.seat_number === selectedSeat
+                );
+
+                if (passenger) {
+                    passenger.seat_number = '';
+                }
+            },
+
             availableSeatsFor(index) {
                 const currentSeat = Number(this.passengers[index].seat_number);
 
@@ -495,17 +506,14 @@
             },
 
             selectSeat(seat) {
+                if (this.isSelected(seat)) {
+                    this.deselectSeat(seat);
+                    return;
+                }
+
                 const target = this.passengers.find(
                     passenger => !passenger.seat_number
-                );
-
-                if (!target) {
-                    return;
-                }
-
-                if (this.isSelected(seat)) {
-                    return;
-                }
+                ) || this.passengers[this.passengers.length - 1];
 
                 target.seat_number = String(seat);
             },

@@ -9,6 +9,8 @@ use App\Models\TravelRoute;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class TripController extends Controller
 {
@@ -294,7 +296,22 @@ class TripController extends Controller
             
 
             $routes = $searchQuery
-                ->orderBy('departure_time')
+                ->when(
+                    $request->input('sort_by'),
+                    function ($query, string $sortBy) {
+                        [$column, $direction] = match ($sortBy) {
+                            'price_asc' => ['price', 'asc'],
+                            'price_desc' => ['price', 'desc'],
+                            'departure_latest' => ['departure_time', 'desc'],
+                            default => ['departure_time', 'asc'],
+                        };
+
+                        $query->orderBy($column, $direction);
+                    },
+                    function ($query) {
+                        $query->orderBy('departure_time');
+                    }
+                )
                 ->paginate(10)
                 ->withQueryString();
         } elseif ($hasAnySearch) {
@@ -312,10 +329,35 @@ class TripController extends Controller
         );
     }
 
+    public function citySuggestions(Request $request): JsonResponse
+    {
+        $query = trim((string) $request->input('q'));
+
+        if (mb_strlen($query) < 2) {
+            return response()->json([]);
+        }
+
+        $pattern = '%' . addcslashes($query, '%_\\') . '%';
+
+        $cities = TravelRoute::query()
+            ->where('origin_city', 'like', $pattern)
+            ->select('origin_city as city')
+            ->union(
+                TravelRoute::query()
+                    ->where('destination_city', 'like', $pattern)
+                    ->select('destination_city as city')
+            )
+            ->orderBy('city')
+            ->limit(8)
+            ->pluck('city');
+
+        return response()->json($cities->values());
+    }
+
 
     public function show(TravelRoute $route): View
     {
-        $route->load('bus');
+        $route->load(['bus', 'reviews.user']);
 
         abort_if(
             $route->status !== 'available'

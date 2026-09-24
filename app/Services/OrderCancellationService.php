@@ -17,6 +17,7 @@ class OrderCancellationService
 
             if (in_array($order->order_status, [
                 'cancelled',
+                'paid',
                 'completed',
                 'expired',
             ], true)) {
@@ -51,6 +52,33 @@ class OrderCancellationService
             return $order->fresh([
                 'route.bus',
                 'payment',
+                'details',
+            ]);
+        });
+    }
+
+    public function releaseSeats(Order $order): Order
+    {
+        return DB::transaction(function () use ($order) {
+            $order = Order::query()
+                ->lockForUpdate()
+                ->with(['route.bus', 'details'])
+                ->findOrFail($order->id);
+
+            if (! in_array($order->order_status, ['cancelled', 'expired'], true)) {
+                throw new \RuntimeException(
+                    'Kursi hanya dapat dilepas dari order yang dibatalkan atau kedaluwarsa.'
+                );
+            }
+
+            if ($order->seats_released) {
+                throw new \RuntimeException('Kursi untuk order ini sudah dilepas.');
+            }
+
+            $this->restoreSeats($order);
+
+            return $order->fresh([
+                'route.bus',
                 'details',
             ]);
         });
@@ -109,6 +137,10 @@ class OrderCancellationService
 
     private function restoreSeats(Order $order): void
     {
+        if ($order->seats_released) {
+            return;
+        }
+
         $route = $order->route;
 
         if (!$route) {
@@ -144,6 +176,10 @@ class OrderCancellationService
             'status' => $newAvailableSeats > 0
                 ? 'available'
                 : 'full',
+        ]);
+
+        $order->update([
+            'seats_released' => true,
         ]);
     }
 }

@@ -38,6 +38,11 @@ Route::get('/perjalanan', [
     'index',
 ])->name('customer.trips.index');
 
+Route::get('/api/cities/suggestion', [
+    CustomerTripController::class,
+    'citySuggestions',
+])->name('api.cities.suggestion');
+
 Route::get('/perjalanan/{route}', [
     CustomerTripController::class,
     'show',
@@ -137,6 +142,11 @@ Route::middleware('auth')->group(function () {
             CustomerOrderController::class,
             'cancel',
         ])->name('orders.cancel');
+
+        Route::post('/orders/{order}/review', [
+            CustomerOrderController::class,
+            'review',
+        ])->name('orders.review');
 
         Route::get('/orders/{order}/payment', [
             CustomerPaymentController::class,
