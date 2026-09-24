@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePaymentRequest;
 use App\Models\Order;
 use App\Services\PaymentService;
+use App\Services\QrCodeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use RuntimeException;
@@ -13,7 +14,8 @@ use RuntimeException;
 class PaymentController extends Controller
 {
     public function __construct(
-        private PaymentService $paymentService
+        private PaymentService $paymentService,
+        private QrCodeService $qrCodeService
     ) {
     }
 
@@ -29,9 +31,18 @@ class PaymentController extends Controller
             'payment',
         ]);
 
+        $accountInfo = implode("\n", [
+            'Transfer ke:',
+            'Bank: BCA',
+            'No. Rek: 1234567890',
+            'Atas Nama: PO CAN Travel',
+            'Nominal: Rp ' . number_format($order->total_price, 0, ',', '.'),
+        ]);
+        $paymentQrCode = $this->qrCodeService->dataUri($accountInfo);
+
         return view(
             'customer.payments.create',
-            compact('order')
+            compact('order', 'paymentQrCode')
         );
     }
 

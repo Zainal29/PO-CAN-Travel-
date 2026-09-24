@@ -28,6 +28,21 @@
 
 <div class="grid gap-6 lg:grid-cols-3">
 
+    <div class="rounded-xl border border-amber-200 bg-amber-50 p-6 shadow-sm lg:col-span-3">
+        <div class="flex flex-col gap-5 sm:flex-row sm:items-center">
+            <img src="{{ $paymentQrCode }}" alt="QR code informasi rekening" class="h-40 w-40 rounded-lg bg-white p-2">
+            <div>
+                <h2 class="text-lg font-bold text-amber-900">Informasi rekening</h2>
+                <p class="mt-1 text-sm text-amber-800">Scan QR code untuk melihat info rekening.</p>
+                <p class="mt-3 whitespace-pre-line text-sm leading-6 text-amber-900">Transfer ke:
+Bank: BCA
+No. Rek: 1234567890
+Atas Nama: PO CAN Travel
+Nominal: Rp {{ number_format($order->total_price, 0, ',', '.') }}</p>
+            </div>
+        </div>
+    </div>
+
     {{-- Form --}}
     <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2">
 

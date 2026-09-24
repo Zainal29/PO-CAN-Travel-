@@ -165,6 +165,38 @@ class OrderController extends Controller
         return back()->with('success', 'Check-in berhasil dicatat.');
     }
 
+    public function checkInByQr(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'qr_payload' => ['required', 'string', 'max:5000'],
+        ]);
+
+        $payload = $validated['qr_payload'];
+        preg_match('/^Order:\s*(\S+)/mi', $payload, $orderMatch);
+        preg_match('/^Ticket:\s*(\S+)/mi', $payload, $ticketMatch);
+
+        $orderCode = $orderMatch[1] ?? null;
+        $ticketCode = $ticketMatch[1] ?? null;
+
+        $order = Order::query()
+            ->with('route')
+            ->when(
+                $ticketCode,
+                fn ($query) => $query->where('ticket_code', $ticketCode)
+            )
+            ->when(
+                ! $ticketCode && $orderCode,
+                fn ($query) => $query->where('order_code', $orderCode)
+            )
+            ->first();
+
+        if (! $order) {
+            return back()->with('error', 'QR e-ticket tidak valid atau order tidak ditemukan.');
+        }
+
+        return $this->checkIn($order);
+    }
+
     /**
      * Release seats dari order yang cancelled/expired/rejected
      */

@@ -70,6 +70,71 @@ class ReviewTest extends TestCase
         $this->assertDatabaseCount('reviews', 0);
     }
 
+    public function test_owner_can_download_qr_for_verified_ticket(): void
+    {
+        $user = User::factory()->create(['role' => 'customer']);
+        $order = $this->createOrder($user, 'paid');
+        $order->update([
+            'payment_status' => 'verified',
+            'ticket_code' => 'CAN-TEST-QR',
+        ]);
+
+        $response = $this->actingAs($user)
+            ->get(route('customer.orders.ticket.qr', $order));
+
+        $response
+            ->assertOk()
+            ->assertHeader('Content-Type', 'image/png');
+    }
+
+    public function test_customer_cannot_download_another_customers_ticket_qr(): void
+    {
+        $owner = User::factory()->create(['role' => 'customer']);
+        $otherUser = User::factory()->create(['role' => 'customer']);
+        $order = $this->createOrder($owner, 'paid');
+        $order->update([
+            'payment_status' => 'verified',
+            'ticket_code' => 'CAN-TEST-QR-2',
+        ]);
+
+        $this->actingAs($otherUser)
+            ->get(route('customer.orders.ticket.qr', $order))
+            ->assertForbidden();
+    }
+
+    public function test_admin_can_check_in_order_from_ticket_qr_payload(): void
+    {
+        $customer = User::factory()->create(['role' => 'customer']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $order = $this->createOrder($customer, 'paid');
+        $order->update([
+            'payment_status' => 'verified',
+            'ticket_code' => 'CAN-TEST-SCAN',
+        ]);
+        $order->route->update([
+            'departure_date' => now()->addDay()->toDateString(),
+        ]);
+
+        $this->actingAs($admin)
+            ->patch(route('admin.orders.qr.check-in'), [
+                'qr_payload' => "Order: {$order->order_code}\nTicket: {$order->ticket_code}",
+            ])
+            ->assertSessionHas('success');
+
+        $this->assertNotNull($order->fresh()->checked_in_at);
+    }
+
+    public function test_invalid_ticket_qr_payload_is_rejected(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)
+            ->patch(route('admin.orders.qr.check-in'), [
+                'qr_payload' => 'invalid qr payload',
+            ])
+            ->assertSessionHas('error');
+    }
+
     private function createOrder(User $user, string $status): Order
     {
         $bus = Bus::create([

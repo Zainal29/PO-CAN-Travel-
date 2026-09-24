@@ -43,6 +43,17 @@
         </div>
 
         <div class="border-t border-dashed border-gray-300 pt-6">
+            <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h2 class="font-semibold text-gray-900">QR e-ticket</h2>
+                    <p class="mt-1 text-sm text-gray-500">Tunjukkan QR ini saat check-in.</p>
+                </div>
+                <img src="{{ $ticketQrCode }}" alt="QR code e-ticket {{ $order->order_code }}" class="h-44 w-44 rounded-lg border border-gray-200 p-2">
+            </div>
+            <a href="{{ route('customer.orders.ticket.qr', $order) }}" class="mt-4 inline-flex rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-gray-700">Download E-Tiket</a>
+        </div>
+
+        <div class="border-t border-dashed border-gray-300 pt-6">
             <h2 class="font-semibold text-gray-900">Penumpang dan kursi</h2>
             <div class="mt-3 space-y-2 text-sm">
                 @foreach ($order->details as $detail)

@@ -82,6 +82,8 @@ Route::middleware('auth')->group(function () {
             ->name('orders.index');
         Route::get('orders/{order}', [\App\Http\Controllers\Admin\OrderController::class, 'show'])
             ->name('orders.show');
+        Route::patch('orders/qr/check-in', [\App\Http\Controllers\Admin\OrderController::class, 'checkInByQr'])
+            ->name('orders.qr.check-in');
         Route::patch('orders/{order}/status', [\App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])
             ->name('orders.status');
         Route::patch('orders/{order}/cancel', [\App\Http\Controllers\Admin\OrderController::class, 'cancel'])
@@ -137,6 +139,11 @@ Route::middleware('auth')->group(function () {
             CustomerOrderController::class,
             'ticket',
         ])->name('orders.ticket');
+
+        Route::get('/orders/{order}/ticket/qr', [
+            CustomerOrderController::class,
+            'downloadTicketQr',
+        ])->name('orders.ticket.qr');
 
         Route::patch('/orders/{order}/cancel', [
             CustomerOrderController::class,

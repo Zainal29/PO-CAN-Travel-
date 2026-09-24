@@ -330,6 +330,13 @@
                         @method('PATCH')
                         <button class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">Catat Check-in</button>
                     </form>
+                    <form method="POST" action="{{ route('admin.orders.qr.check-in') }}" class="mt-6 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+                        @csrf
+                        @method('PATCH')
+                        <label for="qr_payload" class="block text-sm font-semibold text-emerald-900">Validasi QR e-ticket</label>
+                        <textarea id="qr_payload" name="qr_payload" rows="3" required maxlength="5000" class="mt-2 w-full rounded-lg border-emerald-300 text-sm" placeholder="Tempel hasil scan QR e-ticket di sini..."></textarea>
+                        <button class="mt-3 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800">Validasi QR dan Check-in</button>
+                    </form>
                 @elseif ($order->checked_in_at)
                     <p class="mt-6 text-sm font-medium text-emerald-700">Sudah check-in: {{ $order->checked_in_at->format('d M Y H:i') }}</p>
                 @endif
