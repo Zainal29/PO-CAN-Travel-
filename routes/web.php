@@ -100,6 +100,8 @@ Route::middleware('auth')->group(function () {
             ->name('scanner.index');
 
         // Payments
+        Route::get('payments/export/excel', [\App\Http\Controllers\Admin\PaymentController::class, 'exportExcel'])
+            ->name('payments.export-excel');
         Route::get('payments', [\App\Http\Controllers\Admin\PaymentController::class, 'index'])
             ->name('payments.index');
         Route::get('payments/{payment}', [\App\Http\Controllers\Admin\PaymentController::class, 'show'])

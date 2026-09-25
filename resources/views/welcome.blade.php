@@ -7,14 +7,14 @@
     <title>{{ $settings['app_name'] ?? 'PO CAN Travel' }} — Pemesanan Tiket Bus Resmi</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen bg-slate-50 font-sans text-slate-900 antialiased selection:bg-blue-600 selection:text-white">
+<body class="min-h-screen bg-slate-50 font-sans text-slate-900 antialiased selection:bg-blue-600 selection:text-white pb-16 sm:pb-0">
 
-    {{-- 1. NAVBAR (Clean, putih, sticky, border tipis) --}}
-    <header class="sticky top-0 z-40 border-b border-slate-200 bg-white shadow-xs">
+    {{-- 1. NAVBAR (Clean, putih, sticky, border tipis, responsive hamburger) --}}
+    <header class="sticky top-0 z-40 border-b border-slate-200 bg-white shadow-xs" x-data="{ mobileMenuOpen: false }">
         <nav class="site-shell flex h-16 items-center justify-between gap-4">
             {{-- Logo PO CAN Travel --}}
-            <a href="{{ route('home') }}" class="flex items-center gap-3 shrink-0">
-                <div class="h-11 w-11 sm:h-12 sm:w-12 rounded-xl bg-white border border-slate-200/90 overflow-hidden shadow-xs flex items-center justify-center shrink-0">
+            <a href="{{ route('home') }}" class="flex items-center gap-2.5 sm:gap-3 shrink-0">
+                <div class="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-white border border-slate-200/90 overflow-hidden shadow-xs flex items-center justify-center shrink-0">
                     <img src="{{ asset('storage/images/LOGO-CAN-TRAVEL.jpeg') }}" 
                          alt="Logo PO CAN Travel" 
                          class="h-full w-full object-cover scale-135"
@@ -22,17 +22,17 @@
                     <span class="hidden h-full w-full items-center justify-center font-black text-blue-900 text-base">C</span>
                 </div>
                 <div class="flex flex-col">
-                    <span class="text-base sm:text-lg font-extrabold tracking-tight text-slate-900 leading-tight">
+                    <span class="text-sm sm:text-lg font-extrabold tracking-tight text-slate-900 leading-tight">
                         {{ $settings['app_name'] ?? 'PO CAN Travel' }}
                     </span>
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600">
+                    <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-blue-600">
                         Tiket Bus Antarkota
                     </span>
                 </div>
             </a>
 
-            {{-- Navigasi Sesuai Role --}}
-            <div class="flex items-center gap-2 sm:gap-4 text-sm font-semibold">
+            {{-- Desktop Navigation (Hidden on Mobile) --}}
+            <div class="hidden md:flex items-center gap-2 sm:gap-3 text-sm font-semibold">
                 {{-- Jadwal Bus (selalu tampil) --}}
                 <a href="{{ route('customer.trips.index') }}" 
                    class="rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">
@@ -41,7 +41,7 @@
 
                 @auth
                     @if(auth()->user()->role === 'admin')
-                        {{-- Admin: Kembali ke Admin (TIDAK BOLEH ke /customer/*) --}}
+                        {{-- Admin: Kembali ke Admin --}}
                         <a href="{{ route('admin.dashboard') }}" 
                            class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 px-3.5 py-2 text-xs font-bold text-white shadow-xs transition">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -50,10 +50,10 @@
                             <span>Kembali ke Admin</span>
                         </a>
                     @else
-                        {{-- Customer: Beranda + Pesanan + Profil --}}
-                        <a href="{{ route('home') }}" 
-                           class="hidden md:inline-flex rounded-lg px-3 py-2 text-slate-900 bg-slate-100 transition">
-                            Beranda
+                        {{-- Customer: Beranda + Dashboard + Pesanan + Profil --}}
+                        <a href="{{ route('customer.dashboard') }}" 
+                           class="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">
+                            <span>Dashboard</span>
                         </a>
                         <a href="{{ route('customer.orders.index') }}" 
                            class="rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">
@@ -79,7 +79,150 @@
                     </a>
                 @endauth
             </div>
+
+            {{-- Mobile Right Action: Hamburger Button --}}
+            <div class="flex items-center gap-2 md:hidden">
+                @auth
+                    @if(auth()->user()->role === 'admin')
+                        <a href="{{ route('admin.dashboard') }}" 
+                           class="inline-flex items-center gap-1 rounded-lg bg-blue-600 hover:bg-blue-700 px-2.5 py-1.5 text-[11px] font-bold text-white shadow-2xs transition">
+                            <span>Admin</span>
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </a>
+                    @endif
+                @endauth
+
+                <button @click="mobileMenuOpen = !mobileMenuOpen" 
+                        type="button" 
+                        class="flex items-center justify-center h-10 w-10 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition shadow-2xs focus:outline-none"
+                        aria-label="Toggle menu navigasi mobile">
+                    <svg x-show="!mobileMenuOpen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                    <svg x-show="mobileMenuOpen" x-cloak class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
         </nav>
+
+        {{-- Mobile Dropdown Drawer Menu --}}
+        <div x-show="mobileMenuOpen" 
+             x-cloak
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 -translate-y-2"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 -translate-y-2"
+             @click.away="mobileMenuOpen = false"
+             class="md:hidden border-b border-slate-200 bg-white shadow-xl px-4 py-4 space-y-3">
+
+            @auth
+                {{-- User Badge Info --}}
+                <div class="flex items-center justify-between rounded-xl bg-slate-50 p-3 border border-slate-100">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white font-bold text-xs shadow-2xs">
+                            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-xs font-bold text-slate-900 truncate">{{ auth()->user()->name }}</p>
+                            <p class="text-[10px] text-slate-500 capitalize">{{ auth()->user()->role === 'admin' ? 'Administrator' : 'Pelanggan' }}</p>
+                        </div>
+                    </div>
+                    <span class="rounded-md bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-700 uppercase">
+                        {{ auth()->user()->role }}
+                    </span>
+                </div>
+
+                @if(auth()->user()->role === 'admin')
+                    <div class="space-y-1.5 pt-1">
+                        <a href="{{ route('admin.dashboard') }}" 
+                           class="flex items-center justify-center gap-2 w-full rounded-xl bg-blue-600 hover:bg-blue-700 py-2.5 px-3 text-xs font-bold text-white shadow-xs transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                            <span>Kembali ke Portal Admin</span>
+                        </a>
+                        <a href="{{ route('customer.trips.index') }}" 
+                           class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 transition">
+                            <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35"/></svg>
+                            <span>Jadwal Bus & Cari Tiket</span>
+                        </a>
+                    </div>
+                @else
+                    <div class="space-y-1 text-sm font-semibold">
+                        <a href="{{ route('home') }}" 
+                           class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-blue-700 bg-blue-50/70 font-bold transition">
+                            <svg class="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                            <span>Beranda (Halaman Utama)</span>
+                        </a>
+                        <a href="{{ route('customer.dashboard') }}" 
+                           class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100 transition">
+                            <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                            <span>Dashboard Pelanggan</span>
+                        </a>
+                        <a href="{{ route('customer.trips.index') }}" 
+                           class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100 transition">
+                            <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35"/></svg>
+                            <span>Jadwal Bus & Cari Perjalanan</span>
+                        </a>
+                        <a href="{{ route('customer.orders.index') }}" 
+                           class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100 transition">
+                            <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
+                            <span>Pesanan Tiket Saya</span>
+                        </a>
+                        <a href="{{ route('profile.edit') }}" 
+                           class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100 transition">
+                            <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                            <span>Profil Akun</span>
+                        </a>
+                    </div>
+                @endif
+
+                <div class="border-t border-slate-100 pt-2">
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="w-full flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-bold text-red-600 hover:bg-red-50 transition">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                            <span>Keluar Akun</span>
+                        </button>
+                    </form>
+                </div>
+            @else
+                <div class="space-y-1 text-sm font-semibold">
+                    <a href="{{ route('home') }}" 
+                       class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-blue-700 bg-blue-50/70 font-bold transition">
+                        <svg class="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                        <span>Beranda</span>
+                    </a>
+                    <a href="{{ route('customer.trips.index') }}" 
+                       class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100 transition">
+                        <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35"/></svg>
+                        <span>Jadwal Bus & Cari Tiket</span>
+                    </a>
+                    <a href="#cara-booking" @click="mobileMenuOpen = false" 
+                       class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100 transition">
+                        <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span>Panduan Cara Booking</span>
+                    </a>
+                    <a href="#benefit" @click="mobileMenuOpen = false" 
+                       class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100 transition">
+                        <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        <span>Keunggulan Layanan</span>
+                    </a>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 border-t border-slate-100 pt-3">
+                    <a href="{{ route('login') }}" 
+                       class="flex items-center justify-center rounded-xl border border-slate-300 bg-white py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-2xs">
+                        Masuk
+                    </a>
+                    <a href="{{ route('register') }}" 
+                       class="flex items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-700 py-2.5 text-xs font-bold text-white shadow-2xs transition">
+                        Daftar
+                    </a>
+                </div>
+            @endauth
+        </div>
     </header>
 
     <main>
@@ -99,7 +242,7 @@
                 <div class="absolute inset-0 bg-slate-900/80"></div>
             </div>
 
-            <div class="relative z-10 site-shell py-12 sm:py-16 lg:py-20">
+            <div class="relative z-10 site-shell py-10 sm:py-12 lg:py-14">
                 <div class="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
                     {{-- Kiri: Headline kuat, deskripsi singkat, feature kecil --}}
                     <div class="max-w-2xl space-y-5">
@@ -266,7 +409,7 @@
         </section>
 
         {{-- 3. JADWAL BUS (Data database, card terasa seperti tiket dengan visual rute vertikal) --}}
-        <section id="jadwal-bus" class="site-shell py-12 sm:py-16">
+        <section id="jadwal-bus" class="site-shell py-10 sm:py-12">
             <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between border-b border-slate-200 pb-4">
                 <div>
                     <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
@@ -286,7 +429,7 @@
             </div>
 
             {{-- Grid Tiket Bus --}}
-            <div class="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div class="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 @php
                     $jakartaNow = \Carbon\Carbon::now('Asia/Jakarta');
                 @endphp
@@ -486,7 +629,7 @@
         </section>
 
         {{-- 4. CARA BOOKING --}}
-        <section id="cara-booking" class="border-t border-slate-200 bg-white py-20 sm:py-28 lg:py-32">
+        <section id="cara-booking" class="border-t border-slate-200 bg-white py-10 sm:py-12 lg:py-14">
             <div class="site-shell">
                 <div class="max-w-2xl">
                     <div class="inline-flex items-center gap-1.5 rounded-full bg-blue-50 border border-blue-200 px-3.5 py-1 text-xs font-bold text-blue-700 mb-4 shadow-xs">
@@ -502,7 +645,7 @@
                 </div>
 
                 {{-- Grid Langkah Pemesanan --}}
-                <div class="mt-12 sm:mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+                <div class="mt-6 sm:mt-8 grid gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-5">
                     @php
                         $bookingSteps = [
                             [
@@ -580,7 +723,7 @@
                 </div>
 
                 {{-- Garansi & Kemudahan Pemesanan Strip --}}
-                <div class="mt-12 sm:mt-16 rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50/90 via-indigo-50/60 to-slate-50 p-6 sm:p-8 shadow-xs">
+                <div class="mt-6 sm:mt-8 rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50/90 via-indigo-50/60 to-slate-50 p-5 sm:p-6 shadow-xs">
                     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                         <div class="flex items-start gap-3.5">
                             <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-xs">
@@ -627,7 +770,7 @@
         </section>
 
         {{-- 5. KEUNGGULAN LAYANAN & INFO --}}
-        <section id="benefit" class="border-t border-slate-200 bg-slate-50/70 py-20 sm:py-28 lg:py-32">
+        <section id="benefit" class="border-t border-slate-200 bg-slate-50/70 py-10 sm:py-12 lg:py-14">
             <div class="site-shell">
                 <div class="max-w-2xl">
                     <div class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3.5 py-1 text-xs font-bold text-emerald-800 mb-4 shadow-xs">
@@ -643,7 +786,7 @@
                 </div>
 
                 {{-- 4 Pilar Keunggulan --}}
-                <div class="mt-12 sm:mt-16 grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-4">
+                <div class="mt-6 sm:mt-8 grid gap-5 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     {{-- 01: Pilih Kursi Real-Time --}}
                     <div class="rounded-2xl border border-slate-200 bg-white p-7 shadow-xs flex flex-col justify-between hover:border-blue-300 transition">
                         <div>
@@ -734,7 +877,7 @@
                 </div>
 
                 {{-- Trust Metrics Counter Bar --}}
-                <div class="mt-12 sm:mt-16 rounded-2xl border border-slate-200 bg-white p-8 sm:p-10 shadow-xs">
+                <div class="mt-6 sm:mt-8 rounded-2xl border border-slate-200 bg-white p-6 sm:p-7 shadow-xs">
                     <div class="grid grid-cols-2 gap-8 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
                         <div class="text-center pt-2 sm:pt-0">
                             <p class="font-mono text-2xl sm:text-3xl lg:text-4xl font-black text-blue-900">10.000+</p>
@@ -763,7 +906,7 @@
                 </div>
 
                 {{-- Kebijakan & Ketentuan Layanan --}}
-                <div id="kebijakan" class="mt-12 sm:mt-16 rounded-2xl border border-slate-200 bg-white p-7 sm:p-9 shadow-xs">
+                <div id="kebijakan" class="mt-6 sm:mt-8 rounded-2xl border border-slate-200 bg-white p-6 sm:p-7 shadow-xs">
                     <div class="flex items-center gap-3 mb-5">
                         <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600 shadow-2xs">
                             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -802,7 +945,7 @@
         </section>
 
         {{-- 6. CTA (Sederhana: Siap berangkat? Cari jadwal bus dan pesan perjalanan Anda sekarang. Cari Jadwal) --}}
-        <section class="border-t border-slate-800 bg-blue-900 text-white py-16 sm:py-20">
+        <section class="border-t border-slate-800 bg-blue-900 text-white py-8 sm:py-10">
             <div class="site-shell flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Siap berangkat?</h2>
@@ -822,7 +965,7 @@
 
     {{-- 7. FOOTER (Dark navy/blue, compact dan profesional) --}}
     <footer id="kontak" class="border-t border-slate-800 bg-slate-900 text-slate-400">
-        <div class="site-shell py-14 sm:py-18">
+        <div class="site-shell py-10 sm:py-12">
             <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 text-xs">
                 {{-- PO CAN Travel & Deskripsi --}}
                 <div class="space-y-3">
@@ -905,12 +1048,66 @@
                 </div>
             </div>
 
-            <div class="mt-12 border-t border-slate-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-500">
+            <div class="mt-8 border-t border-slate-800 pt-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-500">
                 <p>&copy; {{ date('Y') }} {{ $settings['app_name'] ?? 'PO CAN Travel' }}. Seluruh hak cipta dilindungi.</p>
                 <p>Website Resmi Pemesanan Tiket Bus</p>
             </div>
         </div>
     </footer>
+
+    {{-- Bottom Navigation Bar for Mobile (Home Landing) --}}
+    <nav class="sm:hidden fixed bottom-0 inset-x-0 z-30 border-t border-slate-200 bg-white/95 backdrop-blur-md px-3 py-2 flex items-center justify-around shadow-lg">
+        @auth
+            @if(auth()->user()->role === 'admin')
+                <a href="{{ route('home') }}" class="flex flex-col items-center gap-1 text-[11px] font-semibold text-blue-600">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    <span>Home</span>
+                </a>
+                <a href="{{ route('customer.trips.index') }}" class="flex flex-col items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-blue-600 transition">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35"/></svg>
+                    <span>Jadwal</span>
+                </a>
+                <a href="{{ route('admin.dashboard') }}" class="flex flex-col items-center gap-1 text-[11px] font-semibold text-blue-700 hover:text-blue-900 transition">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                    <span>Admin</span>
+                </a>
+            @else
+                <a href="{{ route('home') }}" class="flex flex-col items-center gap-1 text-[11px] font-semibold text-blue-600">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    <span>Home</span>
+                </a>
+                <a href="{{ route('customer.trips.index') }}" class="flex flex-col items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-blue-600 transition">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35"/></svg>
+                    <span>Cari</span>
+                </a>
+                <a href="{{ route('customer.orders.index') }}" class="flex flex-col items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-blue-600 transition">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
+                    <span>Pesanan</span>
+                </a>
+                <a href="{{ route('customer.dashboard') }}" class="flex flex-col items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-blue-600 transition">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                    <span>Dashboard</span>
+                </a>
+            @endif
+        @else
+            <a href="{{ route('home') }}" class="flex flex-col items-center gap-1 text-[11px] font-semibold text-blue-600">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                <span>Home</span>
+            </a>
+            <a href="{{ route('customer.trips.index') }}" class="flex flex-col items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-blue-600 transition">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35"/></svg>
+                <span>Jadwal</span>
+            </a>
+            <a href="{{ route('login') }}" class="flex flex-col items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-blue-600 transition">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+                <span>Masuk</span>
+            </a>
+            <a href="{{ route('register') }}" class="flex flex-col items-center gap-1 text-[11px] font-semibold text-blue-600 hover:text-blue-700 transition">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+                <span>Daftar</span>
+            </a>
+        @endauth
+    </nav>
 
 </body>
 </html>
